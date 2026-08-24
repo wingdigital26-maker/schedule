@@ -167,7 +167,7 @@ details.row summary::-webkit-details-marker{display:none}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.93);
   backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
   border-top:1px solid var(--line);padding-bottom:var(--safeB)}
-.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr)}
 .nb{padding:10px 0 11px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--dim2)}
 .nb svg{display:block;margin:0 auto 3px;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
@@ -176,6 +176,45 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .view.on{display:block;animation:fi .22s ease}
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .empty{text-align:center;color:var(--dim2);padding:30px 12px;font-size:14.5px}
+
+/* due: month calendar and agenda */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin:2px 0 12px}
+.calmon{font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+.calnav{width:34px;height:34px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);
+  font-size:19px;line-height:1;color:var(--dim);font-weight:700}
+.calnav:disabled{opacity:.32}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal .dow{text-align:center;font-size:10.5px;font-weight:800;color:var(--dim2);
+  letter-spacing:.06em;padding-bottom:4px}
+.cal .d{aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border-radius:11px;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  border:1px solid transparent}
+.cal .d.out{opacity:.3}
+.cal .d.has{background:var(--card2);border-color:var(--line)}
+.cal .d.today{border-color:var(--crimson);font-weight:800;color:var(--crimson)}
+.cal .d.sel{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.cal .d.sel .dot{background:rgba(255,255,255,.9)}
+.dots{display:flex;gap:2.5px;height:5px;align-items:center}
+.dot{width:5px;height:5px;border-radius:99px;background:var(--dim2)}
+.dot.exam{background:var(--crimson)}
+.dot.quiz{background:var(--warn)}
+.duerow{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+.duerow:first-child{border-top:0}
+.duerow .when{flex:0 0 52px;font-size:11.5px;font-weight:800;color:var(--dim2);
+  font-variant-numeric:tabular-nums;padding-top:2px}
+.duerow .what{flex:1 1 auto;min-width:0}
+.duerow .ti{font-size:14.5px;font-weight:650;line-height:1.3}
+.duerow .mt{font-size:12px;color:var(--dim2);margin-top:2px;font-weight:600}
+.duerow.isexam .ti{color:var(--crimson);font-weight:800}
+.daysep{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim2);padding:13px 0 3px;border-top:1px solid var(--line)}
+.daysep:first-child{border-top:0;padding-top:2px}
+.examstrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.examstrip::-webkit-scrollbar{display:none}
+.examcard{flex:0 0 auto;min-width:132px;background:var(--crimson);color:#fff;border-radius:13px;padding:11px 13px}
+.examcard .k{font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--cream);text-transform:uppercase}
+.examcard .n{font-size:14px;font-weight:800;margin-top:3px;line-height:1.2}
+.examcard .w{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:3px;font-weight:600}
 .tba{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;background:var(--card2);
   color:var(--warn);border:1px solid var(--line);border-radius:6px;padding:2px 6px;vertical-align:2px}
 .toast{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safeB));z-index:40;
@@ -352,6 +391,7 @@ audio{width:100%;margin-bottom:12px}
   <div class="navin">
     <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
     <button class="nb" data-v="week"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+    <button class="nb" data-v="due"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>Due</button>
     <button class="nb" data-v="courses"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5z"/><path d="M4 19.5A1.5 1.5 0 015.5 18H19v3H5.5A1.5 1.5 0 014 19.5z"/></svg>Classes</button>
     <button class="nb" data-v="food"><svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 004 0V3M8 11v10"/><path d="M17 3c-1.5 1.5-2 3.5-2 5.5S15.5 12 17 12v9"/></svg>Food</button>
     <button class="nb" data-v="study"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>Record</button>
@@ -387,6 +427,29 @@ audio{width:100%;margin-bottom:12px}
     <div class="sechead"><h2>When we are all free</h2><span class="aux" id="freeWho"></span></div>
     <div class="card tight" id="freeList"></div>
     <div class="card tight" id="bldglist"></div>
+  </section>
+
+  <!-- DUE -->
+  <section class="view" id="v-due">
+    <div class="sechead"><h2>What is coming</h2><span class="aux" id="dueStamp"></span></div>
+    <div class="card tight" id="dueNext"></div>
+
+    <div class="sechead"><h2>Calendar</h2><span class="aux" id="dueLegend">Tap a day</span></div>
+    <div class="card tight">
+      <div class="calhead">
+        <button class="calnav" id="calPrev" aria-label="Previous month">&#8249;</button>
+        <div class="calmon" id="calMon"></div>
+        <button class="calnav" id="calNext" aria-label="Next month">&#8250;</button>
+      </div>
+      <div class="cal" id="calDow"></div>
+      <div class="cal" id="calGrid"></div>
+    </div>
+
+    <div class="sechead"><h2 id="dayHead">Selected day</h2><span class="aux" id="dayAux"></span></div>
+    <div class="card tight" id="dayList"></div>
+
+    <div class="sechead"><h2>Next two weeks</h2><span class="aux" id="soonAux"></span></div>
+    <div class="card tight" id="soonList"></div>
   </section>
 
   <!-- COURSES -->
@@ -545,6 +608,11 @@ audio{width:100%;margin-bottom:12px}
     Tap any class for directions, floor and room.
   </div>
 </div>
+
+<!-- Canvas assignments, generated by canvas_export.py. Optional on purpose:
+     each app looks for its own data/canvas.js beside it, so b/ and c/ simply
+     show an empty Due tab until their owner exports their own. -->
+<script src="data/canvas.js" onerror="window.CANVAS_ABSENT=1"></script>
 
 <script>
 /* ------------------------------------------------------------------
@@ -1092,11 +1160,188 @@ function renderFinals(N){
   $('#finals').innerHTML = (card || '<div class="empty">No finals posted yet.</div>') + note;
 }
 
+/* ---------------- due: Canvas assignments and exams ----------------
+   CANVAS_ITEMS comes from data/canvas.js, which canvas_export.py writes
+   from the Canvas API. If that file is not there the tab explains itself
+   rather than looking broken. Times are already Central, converted at
+   export, so nothing here has to reason about timezones. */
+
+const DUE = { y:0, mo:0, sel:null, ready:false };
+const MONTHS = ['January','February','March','April','May','June','July',
+                'August','September','October','November','December'];
+
+const dueItems = () => (typeof CANVAS_ITEMS === 'undefined' ? [] : CANVAS_ITEMS);
+const isoOf = (y, mo, d) => y + '-' + pad2(mo) + '-' + pad2(d);
+const toMin = t => (+t.slice(0,2)) * 60 + (+t.slice(3,5));
+
+function daysBetween(a, b){
+  const A = new Date(a + 'T00:00:00'), B = new Date(b + 'T00:00:00');
+  return Math.round((B - A) / 86400000);
+}
+
+function dueByDay(){
+  const m = {};
+  for (const it of dueItems()) (m[it.due] = m[it.due] || []).push(it);
+  return m;
+}
+
+/* A short human gap: Today, Tomorrow, in 5 days, Sat 12 Sep. */
+function gapLabel(iso, todayIso){
+  const n = daysBetween(todayIso, iso);
+  if (n === 0) return 'Today';
+  if (n === 1) return 'Tomorrow';
+  if (n < 0)   return Math.abs(n) + 'd ago';
+  if (n <= 6)  return 'in ' + n + ' days';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+}
+
+function rowHtml(it, showDate, todayIso){
+  const exam = it.kind === 'exam';
+  const left = showDate ? gapLabel(it.due, todayIso) : hhmm(toMin(it.time));
+  const meta = [it.short, showDate ? hhmm(toMin(it.time)) : null,
+                it.points ? it.points + ' pts' : null].filter(Boolean).join(' · ');
+  const body = '<div class="ti">' + esc(it.title) + '</div><div class="mt">' + esc(meta) + '</div>';
+  const inner = '<div class="when">' + esc(left) + '</div><div class="what">' + body + '</div>';
+  return it.url
+    ? '<a class="duerow' + (exam ? ' isexam' : '') + '" href="' + it.url + '" target="_blank" rel="noopener">' + inner + '</a>'
+    : '<div class="duerow' + (exam ? ' isexam' : '') + '">' + inner + '</div>';
+}
+
+/* Named for the tab, not just "due": renderDue already exists further down
+   and drives the hand-entered Coming up card on the Now tab. */
+function renderCanvasTab(){
+  const N = campusNow();
+  const items = dueItems();
+  const today = N.iso;
+
+  if (!items.length){
+    $('#dueStamp').textContent = '';
+    $('#dueNext').innerHTML = '<div class="empty">No Canvas data on this app yet.<br>' +
+      'Run <b>canvas_export.py</b> with your own token to fill this in.</div>';
+    $('#dayList').innerHTML = '';
+    $('#soonList').innerHTML = '';
+    $('#calGrid').innerHTML = '';
+    return;
+  }
+
+  if (!DUE.ready){
+    DUE.y = N.y; DUE.mo = N.mo; DUE.sel = today; DUE.ready = true;
+  }
+  $('#dueStamp').textContent = typeof CANVAS_PULLED === 'string' ? 'pulled ' + CANVAS_PULLED : '';
+
+  /* Exams first, since those are the ones that actually matter. */
+  const exams = items.filter(x => x.kind === 'exam' && x.due >= today).slice(0, 8);
+  $('#dueNext').innerHTML = exams.length
+    ? '<div class="examstrip">' + exams.map(e =>
+        '<div class="examcard"><div class="k">' + esc(e.course) + '</div>' +
+        '<div class="n">' + esc(e.title) + '</div>' +
+        '<div class="w">' + esc(gapLabel(e.due, today)) + ' · ' + esc(hhmm(toMin(e.time))) + '</div></div>'
+      ).join('') + '</div>'
+    : '<div class="empty">No exams left on the calendar.</div>';
+
+  renderCal(N);
+  renderDay(today);
+
+  /* Everything landing in the next fortnight, grouped by day. */
+  const soon = items.filter(x => {
+    const n = daysBetween(today, x.due);
+    return n >= 0 && n <= 14;
+  });
+  $('#soonAux').textContent = soon.length + (soon.length === 1 ? ' item' : ' items');
+  if (!soon.length){
+    $('#soonList').innerHTML = '<div class="empty">Nothing due for two weeks. Enjoy it.</div>';
+  } else {
+    let out = '', last = '';
+    for (const it of soon){
+      if (it.due !== last){
+        last = it.due;
+        const d = new Date(it.due + 'T00:00:00');
+        out += '<div class="daysep">' + esc(gapLabel(it.due, today)) + ' &middot; ' +
+               esc(d.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'})) + '</div>';
+      }
+      out += rowHtml(it, false, today);
+    }
+    $('#soonList').innerHTML = out;
+  }
+}
+
+function renderCal(N){
+  const map = dueByDay();
+  const y = DUE.y, mo = DUE.mo;
+  $('#calMon').textContent = MONTHS[mo-1] + ' ' + y;
+
+  $('#calDow').innerHTML = ['S','M','T','W','T','F','S']
+    .map(d => '<div class="dow">' + d + '</div>').join('');
+
+  const first = new Date(y, mo-1, 1);
+  const lead = first.getDay();
+  const len = new Date(y, mo, 0).getDate();
+  const prevLen = new Date(y, mo-1, 0).getDate();
+
+  let cells = '';
+  for (let i = lead - 1; i >= 0; i--){
+    cells += '<div class="d out">' + (prevLen - i) + '</div>';
+  }
+  for (let d = 1; d <= len; d++){
+    const iso = isoOf(y, mo, d);
+    const list = map[iso] || [];
+    const cls = ['d'];
+    if (list.length) cls.push('has');
+    if (iso === N.iso) cls.push('today');
+    if (iso === DUE.sel) cls.push('sel');
+    /* At most three dots: an exam always earns one and shows first. */
+    const kinds = [...new Set(list.map(x => x.kind))]
+      .sort(a => a === 'exam' ? -1 : 1).slice(0, 3);
+    const dots = kinds.map(k => '<span class="dot ' + k + '"></span>').join('');
+    cells += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' +
+             d + '<span class="dots">' + dots + '</span></button>';
+  }
+  const tail = (7 - ((lead + len) % 7)) % 7;
+  for (let i = 1; i <= tail; i++) cells += '<div class="d out">' + i + '</div>';
+
+  $('#calGrid').innerHTML = cells;
+  $('#calGrid').querySelectorAll('.d[data-iso]').forEach(b => {
+    b.onclick = () => { DUE.sel = b.dataset.iso; renderCal(N); renderDay(N.iso); };
+  });
+
+  /* Do not wander outside the semester. */
+  const lo = SEMESTER.start.slice(0,7), hi = SEMESTER.finalsEnd.slice(0,7);
+  const cur = y + '-' + pad2(mo);
+  $('#calPrev').disabled = cur <= lo;
+  $('#calNext').disabled = cur >= hi;
+}
+
+function renderDay(todayIso){
+  const list = (dueByDay()[DUE.sel] || []).slice()
+    .sort((a,b) => a.time.localeCompare(b.time));
+  const d = new Date(DUE.sel + 'T00:00:00');
+  $('#dayHead').textContent = d.toLocaleDateString('en-US',
+    {weekday:'long', month:'long', day:'numeric'});
+  $('#dayAux').textContent = DUE.sel === todayIso ? 'today'
+    : gapLabel(DUE.sel, todayIso).toLowerCase();
+  $('#dayList').innerHTML = list.length
+    ? list.map(it => rowHtml(it, false, todayIso)).join('')
+    : '<div class="empty">Nothing due this day.</div>';
+}
+
+function calShift(step){
+  let y = DUE.y, mo = DUE.mo + step;
+  if (mo < 1){ mo = 12; y--; }
+  if (mo > 12){ mo = 1; y++; }
+  DUE.y = y; DUE.mo = mo;
+  renderCal(campusNow());
+}
+$('#calPrev').onclick = () => calShift(-1);
+$('#calNext').onclick = () => calShift(1);
+
 /* ---------------- nav ---------------- */
 document.querySelectorAll('.nb').forEach(b => {
   b.onclick = () => {
     document.querySelectorAll('.nb').forEach(x => x.classList.toggle('on', x === b));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+    /* Re-render on open so the tab is still right after the day rolls over. */
+    if (b.dataset.v === 'due') renderCanvasTab();
     window.scrollTo({top:0, behavior:'smooth'});
   };
 });
@@ -2660,6 +2905,7 @@ function boot(){
   try { foodBoot(); } catch (e){ console.error('food init', e); }
   try { workBoot(); } catch (e){ console.error('work init', e); }
   try { $('#icsBtn').onclick = exportICS; renderFree(campusNow()); } catch (e){ console.error('cal init', e); }
+  try { renderCanvasTab(); } catch (e){ console.error('due init', e); }
   tick();
   setInterval(tick, 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });

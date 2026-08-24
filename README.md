@@ -22,6 +22,10 @@ no framework and no server. Open the file and it runs.
   against the clock, closing times, favourites and editable hours.
 - **Record** — record a lecture, type timestamped notes, turn them into
   flashcards, quiz yourself, export a study pack.
+- **Due** — everything Canvas knows about, as a month calendar with a dot on
+  every day that has something on it. Tap a day to see it. Exams ride along the
+  top with a countdown, and the next fortnight is listed underneath. Each row
+  opens the assignment in Canvas.
 - **Finals** — every exam, and a button that writes the whole semester into the
   phone's calendar.
 
@@ -93,6 +97,29 @@ schedules it describes. Then commit and push; Pages redeploys itself.
 To change one app's look or behaviour, edit `index.html` and rebuild. Editing
 `b/index.html` or `c/index.html` directly is pointless, the next build
 overwrites them.
+
+## The Due tab and Canvas
+
+The Due tab reads `data/canvas.js`, which is generated from the Canvas API by
+`canvas_export.py`. That script lives outside this repo, next to a `.env`
+holding the Canvas token, because **a token must never be committed here**.
+This repo is public and a Canvas token can act as its owner.
+
+To refresh after new assignments are posted:
+
+```bash
+python canvas_export.py     # in the folder holding .env
+python build.py             # here
+```
+
+Each app looks for its own `data/canvas.js` sitting beside it, so `b/` and `c/`
+show an empty Due tab until their owner exports their own. Nobody sees anybody
+else's coursework by accident.
+
+The export deliberately leaves out names, logins, grades and scores. Only
+course codes, assignment titles and due dates are written, since this repo is
+public. Even so, that is a real person's coursework on the open web. Deleting
+`data/canvas.js` and rebuilding removes it completely.
 
 ## Data provenance
 
