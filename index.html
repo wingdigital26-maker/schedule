@@ -1,0 +1,2670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fall 2026 Schedule Hub</title>
+<meta name="theme-color" content="#841617">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Schedule">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* OU: Crimson Pantone 201 #841617 is primary, neutrals carry the rest.
+     Cream Pantone 468 is print-only in OU's own system, so it appears here
+     only as an accent on crimson, never as a page ground. */
+  --crimson:#841617; --crimson-d:#66100f; --crimson-l:#a03436; --cream:#fdf9d8;
+  --bg:#f3f0ef; --bg2:#e9e3e1; --card:#ffffff; --card2:#faf7f6;
+  --line:#e0d7d5; --tx:#1b1514; --dim:#61514f; --dim2:#93827f;
+  --accent:var(--crimson); --onAccent:#ffffff;
+  --good:#0f7b4f; --warn:#a15a00; --live:var(--crimson);
+  --r:18px; --pad:16px;
+  --safeT:env(safe-area-inset-top,0px); --safeB:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--tx); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.45;
+  padding-bottom:calc(76px + var(--safeB));
+}
+.wrap{max-width:620px;margin:0 auto;padding:0 var(--pad)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* header */
+header{position:relative;margin:0 calc(var(--pad) * -1) 4px;padding:calc(var(--safeT) + 18px) var(--pad) 17px;
+  background:var(--crimson);color:#fff;border-radius:0 0 20px 20px;
+  box-shadow:0 2px 14px rgba(102,16,15,.22)}
+header:after{content:"";position:absolute;left:var(--pad);right:var(--pad);bottom:0;height:3px;
+  background:var(--cream);opacity:.5;border-radius:3px}
+.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--cream);font-weight:800}
+h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.sub{color:rgba(255,255,255,.82);font-size:14px}
+.nowclock{display:inline-flex;align-items:center;gap:7px;margin-top:9px;background:rgba(0,0,0,.22);
+  border:1px solid rgba(253,249,216,.28);border-radius:99px;padding:5px 12px 5px 10px;font-size:12.5px;
+  font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.nowclock:before{content:"";width:7px;height:7px;border-radius:99px;background:var(--cream);
+  animation:p 2.4s ease-in-out infinite}
+.semwrap{margin-top:12px}
+.sembar{height:6px;border-radius:99px;background:rgba(0,0,0,.26);overflow:hidden}
+.semfill{height:100%;background:var(--cream);border-radius:99px}
+.semmeta{display:flex;justify-content:space-between;font-size:11.5px;color:rgba(255,255,255,.72);
+  margin-top:6px;font-weight:700}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:14px 0;
+  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+.card.tight{padding:14px}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 8px}
+.sechead h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin:0;font-weight:700}
+.sechead .aux{font-size:12px;color:var(--dim2);font-weight:600}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;
+  box-shadow:0 2px 10px rgba(27,21,20,.07)}
+.hero:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--hc,var(--accent))}
+.hero:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--cream);opacity:.9}
+.hstat{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--hc,var(--accent))}
+.dot{width:8px;height:8px;border-radius:99px;background:currentColor}
+.dot.pulse{animation:p 1.8s ease-in-out infinite}
+@keyframes p{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.htitle{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:8px 0 2px;line-height:1.2}
+.htime{color:var(--dim);font-size:14.5px;font-weight:500}
+.loc{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.floorbox{flex:0 0 auto;text-align:center;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-width:62px}
+.floorbox .n{font-size:22px;font-weight:800;line-height:1}
+.floorbox .l{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);font-weight:700;margin-top:3px}
+.locmain{min-width:0}
+.locmain .b{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.locmain .r{font-size:12.5px;color:var(--dim);margin-top:2px;line-height:1.3}
+.cd{margin-top:14px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cd .lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
+.cd .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.prog{height:5px;border-radius:99px;background:var(--bg2);overflow:hidden;margin-top:12px}
+.progfill{height:100%;background:var(--hc,var(--accent));border-radius:99px;transition:width .6s ease}
+
+/* buttons */
+.btns{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+.btn{flex:1 1 0;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--accent);color:var(--onAccent);font-weight:700;font-size:14.5px;padding:12px 14px;border-radius:13px}
+.btn.ghost{background:var(--bg2);color:var(--tx);border:1px solid var(--line);font-weight:600}
+.btn:active{transform:scale(.985)}
+
+/* timeline */
+.tl{position:relative;padding-left:26px}
+.tl:before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.ev{position:relative;padding:11px 0}
+.ev:before{content:"";position:absolute;left:-24px;top:17px;width:12px;height:12px;border-radius:99px;
+  background:var(--card);border:2.5px solid var(--ec,var(--dim2))}
+.ev.done{opacity:.42}
+.ev.live:before{background:var(--live);border-color:var(--live);box-shadow:0 0 0 5px rgba(132,22,23,.15)}
+.ev .t{font-size:12.5px;color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
+.ev .n{font-size:16px;font-weight:700;margin:1px 0 1px;letter-spacing:-.01em}
+.ev .w{font-size:13px;color:var(--dim)}
+.gap{margin-left:-2px;padding:7px 0;font-size:12.5px;color:var(--dim2);font-weight:600;display:flex;align-items:center;gap:8px}
+.gap:before{content:"";width:16px;height:1px;background:var(--line)}
+.nowline{position:relative;height:0;margin:2px 0}
+.nowline span{position:absolute;left:-30px;right:0;top:0;height:2px;background:var(--live);opacity:.55}
+.nowline span:after{content:"NOW";position:absolute;right:0;top:-8px;font-size:9px;font-weight:800;letter-spacing:.1em;
+  color:var(--onAccent);background:var(--live);padding:1px 5px;border-radius:5px}
+
+/* day chips */
+.chips{display:flex;gap:7px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:1 1 0;min-width:0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 4px;font-size:13px;font-weight:700;color:var(--dim)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.chip .cnt{font-size:10px;opacity:.65;margin-left:3px;font-weight:700}
+
+/* week grid */
+.gridscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 calc(var(--pad) * -1);padding:0 var(--pad)}
+.gridscroll::-webkit-scrollbar{display:none}
+.grid{display:grid;grid-template-columns:46px repeat(5,minmax(96px,1fr));min-width:540px;position:relative}
+.gh{position:sticky;top:0;z-index:3;background:var(--bg);padding:0 0 14px;text-align:center;font-size:12px;font-weight:800;color:var(--dim2);letter-spacing:.06em}
+.gh.today{color:var(--accent)}
+.gcol{position:relative;border-left:1px solid var(--line)}
+.gtime{position:relative}
+.gtime .hr{height:var(--hh);font-size:10.5px;color:var(--dim2);text-align:right;padding-right:7px;font-weight:600;
+  transform:translateY(-5px);font-variant-numeric:tabular-nums}
+.gtime{padding-top:6px}
+.gcol{margin-top:6px}
+.gline{position:absolute;left:46px;right:0;height:1px;background:var(--line);opacity:.5}
+.blk{position:absolute;left:3px;right:3px;border-radius:9px;padding:5px 6px;overflow:hidden;display:flex;flex-direction:column;gap:1px;
+  background:var(--bc);border-left:3px solid var(--bcs);color:var(--tx)}
+.blk .bn{font-size:10.5px;font-weight:800;line-height:1.1;letter-spacing:-.015em;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.blk .bl{font-size:9.5px;font-weight:700;opacity:.62;line-height:1.1;margin-top:auto;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gnow{position:absolute;left:46px;right:0;height:2px;background:var(--live);z-index:2}
+.gnow:before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:99px;background:var(--live)}
+
+/* course rows */
+.row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.swatch{flex:0 0 auto;width:4px;align-self:stretch;border-radius:99px;background:var(--sc);min-height:38px}
+.rmain{flex:1;min-width:0}
+.rmain .n{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.rmain .m{font-size:13px;color:var(--dim);margin-top:2px}
+.rmain .code{font-size:11px;color:var(--dim2);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.rgo{flex:0 0 auto;align-self:center;background:var(--bg2);border:1px solid var(--line);border-radius:11px;
+  padding:11px 13px;font-size:12.5px;font-weight:700;color:var(--dim);min-height:42px;
+  display:inline-flex;align-items:center}
+details.row{display:block}
+details.row summary{display:flex;gap:12px;align-items:flex-start;list-style:none;cursor:pointer}
+details.row summary::-webkit-details-marker{display:none}
+.det{padding:12px 0 2px;margin-left:16px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:5px 0}
+.kv .k{color:var(--dim2);font-weight:600}
+.kv .v{font-weight:600;text-align:right}
+
+/* nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.93);
+  backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
+  border-top:1px solid var(--line);padding-bottom:var(--safeB)}
+.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.nb{padding:10px 0 11px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--dim2)}
+.nb svg{display:block;margin:0 auto 3px;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.nb.on{color:var(--accent)}
+.view{display:none}
+.view.on{display:block;animation:fi .22s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.empty{text-align:center;color:var(--dim2);padding:30px 12px;font-size:14.5px}
+.tba{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;background:var(--card2);
+  color:var(--warn);border:1px solid var(--line);border-radius:6px;padding:2px 6px;vertical-align:2px}
+.toast{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safeB));z-index:40;
+  background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px;
+  box-shadow:0 12px 34px rgba(27,21,20,.2);display:none}
+.toast.on{display:block;animation:tu .2s ease}
+@keyframes tu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.toast .tl2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
+.toast .addr{font-size:14.5px;font-weight:600;margin:7px 0 11px;line-height:1.35;-webkit-user-select:all;user-select:all;
+  background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.toast .trow{display:flex;gap:8px}
+.toast button{flex:1;border-radius:11px;padding:10px;font-size:14px;font-weight:700}
+.toast .copy{background:var(--accent);color:var(--onAccent)}
+.toast .close{background:var(--bg2);border:1px solid var(--line);color:var(--tx);font-weight:600}
+
+/* ---- study / recorder ---- */
+.recwrap{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:14px 0;
+  box-shadow:0 2px 10px rgba(27,21,20,.07)}
+.rectarget{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.rectarget select{flex:1;min-width:0;font:inherit;font-size:14.5px;font-weight:600;color:var(--tx);
+  background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;
+  -webkit-appearance:none;appearance:none}
+.recbig{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--accent);
+  color:var(--onAccent);font-weight:800;font-size:16px;padding:16px;border-radius:15px;min-height:54px}
+.recbig.stop{background:var(--tx)}
+.recbig[disabled]{opacity:.5}
+.recdot{width:11px;height:11px;border-radius:99px;background:currentColor}
+.recdot.pulse{animation:p 1.4s ease-in-out infinite}
+.recmeta{display:flex;align-items:center;gap:12px;margin-top:13px}
+.rectime{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.levelbar{flex:1;height:7px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.levelfill{height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .09s linear}
+.noteform{display:flex;gap:8px;margin-top:13px}
+.noteform input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
+  border:1px solid var(--line);border-radius:12px;padding:12px}
+.noteform input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.noteform button{background:var(--accent);color:var(--onAccent);font-weight:700;border-radius:12px;padding:0 16px}
+.livenotes{margin-top:12px;max-height:210px;overflow-y:auto}
+.ln{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.ln .lt{flex:0 0 auto;color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums;font-size:12.5px;padding-top:2px}
+.recnote{font-size:12.5px;color:var(--dim2);margin-top:11px;line-height:1.5}
+.warnbox{background:#fdf3e7;border:1px solid #f0d5ae;color:#7a4a05;border-radius:13px;padding:12px;
+  font-size:13.5px;line-height:1.5;margin-top:12px}
+
+.lec{border-top:1px solid var(--line)}
+.lec:first-child{border-top:0}
+.lec summary{display:flex;gap:12px;align-items:center;padding:13px 0;list-style:none;cursor:pointer}
+.lec summary::-webkit-details-marker{display:none}
+.lecmain{flex:1;min-width:0}
+.lecmain .n{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.lecmain .m{font-size:12.5px;color:var(--dim);margin-top:2px}
+.lecbody{padding:4px 0 16px}
+audio{width:100%;margin-bottom:12px}
+.tnote{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.45}
+.tnote .ts{flex:0 0 auto;color:var(--accent);font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;
+  padding-top:2px;min-width:42px;text-align:left}
+.subhead{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:16px 0 6px}
+.card-fc{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-bottom:8px}
+.card-fc .q{font-size:14.5px;font-weight:700}
+.card-fc .a{font-size:13.5px;color:var(--dim);margin-top:3px}
+.fcform{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.fcform input{font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);border:1px solid var(--line);
+  border-radius:12px;padding:11px}
+.minibtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.minibtn{flex:1 1 auto;min-width:110px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:13.5px;font-weight:700}
+.minibtn.primary{background:var(--accent);color:var(--onAccent);border-color:var(--accent)}
+.minibtn.danger{color:#9b1c1c}
+
+.foodnote{font-size:11.5px;color:var(--dim2);line-height:1.5;background:var(--card);border:1px solid var(--line);
+  border-radius:13px;padding:11px 12px;margin:0 0 12px}
+.venue{background:var(--card);border:1px solid var(--line);border-radius:17px;margin-bottom:11px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+.venue > *:not(.vpic){margin-left:14px;margin-right:14px}
+.venue > .minibtns{margin-bottom:14px}
+.vpic{position:relative;line-height:0;background:var(--bg2)}
+.vart{width:100%;height:132px;object-fit:cover;display:block}
+.vcam{position:absolute;right:9px;bottom:9px;background:rgba(255,255,255,.94);border:1px solid var(--line);
+  border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700;color:var(--tx);line-height:1;
+  cursor:pointer;min-height:36px;display:inline-flex;align-items:center}
+.vcam input{display:none}
+.vcam.vdrop{right:auto;left:9px;color:#9b1c1c}
+.photobar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.photobar > *{flex:1 1 auto;min-width:104px;min-height:44px;display:inline-flex;align-items:center;
+  justify-content:center;border-radius:12px;padding:11px 12px;font-size:13.5px;font-weight:700;cursor:pointer}
+.photobar .pb1{background:var(--accent);color:var(--onAccent)}
+.photobar .pb2{background:var(--card);border:1px solid var(--line);color:var(--tx)}
+.photobar input{display:none}
+.pwbig{border-radius:14px;overflow:hidden;background:var(--bg2);line-height:0;margin-bottom:12px}
+.pwbig img,.pwbig svg{width:100%;height:190px;object-fit:cover;display:block}
+.pwgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:10px}
+.pwcell{background:var(--bg2);border-radius:11px;overflow:hidden;line-height:0}
+.pwcell img,.pwcell svg{width:100%;height:74px;object-fit:cover;display:block}
+.pwcell span{display:block;font-size:10.5px;font-weight:700;color:var(--dim);padding:5px 6px;line-height:1.25}
+.vhead{display:flex;align-items:center;gap:9px;padding-top:13px}
+.star{flex:0 0 auto;font-size:21px;line-height:1;color:var(--dim2);padding:2px;min-width:34px;min-height:40px}
+.star.on{color:#e0a410}
+.vname{flex:1;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+.pill{flex:0 0 auto;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:7px}
+.pill.open{background:#e3f5ec;color:#0f6b46;border:1px solid #bfe6d3}
+.pill.shut{background:var(--bg2);color:var(--dim2);border:1px solid var(--line)}
+.pill.unk{background:#fdf3e7;color:#7a4a05;border:1px solid #f0d5ae}
+.vserves{font-size:13.5px;color:var(--dim);margin-top:6px;line-height:1.4}
+.vsub{font-size:13.5px;font-weight:700;margin-top:7px}
+.edrow{display:flex;align-items:center;gap:8px;padding:5px 0}
+.edday{flex:0 0 40px;font-size:12.5px;font-weight:700;color:var(--dim2)}
+.edrow input{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--tx);background:var(--bg2);
+  border:1px solid var(--line);border-radius:10px;padding:8px 9px}
+.edto{font-size:12px;color:var(--dim2);font-weight:600}
+.duewrap{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px 14px;margin:14px 0;
+  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+.duehead{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:4px}
+.duelink{font-size:11.5px;letter-spacing:.06em;color:var(--accent);font-weight:800;text-transform:uppercase;
+  min-height:32px;padding:0 2px}
+.dueempty{font-size:13.5px;color:var(--dim2);padding:8px 0;line-height:1.45}
+.duerow,.wrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:10px 0;
+  border-top:1px solid var(--line)}
+.duerow:first-of-type{border-top:0}
+.dbox{flex:0 0 auto;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);background:var(--card);
+  display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:var(--onAccent);min-height:22px}
+.dbox.on{background:var(--good);border-color:var(--good)}
+.dmain{flex:1;min-width:0}
+.dt{font-size:14.5px;font-weight:700;letter-spacing:-.01em;display:block}
+.dc{font-size:12px;color:var(--dim2);font-weight:600;margin-top:1px;display:block}
+.dwhen{flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:7px;
+  background:var(--bg2);color:var(--dim)}
+.dwhen.soon{background:#fdf3e7;color:#7a4a05}
+.dwhen.late{background:#fdeaea;color:#9b1c1c}
+.wrow.done{opacity:.5}
+.wdel{flex:0 0 auto;font-size:22px;color:var(--dim2);min-width:34px;min-height:40px;line-height:1}
+.wsel{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--tx);background:var(--bg2);border:1px solid var(--line);
+  border-radius:10px;padding:9px;-webkit-appearance:none;appearance:none}
+.freeday{border-top:1px solid var(--line);padding:11px 0}
+.freeday:first-child{border-top:0}
+.freeday.today .fdname{color:var(--accent)}
+.fdname{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim2)}
+.fdslots{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.fdslot{background:#e3f5ec;border:1px solid #bfe6d3;color:#0f6b46;border-radius:10px;padding:6px 9px;
+  font-size:12.5px;font-weight:700;display:inline-flex;gap:7px;align-items:baseline}
+.fdslot b{font-weight:800;opacity:.7;font-size:11px}
+.fdnone{font-size:13px;color:var(--dim2);margin-top:5px}
+.gradebig{display:flex;align-items:baseline;justify-content:center;gap:10px;padding:10px 0 2px}
+.gp{font-size:38px;font-weight:800;letter-spacing:-.03em}
+.gl{font-size:20px;font-weight:800;color:var(--accent)}
+.walkstat{text-align:center;padding:4px 0 10px}
+.wsbig{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.wslab{font-size:14px;color:var(--dim);font-weight:600;margin-top:4px}
+.wsacc{font-size:11.5px;color:var(--dim2);margin-top:4px}
+.walkmsg{text-align:center;font-size:13.5px;color:var(--dim);padding:10px 4px;line-height:1.5}
+#walkMap{margin:6px 0 10px}
+.pinnote{font-size:11.5px;color:var(--dim2);line-height:1.5;margin-top:10px;text-align:center}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(27,21,20,.45);display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheetin{width:100%;max-width:620px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;
+  padding:18px 16px calc(18px + var(--safeB));max-height:88vh;display:flex;flex-direction:column}
+.sheetin h3{margin:0 0 4px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+.sheetin .sd{font-size:13px;color:var(--dim);margin-bottom:12px;line-height:1.5}
+.sheetin textarea{width:100%;flex:1;min-height:180px;font:inherit;font-size:13px;line-height:1.5;
+  background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:12px;color:var(--tx);resize:none}
+
+.quizcard{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px 18px;text-align:center;
+  min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.quizcard .qq{font-size:19px;font-weight:800;line-height:1.3}
+.quizcard .qa{font-size:16px;color:var(--dim);line-height:1.4}
+.quizcard .hint{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
+.quizmeta{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim2);font-weight:600;margin-top:10px}
+.foot{color:var(--dim2);font-size:12px;text-align:center;padding:22px 10px 8px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="navin">
+    <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
+    <button class="nb" data-v="week"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+    <button class="nb" data-v="courses"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5z"/><path d="M4 19.5A1.5 1.5 0 015.5 18H19v3H5.5A1.5 1.5 0 014 19.5z"/></svg>Classes</button>
+    <button class="nb" data-v="food"><svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 004 0V3M8 11v10"/><path d="M17 3c-1.5 1.5-2 3.5-2 5.5S15.5 12 17 12v9"/></svg>Food</button>
+    <button class="nb" data-v="study"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>Record</button>
+    <button class="nb" data-v="finals"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M7 10.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-5.5"/></svg>Finals</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow">Fall 2026</div>
+    <h1 id="hdate">Schedule Hub</h1>
+    <div class="sub" id="hsub"></div>
+    <div class="nowclock" id="nowclock"></div>
+    <div class="semwrap">
+      <div class="sembar"><div class="semfill" id="semfill" style="width:0%"></div></div>
+      <div class="semmeta"><span id="semL">Semester</span><span id="semR"></span></div>
+    </div>
+  </header>
+
+  <!-- NOW -->
+  <section class="view on" id="v-now">
+    <div id="hero"></div>
+    <div id="dueCard"></div>
+    <div class="sechead"><h2 id="tlhead">Rest of today</h2><span class="aux" id="tlaux"></span></div>
+    <div class="chips" id="daychips"></div>
+    <div class="card tight"><div class="tl" id="timeline"></div></div>
+  </section>
+
+  <!-- WEEK -->
+  <section class="view" id="v-week">
+    <div class="sechead"><h2>Week at a glance</h2><span class="aux">Scroll sideways</span></div>
+    <div class="gridscroll"><div class="grid" id="grid"></div></div>
+    <div class="sechead"><h2>When we are all free</h2><span class="aux" id="freeWho"></span></div>
+    <div class="card tight" id="freeList"></div>
+    <div class="card tight" id="bldglist"></div>
+  </section>
+
+  <!-- COURSES -->
+  <section class="view" id="v-courses">
+    <div class="sechead"><h2>All courses</h2><span class="aux" id="crcount"></span></div>
+    <div class="card" id="courses"></div>
+  </section>
+
+  <!-- FOOD -->
+  <section class="view" id="v-food">
+    <div class="sechead"><h2>Cross Village dining</h2><span class="aux" id="foodCount"></span></div>
+    <div class="photobar">
+      <button class="pb1" id="startWalk">Photo walk</button>
+      <button class="pb2" id="sharePhotos">Share photos</button>
+      <label class="pb2">Import photos<input type="file" accept="application/json,.json" id="importPhotos"></label>
+    </div>
+    <div class="foodnote">Source: <span id="foodSrc"></span></div>
+    <div id="foodList"></div>
+  </section>
+
+  <!-- STUDY -->
+  <section class="view" id="v-study">
+    <div class="sechead"><h2>Record a lecture</h2><span class="aux">Stays on this phone</span></div>
+    <div class="recwrap">
+      <div class="rectarget"><select id="recCourse" aria-label="Which class"></select></div>
+      <button class="recbig" id="recBtn"><span class="recdot"></span>Start recording</button>
+      <div id="transcribeRow" class="recnote" style="display:flex;align-items:center;gap:8px;margin-top:12px">
+        <input type="checkbox" id="recTranscribe" style="width:18px;height:18px">
+        <label for="recTranscribe">Also try a live transcript (browser dependent, works best on a laptop)</label>
+      </div>
+      <div id="recLive" style="display:none">
+        <div class="recmeta">
+          <span class="rectime" id="recTime">0:00</span>
+          <span class="levelbar"><span class="levelfill" id="levelFill"></span></span>
+        </div>
+        <div class="noteform">
+          <input id="noteInput" placeholder="Type a note, hit enter" autocomplete="off">
+          <button id="noteAdd">Add</button>
+        </div>
+        <div class="livenotes" id="liveNotes"></div>
+        <div class="recnote">Each note is stamped with the moment you typed it, so you can jump straight back to it in the audio.</div>
+      </div>
+      <div class="warnbox" id="recWarn" style="display:none"></div>
+      <button class="minibtn" id="recNotesOnly" style="display:none;width:100%;margin-top:10px">Notes only</button>
+      <div class="recnote">Write notes as <b>term: definition</b> and the app can turn them into flashcards afterwards.</div>
+    </div>
+
+    <div class="sechead"><h2>Saved lectures</h2><span class="aux" id="lecCount"></span></div>
+    <div class="card tight" id="lectures"></div>
+  </section>
+
+  <!-- FINALS -->
+  <section class="view" id="v-finals">
+    <div class="sechead"><h2>Finals schedule</h2><span class="aux" id="fincd"></span></div>
+    <div class="card" id="finals"></div>
+    <div class="minibtns"><button class="minibtn primary" id="icsBtn">Add everything to my calendar</button></div>
+    <div class="foot" style="text-align:left;padding:10px 2px 0">Downloads a calendar file. Open it once and every
+    class and final lands in your phone's calendar with a 15 minute heads up, so you get real alerts without opening this.</div>
+  </section>
+
+  <div class="sheet" id="workSheet">
+    <div class="sheetin">
+      <h3>Assignments</h3>
+      <div class="sd">Tap the box to mark something finished.</div>
+      <div id="workBody" style="overflow-y:auto"></div>
+      <div class="minibtns"><button class="minibtn" id="workClose">Close</button></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="gradeSheet">
+    <div class="sheetin">
+      <h3 id="gradeTitle"></h3>
+      <div class="sd" id="gradeDesc"></div>
+      <div id="gradeBody" style="overflow-y:auto"></div>
+      <div class="minibtns"><button class="minibtn" id="gradeClose">Close</button></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="pwSheet">
+    <div class="sheetin">
+      <h3 id="pwTitle"></h3>
+      <div class="sd" id="pwDesc"></div>
+      <div id="pwBody" style="overflow-y:auto"></div>
+      <div class="minibtns">
+        <label class="minibtn primary" id="pwShoot"><span>Take photo</span>
+          <input type="file" accept="image/*" capture="environment" style="display:none"></label>
+        <button class="minibtn" id="pwNext">Skip</button>
+        <button class="minibtn" id="pwClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="foodSheet">
+    <div class="sheetin">
+      <h3 id="foodSheetTitle"></h3>
+      <div class="sd" id="foodSheetDesc"></div>
+      <div id="foodSheetBody" style="overflow-y:auto"></div>
+      <div class="minibtns"><button class="minibtn" id="foodSheetClose">Close</button></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="walkSheet">
+    <div class="sheetin">
+      <h3 id="walkTitle">Walk there</h3>
+      <div class="sd" id="walkSub"></div>
+      <div id="walkLive"></div>
+      <div id="walkMap"></div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="walkApple">Apple Maps</button>
+        <button class="minibtn" id="walkGoogle">Google Maps</button>
+      </div>
+      <div class="minibtns">
+        <button class="minibtn" id="walkCopy">Copy address</button>
+        <button class="minibtn" id="walkSetPin">Set pin here</button>
+        <button class="minibtn" id="walkClose">Close</button>
+      </div>
+      <div class="pinnote" id="pinState"></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheetin">
+      <div id="sheetBody">
+        <h3 id="sheetTitle">Study pack</h3>
+        <div class="sd" id="sheetDesc"></div>
+        <textarea id="sheetText" readonly></textarea>
+        <div class="minibtns">
+          <button class="minibtn primary" id="sheetCopy">Copy</button>
+          <button class="minibtn" id="sheetClose">Close</button>
+        </div>
+      </div>
+      <div id="quizBody" style="display:none">
+        <h3>Quiz</h3>
+        <div class="sd">Tap the card to flip it.</div>
+        <div class="quizcard" id="quizCard"></div>
+        <div class="quizmeta"><span id="quizPos"></span></div>
+        <div class="minibtns">
+          <button class="minibtn primary" id="quizNext">Next</button>
+          <button class="minibtn" id="quizClose">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <div class="tl2" id="toastLab">Open this in Maps</div>
+    <div class="addr" id="toastAddr"></div>
+    <div class="trow">
+      <button class="copy" id="toastCopy">Copy address</button>
+      <button class="close" id="toastClose">Close</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    Times shown in America/Chicago. Floor is read from the room number.<br>
+    Tap any class for directions, floor and room.
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+   DATA. Edit this block to change a class, room or final.
+   days: M T W R(Thu) F   |   times: 24h "HH:MM"
+------------------------------------------------------------------ */
+/* ==DATA:START== */
+const SCHEDULE = { id:'jack', label:'Fall 2026' };
+const SEMESTER = { start:'2026-08-24', lastClass:'2026-12-11', finalsEnd:'2026-12-18' };
+
+const CAMPUS = 'University of Oklahoma, Norman, OK';
+
+const COURSES = [
+  { code:'ASTR 1504',  title:'Astronomy: Exploring Universe', short:'Astronomy',
+    days:'MWF', start:'14:00', end:'14:50', bldg:'Nielsen Hall', room:'0170',
+    final:{ date:'2026-12-17', start:'10:30', end:'12:30', bldg:'Nielsen Hall', room:'0170' } },
+
+  { code:'ASTR 1504-020', title:'Disc-ASTR 1504-020', short:'Astro Discussion',
+    days:'R', start:'15:30', end:'16:20', bldg:'Nielsen Hall', room:'0302',
+    final:{ tba:true } },
+
+  { title:'Personal Computing Prod Tools', short:'Personal Computing',
+    days:'M', start:'15:00', end:'15:50', bldg:'Adams Hall', room:'0150',
+    final:{ date:'2026-12-17', start:'16:30', end:'18:30', bldg:'Adams Hall', room:'0150' } },
+
+  { title:'Business for People/Prosperity', short:'Business for People',
+    days:'MWF', start:'10:00', end:'10:50', bldg:'Dale Hall', room:'0112', final:null },
+
+  { title:'Principles of Economics-Micro', short:'Microeconomics',
+    days:'MWF', start:'11:00', end:'11:50', bldg:'Dale Hall', room:'0200', final:null },
+
+  { title:'Functn/Model Bus/Life/Soc Sci', short:'Math Modeling',
+    days:'MWF', start:'09:00', end:'09:50', bldg:'Physical Science Ctr', room:'0108', final:null },
+
+  { title:'Computer-Based Info Systems', short:'Info Systems',
+    days:'TR', start:'13:30', end:'14:45', bldg:'Adams Hall', room:'0150', final:null }
+];
+/* ==DATA:END== */
+
+/* ==PEERS:START== */
+const PEERS = {
+  jack:{ label:'Fall 2026', busy:{M:[[540,590],[600,650],[660,710],[840,890],[900,950]],T:[[810,885]],W:[[540,590],[600,650],[660,710],[840,890]],R:[[810,885],[930,980]],F:[[540,590],[600,650],[660,710],[840,890]]} },
+  b:{ label:'Fall 2026 · Schedule B', busy:{M:[[840,890],[900,950]],T:[[630,705],[810,885]],W:[[840,890],[900,950]],R:[[630,705],[810,885]],F:[[720,770],[840,890],[900,950]]} },
+  c:{ label:'Fall 2026 · Schedule C', busy:{M:[[600,650],[660,710],[780,830],[840,890]],T:[],W:[[600,650],[660,710],[780,830],[840,890],[1080,1135]],R:[],F:[[600,650],[660,710],[780,830],[840,890]]} }
+};
+/* ==PEERS:END== */
+
+const PALETTE = ['#2f6fed','#b45c09','#0f7b4f','#7b3fa0','#0e7490','#a8412b','#5b6b16'];
+COURSES.forEach((c,i) => {
+  c.color = PALETTE[i % PALETTE.length];
+  // Stable internal id. Course codes are display only and may be absent.
+  c.key = (c.short || c.title).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') + '-' + i;
+});
+
+/* ---------------- helpers ---------------- */
+const DAYKEY = ['U','M','T','W','R','F','S'];   // U = Sunday, S = Saturday
+const DAYNAME = {M:'Monday',T:'Tuesday',W:'Wednesday',R:'Thursday',F:'Friday'};
+const $ = s => document.querySelector(s);
+const enc = encodeURIComponent;
+const mins = t => (+t.slice(0,2))*60 + (+t.slice(3,5));
+const pad2 = n => String(n).padStart(2,'0');
+
+function fmt(t){
+  let h = +t.slice(0,2), m = t.slice(3,5);
+  const ap = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return h + ':' + m + ' ' + ap;
+}
+/* Leading digit of the room number is the floor: 0150 -> 1, 0302 -> 3,
+   3103 -> 3. A one or two digit room is ground floor. */
+function floorOf(room){
+  const t = String(parseInt(room, 10) || 0);
+  return t.length <= 2 ? 1 : +t[0];
+}
+function roomShort(room){ return String(parseInt(room,10)); }
+/* Wash a course color toward white so grid blocks stay readable with dark text. */
+function wash(hex, amt){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const m = v => Math.round(v + (255 - v) * amt);
+  return 'rgb(' + m(r) + ',' + m(g) + ',' + m(b) + ')';
+}
+function dur(ms){
+  const m = Math.max(0, Math.round(ms/60000));
+  const h = Math.floor(m/60), r = m % 60;
+  if (h && r) return h + 'h ' + r + 'm';
+  if (h) return h + 'h';
+  return r + 'm';
+}
+function durClock(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const h = Math.floor(s/3600), m = Math.floor(s%3600/60), sec = s%60;
+  return h ? (h + ':' + pad2(m) + ':' + pad2(sec)) : (m + ':' + pad2(sec));
+}
+function destQ(bldg, room){
+  return bldg + ', ' + CAMPUS;
+}
+function appleUrl(bldg, from){
+  const d = 'daddr=' + enc(destQ(bldg));
+  const s = from ? '&saddr=' + enc(destQ(from)) : '';
+  return 'https://maps.apple.com/?' + d + s + '&dirflg=w';
+}
+function googleUrl(bldg, from){
+  let u = 'https://www.google.com/maps/dir/?api=1&destination=' + enc(destQ(bldg)) + '&travelmode=walking';
+  if (from) u += '&origin=' + enc(destQ(from));
+  return u;
+}
+
+/* Build a flat list of meetings for a given day letter */
+function meetingsFor(dayLetter){
+  return COURSES
+    .filter(c => c.days.includes(dayLetter))
+    .map(c => ({ c, s:mins(c.start), e:mins(c.end) }))
+    .sort((a,b) => a.s - b.s);
+}
+
+/* Regular meetings stop after the last day of class. Finals week is its own
+   mode: the weekly pattern no longer applies and only exam slots are real. */
+function pastClasses(N){ return N.iso > SEMESTER.lastClass; }
+
+function upcomingFinals(N){
+  const nowKey = N.iso + 'T' + pad2(N.h) + ':' + pad2(N.mi);
+  return COURSES
+    .filter(c => c.final && c.final.date)
+    .map(c => ({ c, startKey:c.final.date+'T'+c.final.start, endKey:c.final.date+'T'+c.final.end }))
+    .filter(f => f.endKey >= nowKey)
+    .sort((a,b) => a.startKey.localeCompare(b.startKey));
+}
+
+/* Now, in America/Chicago, regardless of device timezone */
+function campusNow(){
+  const now = new Date();
+  const p = new Intl.DateTimeFormat('en-US',{
+    timeZone:'America/Chicago', hour12:false,
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', weekday:'short'
+  }).formatToParts(now).reduce((a,x)=>(a[x.type]=x.value,a),{});
+  const hour = p.hour === '24' ? 0 : +p.hour;
+  const wd = {Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6}[p.weekday];
+  return {
+    y:+p.year, mo:+p.month, d:+p.day,
+    h:hour, mi:+p.minute, se:+p.second,
+    dow:wd, letter:DAYKEY[wd],
+    minutes: hour*60 + (+p.minute),
+    seconds: hour*3600 + (+p.minute)*60 + (+p.second),
+    iso: p.year + '-' + p.month + '-' + p.day,
+    date: now
+  };
+}
+
+/* ---------------- header ---------------- */
+function renderHeader(N){
+  $('#eyebrow').textContent = SCHEDULE.label;
+  const dt = new Date(N.y, N.mo-1, N.d);
+  $('#hdate').textContent = dt.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+
+  const start = new Date(SEMESTER.start + 'T00:00:00');
+  const end   = new Date(SEMESTER.finalsEnd + 'T23:59:59');
+  const last  = new Date(SEMESTER.lastClass + 'T23:59:59');
+  const total = end - start;
+  const gone  = Math.min(Math.max(dt - start, 0), total);
+  const pct   = total > 0 ? (gone/total)*100 : 0;
+  $('#semfill').style.width = pct.toFixed(1) + '%';
+
+  if (dt < start){
+    const days = Math.ceil((start - dt)/86400000);
+    $('#hsub').textContent = 'Classes start in ' + days + ' day' + (days===1?'':'s');
+    $('#semL').textContent = 'Semester starts ' + start.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    $('#semR').textContent = 'Not started';
+  } else {
+    const wk = Math.floor((dt - start)/(7*86400000)) + 1;
+    const daysLeft = Math.ceil((last - dt)/86400000);
+    if (daysLeft < 0){
+      $('#hsub').textContent = 'Finals week';
+      $('#semL').textContent = Math.round(pct) + '% through';
+      $('#semR').textContent = 'Classes are over';
+    } else {
+      $('#hsub').textContent = 'Week ' + wk + ' of the semester';
+      $('#semL').textContent = Math.round(pct) + '% through';
+      $('#semR').textContent = daysLeft + ' days of class left';
+    }
+  }
+}
+
+/* ---------------- hero: now / next ---------------- */
+function findCurrentAndNext(N){
+  const today = meetingsFor(N.letter);
+  const cur = today.find(m => N.minutes >= m.s && N.minutes < m.e) || null;
+  let next = today.find(m => m.s > N.minutes) || null;
+  let nextDayOffset = 0;
+
+  if (!next){
+    for (let i=1; i<=7; i++){
+      const L = DAYKEY[(N.dow + i) % 7];
+      const list = meetingsFor(L);
+      if (list.length){ next = list[0]; nextDayOffset = i; break; }
+    }
+  }
+  return { cur, next, nextDayOffset, today };
+}
+
+function heroFinals(N){
+  const h = $('#hero');
+  const list = upcomingFinals(N);
+
+  if (!list.length){
+    h.innerHTML =
+     '<div class="hero" style="--hc:var(--good)">' +
+       '<div class="hstat"><span class="dot"></span>Semester complete</div>' +
+       '<div class="htitle">No exams left</div>' +
+       '<div class="htime">Every final on your schedule is behind you. Go home.</div>' +
+     '</div>';
+    return;
+  }
+
+  const f = list[0], c = f.c, fin = c.final;
+  const nowKey = N.iso + 'T' + pad2(N.h) + ':' + pad2(N.mi);
+  const live = nowKey >= f.startKey;
+
+  const examDay = new Date(fin.date + 'T00:00:00');
+  const today = new Date(N.y, N.mo-1, N.d);
+  const daysOut = Math.round((examDay - today)/86400000);
+
+  let cdLab, cdVal;
+  if (live){
+    const left = (mins(fin.end) - N.minutes)*60000 - N.se*1000;
+    cdLab = 'Ends in'; cdVal = durClock(left);
+  } else if (daysOut === 0){
+    const until = (mins(fin.start) - N.minutes)*60000 - N.se*1000;
+    cdLab = 'Starts in'; cdVal = until < 90*60000 ? durClock(until) : dur(until);
+  } else {
+    cdLab = 'Exam day'; cdVal = daysOut === 1 ? 'Tomorrow' : daysOut + ' days';
+  }
+
+  const when = examDay.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+
+  h.innerHTML =
+   '<div class="hero" style="--hc:var(--live)">' +
+     '<div class="hstat"><span class="dot' + (live?' pulse':'') + '"></span>' +
+       (live ? 'Final in progress' : 'Next final') + '</div>' +
+     '<div class="htitle">' + c.title + '</div>' +
+     '<div class="htime">' + when + ' &middot; ' + fmt(fin.start) + ' to ' + fmt(fin.end) + '</div>' +
+     (fin.bldg
+       ? '<div class="loc">' +
+           '<div class="floorbox"><div class="n">' + floorOf(fin.room) + '</div><div class="l">Floor</div></div>' +
+           '<div class="floorbox"><div class="n">' + roomShort(fin.room) + '</div><div class="l">Room</div></div>' +
+           '<div class="locmain"><div class="b">' + esc(fin.bldg) + '</div>' +
+             '<div class="r">' + (list.length > 1 ? (list.length - 1) + ' more after this' : 'Last exam') + '</div></div>' +
+         '</div>'
+       : '<div class="loc"><div class="locmain"><div class="b"><span class="tba">ROOM TBA</span></div>' +
+           '<div class="r">Room not posted yet. Check one.ou.edu.</div></div></div>') +
+     '<div class="cd"><span class="lab">' + cdLab + '</span><span class="val">' + cdVal + '</span></div>' +
+     (fin.bldg ? '<div class="btns">' +
+       '<button class="btn" data-walk="' + esc(fin.bldg) + '">Walk there</button>' +
+       '<button class="btn ghost" data-map="' + esc(fin.bldg) + '" data-room="' + fin.room + '">Map</button>' +
+     '</div>' : '') +
+   '</div>';
+}
+
+function finalsTimeline(N){
+  const list = upcomingFinals(N);
+  $('#tlhead').textContent = 'Finals week';
+  $('#tlaux').textContent = list.length ? list.length + ' left' : '';
+  const el = $('#timeline');
+  if (!list.length){
+    el.innerHTML = '<div class="empty">All finals done.</div>';
+    return;
+  }
+  el.innerHTML = list.map(f => {
+    const c = f.c, fin = c.final;
+    const d = new Date(fin.date + 'T00:00:00');
+    return '<div class="ev" style="--ec:' + c.color + '">' +
+      '<div class="t">' + d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'}) +
+        ' &middot; ' + fmt(fin.start) + ' to ' + fmt(fin.end) + '</div>' +
+      '<div class="n">' + esc(c.short) + '</div>' +
+      '<div class="w">' + (fin.bldg
+        ? esc(fin.bldg) + ' &middot; Floor ' + floorOf(fin.room) + ', Room ' + roomShort(fin.room)
+        : 'Room TBA') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function heroCard(N, st){
+  const h = $('#hero');
+  if (!st.cur && !st.next){ h.innerHTML = ''; return; }
+
+  const live = !!st.cur;
+  const m = st.cur || st.next;
+  const c = m.c;
+  const prev = st.today.filter(x => x.e <= (st.cur ? st.cur.s : m.s)).pop();
+
+  let statusTxt, cdLab, cdVal, progPct = null;
+
+  if (live){
+    const left = (m.e - N.minutes)*60000 - N.se*1000;
+    statusTxt = 'In class now';
+    cdLab = 'Ends in'; cdVal = durClock(left);
+    progPct = ((N.seconds/60 - m.s) / (m.e - m.s)) * 100;
+  } else {
+    const untilMin = st.nextDayOffset > 0
+      ? (st.nextDayOffset*1440) - N.minutes + m.s
+      : m.s - N.minutes;
+    const untilMs = untilMin*60000 - N.se*1000;
+    statusTxt = st.nextDayOffset > 0
+      ? 'Next class ' + (st.nextDayOffset === 1 ? 'tomorrow' : 'on ' + DAYNAME[DAYKEY[(N.dow + st.nextDayOffset)%7]])
+      : 'Up next';
+    cdLab = untilMin < 20 ? 'Leave now, starts in' : 'Starts in';
+    cdVal = untilMin < 90 ? durClock(untilMs) : dur(untilMs);
+  }
+
+  const col = live ? 'var(--live)' : c.color;
+  const walkFrom = (!live && prev && prev.c.bldg !== c.bldg) ? prev.c.bldg : null;
+
+  // Second line under the building: where you go after this, or how to get here.
+  let locSub;
+  if (walkFrom){
+    locSub = 'Walk from ' + walkFrom;
+  } else if (live){
+    const after = st.today.find(x => x.s >= m.e);
+    locSub = after
+      ? 'Then ' + after.c.short + ' at ' + fmt(after.c.start) + (after.c.bldg !== c.bldg ? ', ' + after.c.bldg : ', same building')
+      : 'Last class of the day';
+  } else {
+    locSub = 'Room ' + c.room;
+  }
+
+  h.innerHTML =
+   '<div class="hero" style="--hc:' + col + '">' +
+     '<div class="hstat"><span class="dot' + (live?' pulse':'') + '"></span>' + statusTxt + '</div>' +
+     '<div class="htitle">' + c.title + '</div>' +
+     '<div class="htime">' + fmt(c.start) + ' to ' + fmt(c.end) + (c.code ? ' &middot; ' + esc(c.code) : '') + '</div>' +
+     (progPct !== null ? '<div class="prog"><div class="progfill" style="width:' + Math.min(100,Math.max(0,progPct)).toFixed(1) + '%"></div></div>' : '') +
+     '<div class="loc">' +
+       '<div class="floorbox"><div class="n">' + floorOf(c.room) + '</div><div class="l">Floor</div></div>' +
+       '<div class="floorbox"><div class="n">' + roomShort(c.room) + '</div><div class="l">Room</div></div>' +
+       '<div class="locmain"><div class="b">' + c.bldg + '</div>' +
+         '<div class="r">' + locSub + '</div></div>' +
+     '</div>' +
+     '<div class="cd"><span class="lab">' + cdLab + '</span><span class="val">' + cdVal + '</span></div>' +
+     '<div class="btns">' +
+       '<button class="btn" data-walk="' + esc(c.bldg) + '"' +
+         (walkFrom ? ' data-from="' + esc(walkFrom) + '"' : '') + '>Walk there</button>' +
+       '<button class="btn ghost" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '"' +
+         (walkFrom ? ' data-from="' + esc(walkFrom) + '"' : '') + '>Map</button>' +
+     '</div>' +
+   '</div>';
+}
+
+/* ---------------- timeline ---------------- */
+let viewDay = null;
+
+function renderChips(N){
+  const el = $('#daychips');
+  el.innerHTML = ['M','T','W','R','F'].map(L => {
+    const n = meetingsFor(L).length;
+    const on = (viewDay || N.letter) === L;
+    return '<button class="chip' + (on?' on':'') + '" data-day="' + L + '">' +
+           DAYNAME[L].slice(0,3) + '<span class="cnt">' + n + '</span></button>';
+  }).join('');
+  el.querySelectorAll('.chip').forEach(b => b.onclick = () => {
+    viewDay = b.dataset.day; tick();
+  });
+}
+
+function renderTimeline(N){
+  const L = viewDay || N.letter;
+  const isToday = L === N.letter && !viewDay;
+  const list = meetingsFor(L);
+  const el = $('#timeline');
+
+  $('#tlhead').textContent = isToday ? 'Today' : DAYNAME[L] || 'Schedule';
+  $('#tlaux').textContent = list.length ? list.length + ' class' + (list.length===1?'':'es') : '';
+
+  if (!list.length){
+    el.innerHTML = '<div class="empty">Nothing scheduled. Enjoy it.</div>';
+    return;
+  }
+
+  let html = '';
+  list.forEach((m, i) => {
+    const c = m.c;
+    const showNow = isToday && N.minutes < m.s && (i === 0 || N.minutes >= list[i-1].e);
+    if (showNow) html += '<div class="nowline"><span></span></div>';
+
+    const done = isToday && N.minutes >= m.e;
+    const liveNow = isToday && N.minutes >= m.s && N.minutes < m.e;
+
+    html +=
+      '<div class="ev' + (done?' done':'') + (liveNow?' live':'') + '" style="--ec:' + c.color + '">' +
+        '<div class="t">' + fmt(c.start) + ' to ' + fmt(c.end) + (liveNow ? ' &middot; now' : '') + '</div>' +
+        '<div class="n">' + c.short + '</div>' +
+        '<div class="w">' + c.bldg + ' &middot; Floor ' + floorOf(c.room) + ', Room ' + roomShort(c.room) + '</div>' +
+      '</div>';
+
+    const nx = list[i+1];
+    if (nx){
+      const gapMin = nx.s - m.e;
+      const move = nx.c.bldg !== c.bldg;
+      html += '<div class="gap">' + dur(gapMin*60000) + ' free' +
+              (move ? ', walk to ' + nx.c.bldg : ', stay put') + '</div>';
+    }
+  });
+
+  if (isToday && list.length && N.minutes >= list[list.length-1].e){
+    html += '<div class="nowline"><span></span></div>';
+    html += '<div class="ev" style="--ec:var(--good)"><div class="n">Done for the day</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+/* ---------------- week grid ---------------- */
+const GH_START = 8, GH_END = 18, HH = 54;
+function renderGrid(N){
+  const g = $('#grid');
+  const hours = GH_END - GH_START;
+  let html = '<div class="gh"></div>';
+  ['M','T','W','R','F'].forEach(L => {
+    html += '<div class="gh' + (L === N.letter ? ' today' : '') + '">' + DAYNAME[L].slice(0,3).toUpperCase() + '</div>';
+  });
+
+  html += '<div class="gtime" style="--hh:' + HH + 'px">';
+  for (let h = GH_START; h < GH_END; h++){
+    const ap = h >= 12 ? 'p' : 'a', hh = h % 12 || 12;
+    html += '<div class="hr">' + hh + ap + '</div>';
+  }
+  html += '</div>';
+
+  ['M','T','W','R','F'].forEach(L => {
+    html += '<div class="gcol" style="height:' + (hours*HH) + 'px">';
+    for (let h = 1; h < hours; h++){
+      html += '<div style="position:absolute;left:0;right:0;top:' + (h*HH) + 'px;height:1px;background:var(--line);opacity:.45"></div>';
+    }
+    meetingsFor(L).forEach(m => {
+      const c = m.c;
+      const top = ((m.s - GH_START*60)/60)*HH;
+      const hgt = ((m.e - m.s)/60)*HH - 3;
+      html += '<div class="blk" style="top:' + top + 'px;height:' + hgt + 'px;--bc:' + wash(c.color, 0.87) + ';--bcs:' + c.color + '">' +
+                '<div class="bn">' + c.short + '</div>' +
+                '<div class="bl">' + c.bldg.replace(' Hall','') + ' ' + roomShort(c.room) + '</div>' +
+              '</div>';
+    });
+    if (L === N.letter && N.minutes >= GH_START*60 && N.minutes <= GH_END*60){
+      const top = ((N.minutes - GH_START*60)/60)*HH;
+      html += '<div style="position:absolute;left:0;right:0;top:' + top + 'px;height:2px;background:var(--live);z-index:2"></div>';
+    }
+    html += '</div>';
+  });
+
+  g.innerHTML = html;
+}
+
+function renderBuildings(){
+  const seen = [];
+  COURSES.forEach(c => { if (!seen.some(b => b.bldg === c.bldg)) seen.push({bldg:c.bldg, rooms:[]}); });
+  COURSES.forEach(c => {
+    const b = seen.find(x => x.bldg === c.bldg);
+    const label = 'Fl ' + floorOf(c.room) + ' Rm ' + roomShort(c.room);
+    if (!b.rooms.includes(label)) b.rooms.push(label);
+  });
+  $('#bldglist').innerHTML =
+    '<div class="rmain" style="padding-bottom:8px"><div class="code">Your buildings</div></div>' +
+    seen.map(b =>
+      '<div class="row"><div class="swatch" style="--sc:var(--line)"></div>' +
+      '<div class="rmain"><div class="n">' + b.bldg + '</div>' +
+      '<div class="m">' + b.rooms.join(' &middot; ') + '</div></div>' +
+      '<button class="rgo" data-walk="' + esc(b.bldg) + '">Walk</button></div>'
+    ).join('');
+}
+
+/* ---------------- courses ---------------- */
+function renderCourses(){
+  $('#crcount').textContent = COURSES.length + ' classes';
+  $('#courses').innerHTML = COURSES.map(c => {
+    const dayFull = c.days.split('').map(d => DAYNAME[d].slice(0,3)).join(', ');
+    const fin = c.final && c.final.date
+      ? new Date(c.final.date + 'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) +
+        ', ' + fmt(c.final.start) + ' to ' + fmt(c.final.end) + (c.final.bldg ? '' : ' (room TBA)')
+      : (c.final && c.final.tba ? 'Building TBA' : 'Not listed');
+    return '<details class="row"><summary>' +
+      '<div class="swatch" style="--sc:' + c.color + '"></div>' +
+      '<div class="rmain">' + (c.code ? '<div class="code">' + esc(c.code) + '</div>' : '') +
+        '<div class="n">' + c.title + '</div>' +
+        '<div class="m">' + c.days + ' ' + fmt(c.start) + ' to ' + fmt(c.end) + '</div>' +
+        '<div class="m">' + c.bldg + ' &middot; Floor ' + floorOf(c.room) + ', Room ' + roomShort(c.room) + '</div>' +
+      '</div><span class="rgo">Info</span></summary>' +
+      '<div class="det">' +
+        '<div class="kv"><span class="k">Meets</span><span class="v">' + dayFull + '</span></div>' +
+        '<div class="kv"><span class="k">Building</span><span class="v">' + c.bldg + '</span></div>' +
+        '<div class="kv"><span class="k">Floor</span><span class="v">Floor ' + floorOf(c.room) + '</span></div>' +
+        '<div class="kv"><span class="k">Room</span><span class="v">' + c.room + '</span></div>' +
+        '<div class="kv"><span class="k">Final</span><span class="v">' + fin + '</span></div>' +
+        '<div class="kv"><span class="k">Current grade</span><span class="v">' +
+          (gradeFor(c.key) ? gradeFor(c.key).pct.toFixed(1) + '% ' + letter(gradeFor(c.key).pct) : 'no scores yet') +
+        '</span></div>' +
+        '<div class="minibtns" style="margin-top:10px"><button class="minibtn" data-grades="' + esc(c.key) + '">Grades</button></div>' +
+        '<div class="btns">' +
+          '<button class="btn" data-walk="' + esc(c.bldg) + '">Walk there</button>' +
+          '<button class="btn ghost" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '">Map</button>' +
+        '</div>' +
+      '</div></details>';
+  }).join('');
+}
+
+/* ---------------- finals ---------------- */
+function renderFinals(N){
+  const withFinals = COURSES.filter(c => c.final);
+  const dated = withFinals.filter(c => c.final.date)
+    .sort((a,b) => (a.final.date + a.final.start).localeCompare(b.final.date + b.final.start));
+  const tba = withFinals.filter(c => !c.final.date);
+
+  if (dated.length){
+    const first = new Date(dated[0].final.date + 'T00:00:00');
+    const todayD = new Date(N.y, N.mo-1, N.d);
+    const days = Math.ceil((first - todayD)/86400000);
+    $('#fincd').textContent = days > 0 ? days + ' days away' : '';
+  }
+
+  const card = dated.map(c => {
+    const d = new Date(c.final.date + 'T00:00:00');
+    const placed = !!c.final.bldg;
+    return '<div class="row"><div class="swatch" style="--sc:' + c.color + '"></div>' +
+      '<div class="rmain">' +
+        '<div class="code">' + d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'}) + '</div>' +
+        '<div class="n">' + c.title + '</div>' +
+        '<div class="m">' + fmt(c.final.start) + ' to ' + fmt(c.final.end) + '</div>' +
+        '<div class="m">' + (placed
+          ? esc(c.final.bldg) + ' &middot; Floor ' + floorOf(c.final.room) + ', Room ' + roomShort(c.final.room)
+          : '<span class="tba">ROOM TBA</span>') + '</div>' +
+      '</div>' +
+      (placed ? '<button class="rgo" data-walk="' + esc(c.final.bldg) + '" data-room="' + c.final.room + '">Walk</button>' : '') +
+      '</div>';
+  }).join('') +
+  tba.map(c =>
+    '<div class="row"><div class="swatch" style="--sc:' + c.color + '"></div>' +
+    '<div class="rmain"><div class="code">Date and room pending</div>' +
+    '<div class="n">' + c.title + '</div>' +
+    '<div class="m"><span class="tba">BUILDING TBA</span></div></div></div>'
+  ).join('');
+
+  const missing = COURSES.filter(c => !c.final);
+  const note = missing.length
+    ? '<div class="foot" style="text-align:left;padding:14px 0 0">No final listed yet for: ' +
+      missing.map(c => c.short).join(', ') + '. Check one.ou.edu as finals week gets closer.</div>'
+    : '';
+
+  $('#finals').innerHTML = (card || '<div class="empty">No finals posted yet.</div>') + note;
+}
+
+/* ---------------- nav ---------------- */
+document.querySelectorAll('.nb').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.nb').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+    window.scrollTo({top:0, behavior:'smooth'});
+  };
+});
+
+/* ----- map links -----
+   Some embedded viewers block a link from opening a new context. When that
+   happens window.open returns null, so show the address instead of failing
+   silently. On a normal browser or the home-screen app this never fires. */
+const toast = $('#toast');
+function showToast(addr, label){
+  $('#toastLab').textContent = label;
+  $('#toastAddr').textContent = addr;
+  toast.classList.add('on');
+}
+$('#toastClose').onclick = () => toast.classList.remove('on');
+$('#toastCopy').onclick = async () => {
+  const t = $('#toastAddr').textContent;
+  try { await navigator.clipboard.writeText(t); $('#toastCopy').textContent = 'Copied'; }
+  catch (e) { $('#toastCopy').textContent = 'Select the address above'; }
+  setTimeout(() => { $('#toastCopy').textContent = 'Copy address'; }, 2000);
+};
+document.addEventListener('click', e => {
+  const mp = e.target.closest('[data-map]');
+  if (mp){
+    e.preventDefault();
+    openWalk(mp.dataset.map, mp.dataset.room || null, mp.dataset.from || null);
+    return;
+  }
+  const wt = e.target.closest('[data-walk]');
+  if (wt){
+    e.preventDefault();
+    openMaps(wt.dataset.walk, wt.dataset.from || null);
+    return;
+  }
+  const a = e.target.closest('a.maplink');
+  if (!a) return;
+  // Note: passing 'noopener' in the features string makes window.open always
+  // return null, which would defeat the check. Sever the opener afterwards.
+  let w = null;
+  try { w = window.open(a.href, '_blank'); } catch (err) { w = null; }
+  if (w){ try { w.opener = null; } catch (err) {} return; }
+  e.preventDefault();
+  let addr = '', label = 'Open this in Maps';
+  try {
+    const u = new URL(a.href);
+    addr = u.searchParams.get('daddr') || u.searchParams.get('destination') || '';
+    const from = u.searchParams.get('saddr') || u.searchParams.get('origin');
+    if (from) label = 'Walking route, blocked here';
+  } catch (err) { addr = a.href; }
+  showToast(addr || a.href, label);
+});
+
+
+/* =========================================================================
+   LECTURES: record, timestamped notes, flashcards, export.
+
+   Audio and notes live in this browser only (IndexedDB), never uploaded.
+   The page cannot write summaries itself, so "Study pack" packages the
+   notes and transcript with a ready prompt to paste into Claude.
+   ========================================================================= */
+
+const LEC = { rec:null, stream:null, chunks:[], t0:0, timer:null, raf:null, ac:null,
+              notes:[], target:null, noAudio:false, sr:null, transcript:'' };
+
+/* ---- IndexedDB ---- */
+function idb(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('schedhub_' + SCHEDULE.id, 2);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      if (!d.objectStoreNames.contains('lectures')) d.createObjectStore('lectures', {keyPath:'id'});
+      if (!d.objectStoreNames.contains('photos'))   d.createObjectStore('photos',   {keyPath:'id'});
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function dbTx(mode, fn){
+  const d = await idb();
+  return new Promise((res, rej) => {
+    const t = d.transaction('lectures', mode);
+    const out = fn(t.objectStore('lectures'));
+    t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
+    t.onerror = () => rej(t.error);
+  });
+}
+const dbPut = r  => dbTx('readwrite', s => s.put(r));
+const dbAll = () => dbTx('readonly',  s => s.getAll());
+const dbGet = id => dbTx('readonly',  s => s.get(id));
+const dbDel = id => dbTx('readwrite', s => s.delete(id));
+
+/* ---- helpers ---- */
+function mmss(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  const h = Math.floor(m/60);
+  return h ? h + ':' + pad2(m%60) + ':' + pad2(s) : m + ':' + pad2(s);
+}
+function esc(t){
+  return String(t).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+function courseByKey(k){
+  return COURSES.find(c => c.key === k) || COURSES.find(c => c.code && c.code === k) || null;
+}
+
+/* Which class is happening right now, so a recording labels itself. */
+function suggestCourse(){
+  const N = campusNow();
+  const today = meetingsFor(N.letter);
+  const live = today.find(m => N.minutes >= m.s - 10 && N.minutes < m.e + 10);
+  if (live) return live.c.key;
+  const soon = today.find(m => m.s > N.minutes);
+  return soon ? soon.c.key : (COURSES[0] && COURSES[0].key);
+}
+
+/* ---- recorder ---- */
+function pickMime(){
+  const opts = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/aac'];
+  if (typeof MediaRecorder === 'undefined') return null;
+  for (const m of opts){ if (MediaRecorder.isTypeSupported(m)) return m; }
+  return '';
+}
+function extFor(mime){ return (mime || '').indexOf('mp4') >= 0 || (mime||'').indexOf('aac') >= 0 ? 'mp4' : 'webm'; }
+
+function recElapsed(){ return (Date.now() - LEC.t0) / 1000; }
+
+async function startRec(withAudio){
+  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.noAudio = !withAudio;
+  LEC.target = $('#recCourse').value;
+
+  if (withAudio){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined'){
+      return recBlocked('This browser will not give the page a microphone.');
+    }
+    try {
+      LEC.stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    } catch (e){
+      return recBlocked(e && e.name === 'NotAllowedError'
+        ? 'Microphone access was refused. If you are viewing this inside another app, the mic is usually blocked there.'
+        : 'Could not open the microphone (' + ((e && e.name) || 'unknown') + ').');
+    }
+    const mime = pickMime();
+    try {
+      LEC.rec = mime ? new MediaRecorder(LEC.stream, {mimeType:mime}) : new MediaRecorder(LEC.stream);
+    } catch (e){ return recBlocked('Recording is not supported here.'); }
+    LEC.rec.ondataavailable = e => { if (e.data && e.data.size) LEC.chunks.push(e.data); };
+    LEC.rec.start(1000);
+    startMeter();
+    startSpeech();
+  }
+
+  LEC.t0 = Date.now();
+  LEC.timer = setInterval(() => { $('#recTime').textContent = mmss(recElapsed()); }, 500);
+  $('#recTime').textContent = '0:00';
+  setRecUI(true);
+}
+
+function recBlocked(msg){
+  $('#recWarn').innerHTML = esc(msg) +
+    '<br><br>You can still keep timestamped notes without audio. Tap <b>Notes only</b>.';
+  $('#recWarn').style.display = 'block';
+  $('#recNotesOnly').style.display = '';
+  setRecUI(false);
+}
+
+function setRecUI(on){
+  const b = $('#recBtn');
+  b.classList.toggle('stop', on);
+  b.innerHTML = on
+    ? '<span class="recdot pulse"></span>Stop and save'
+    : '<span class="recdot"></span>Start recording';
+  $('#recLive').style.display = on ? '' : 'none';
+  $('#recCourse').disabled = on;
+  $('#recNotesOnly').style.display = on ? 'none' : $('#recNotesOnly').style.display;
+  if (!on){ $('#liveNotes').innerHTML = ''; $('#recTime').textContent = '0:00'; $('#levelFill').style.width = '0%'; }
+}
+
+function startMeter(){
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    LEC.ac = new AC();
+    const src = LEC.ac.createMediaStreamSource(LEC.stream);
+    const an = LEC.ac.createAnalyser();
+    an.fftSize = 512;
+    src.connect(an);
+    const buf = new Uint8Array(an.frequencyBinCount);
+    const loop = () => {
+      an.getByteTimeDomainData(buf);
+      let peak = 0;
+      for (let i=0;i<buf.length;i++){ const v = Math.abs(buf[i]-128)/128; if (v>peak) peak=v; }
+      $('#levelFill').style.width = Math.min(100, peak*180).toFixed(0) + '%';
+      LEC.raf = requestAnimationFrame(loop);
+    };
+    loop();
+  } catch (e){ /* meter is decoration; never block recording on it */ }
+}
+
+/* Live transcript where the browser offers it. Recognition stops on its own
+   every so often, so restart it until the user stops the recording. */
+function startSpeech(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR || !$('#recTranscribe').checked) return;
+  try {
+    const r = new SR();
+    r.continuous = true; r.interimResults = false; r.lang = 'en-US';
+    r.onresult = e => {
+      for (let i = e.resultIndex; i < e.results.length; i++){
+        if (e.results[i].isFinal) LEC.transcript += e.results[i][0].transcript.trim() + ' ';
+      }
+    };
+    r.onend = () => { if (LEC.rec && LEC.rec.state === 'recording'){ try { r.start(); } catch(err){} } };
+    r.onerror = () => {};
+    r.start();
+    LEC.sr = r;
+  } catch (e){ LEC.sr = null; }
+}
+
+function addLiveNote(){
+  const inp = $('#noteInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  LEC.notes.push({ t: Math.floor(recElapsed()), text });
+  inp.value = '';
+  $('#liveNotes').innerHTML = LEC.notes.slice().reverse().map(n =>
+    '<div class="ln"><span class="lt">' + mmss(n.t) + '</span><span>' + esc(n.text) + '</span></div>').join('');
+}
+
+async function stopRec(){
+  clearInterval(LEC.timer); LEC.timer = null;
+  if (LEC.raf) cancelAnimationFrame(LEC.raf);
+  if (LEC.ac){ try { LEC.ac.close(); } catch(e){} LEC.ac = null; }
+  if (LEC.sr){ try { LEC.sr.onend = null; LEC.sr.stop(); } catch(e){} LEC.sr = null; }
+
+  const seconds = Math.floor(recElapsed());
+  let blob = null, mime = '';
+
+  if (LEC.rec && LEC.rec.state !== 'inactive'){
+    mime = LEC.rec.mimeType || '';
+    await new Promise(res => { LEC.rec.onstop = res; LEC.rec.stop(); });
+    blob = new Blob(LEC.chunks, {type: mime || 'audio/webm'});
+  }
+  if (LEC.stream){ LEC.stream.getTracks().forEach(t => t.stop()); LEC.stream = null; }
+  LEC.rec = null;
+
+  if (!seconds && !LEC.notes.length){ setRecUI(false); return; }
+
+  const N = campusNow();
+  const rec = {
+    id: newId('lec_'),
+    key: LEC.target,
+    dateISO: N.iso,
+    stamp: Date.now(),
+    seconds,
+    notes: LEC.notes.slice(),
+    transcript: LEC.transcript.trim(),
+    cards: [],
+    audio: blob, mime
+  };
+  try { await dbPut(rec); }
+  catch (e){
+    alert('Could not save the recording. Storage may be full. Notes are still on screen; copy them before leaving.');
+    return;
+  }
+  LEC.notes = []; LEC.chunks = []; LEC.transcript = '';
+  setRecUI(false);
+  renderLectures();
+}
+
+/* ---- lecture list ---- */
+async function renderLectures(){
+  let all = [];
+  try { all = await dbAll(); } catch (e){ all = []; }
+  all.sort((a,b) => b.stamp - a.stamp);
+  $('#lecCount').textContent = all.length ? all.length + ' saved' : '';
+  const el = $('#lectures');
+  if (!all.length){
+    el.innerHTML = '<div class="empty">No lectures yet. Hit record when class starts.</div>';
+    return;
+  }
+  el.innerHTML = all.map(r => {
+    const c = courseByKey(r.key || r.code);
+    const d = new Date(r.dateISO + 'T00:00:00');
+    const bits = [];
+    if (r.seconds) bits.push(mmss(r.seconds));
+    bits.push(r.notes.length + ' note' + (r.notes.length===1?'':'s'));
+    if (r.cards && r.cards.length) bits.push(r.cards.length + ' card' + (r.cards.length===1?'':'s'));
+    if (!r.audio) bits.push('notes only');
+    return '<details class="lec" data-id="' + r.id + '"><summary>' +
+      '<div class="swatch" style="--sc:' + (c ? c.color : 'var(--dim2)') + '"></div>' +
+      '<div class="lecmain"><div class="n">' + esc(c ? c.short : 'Lecture') + '</div>' +
+        '<div class="m">' + d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'}) +
+        ' &middot; ' + bits.join(' &middot; ') + '</div></div>' +
+      '<span class="rgo">Open</span></summary>' +
+      '<div class="lecbody" id="body_' + r.id + '"></div></details>';
+  }).join('');
+
+  el.querySelectorAll('details.lec').forEach(d => {
+    d.addEventListener('toggle', () => { if (d.open) renderLecBody(d.dataset.id); });
+  });
+}
+
+async function renderLecBody(id){
+  const r = await dbGet(id);
+  if (!r) return;
+  const host = $('#body_' + id);
+  const c = courseByKey(r.key || r.code);
+  let html = '';
+
+  if (r.audio){
+    const url = URL.createObjectURL(r.audio);
+    html += '<audio id="au_' + id + '" controls preload="metadata" src="' + url + '"></audio>';
+    html += '<div class="recnote" style="margin:-6px 0 4px">Length ' + mmss(r.seconds) + '</div>';
+  }
+
+  html += '<div class="subhead">Notes</div>';
+  html += r.notes.length
+    ? r.notes.map(n => '<div class="tnote"><button class="ts" data-seek="' + n.t + '" data-au="' + id + '">' +
+        mmss(n.t) + '</button><span>' + esc(n.text) + '</span></div>').join('')
+    : '<div class="recnote">No notes on this one.</div>';
+
+  if (r.transcript){
+    html += '<div class="subhead">Transcript</div>' +
+            '<div class="recnote" style="max-height:150px;overflow:auto">' + esc(r.transcript) + '</div>';
+  }
+
+  html += '<div class="subhead">Flashcards</div>';
+  html += '<div id="fc_' + id + '">' + (r.cards && r.cards.length
+    ? r.cards.map((k,i) => '<div class="card-fc"><div class="q">' + esc(k.q) + '</div>' +
+        '<div class="a">' + esc(k.a) + '</div></div>').join('')
+    : '<div class="recnote">No cards yet. Build them from your notes, or add one below.</div>') + '</div>';
+  html += '<div class="fcform">' +
+      '<input id="fq_' + id + '" placeholder="Question or term">' +
+      '<input id="fa_' + id + '" placeholder="Answer or definition">' +
+      '<div class="minibtns" style="margin-top:0">' +
+        '<button class="minibtn" data-addcard="' + id + '">Add card</button>' +
+        '<button class="minibtn" data-build="' + id + '">Build from notes</button>' +
+        '<button class="minibtn primary" data-quiz="' + id + '">Quiz me</button>' +
+      '</div></div>';
+
+  html += '<div class="minibtns">' +
+      '<button class="minibtn primary" data-pack="' + id + '">Study pack</button>' +
+      '<button class="minibtn" data-dlnotes="' + id + '">Save notes</button>' +
+      (r.audio ? '<button class="minibtn" data-dlaudio="' + id + '">Save audio</button>' : '') +
+      '<button class="minibtn danger" data-del="' + id + '">Delete</button>' +
+    '</div>';
+
+  host.innerHTML = html;
+
+  const au = document.getElementById('au_' + id);
+  if (au){
+    const fixDuration = () => {
+      if (au.duration !== Infinity) return;
+      au.currentTime = 1e101;
+      const settle = () => { au.removeEventListener('timeupdate', settle); au.currentTime = 0; };
+      au.addEventListener('timeupdate', settle);
+    };
+    if (au.readyState > 0) fixDuration(); else au.addEventListener('loadedmetadata', fixDuration, {once:true});
+  }
+}
+
+/* ---- study pack: what you paste into Claude ---- */
+function buildPack(r){
+  const c = courseByKey(r.key || r.code);
+  const d = new Date(r.dateISO + 'T00:00:00');
+  let out = 'Turn the lecture below into study material: a short summary, the key concepts, ';
+  out += 'and a set of practice questions with answers.\n\n';
+  out += '# ' + (c ? c.title : 'Lecture') + '\n';
+  out += d.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  if (r.seconds) out += ' | ' + mmss(r.seconds) + ' of audio';
+  out += '\n\n## My notes\n';
+  out += r.notes.length ? r.notes.map(n => '- [' + mmss(n.t) + '] ' + n.text).join('\n') : '(none)';
+  if (r.transcript) out += '\n\n## Transcript\n' + r.transcript;
+  if (r.cards && r.cards.length){
+    out += '\n\n## Cards I already made\n' + r.cards.map(k => '- Q: ' + k.q + '\n  A: ' + k.a).join('\n');
+  }
+  return out;
+}
+
+function showSheet(title, desc, text){
+  $('#sheetTitle').textContent = title;
+  $('#sheetDesc').textContent = desc;
+  $('#sheetText').value = text;
+  $('#sheet').classList.add('on');
+  $('#sheetBody').style.display = '';
+  $('#quizBody').style.display = 'none';
+}
+function closeSheet(){ $('#sheet').classList.remove('on'); }
+
+async function saveFile(filename, data, okMsg){
+  let dl = null;
+  try { dl = window.claude && claude.use ? await claude.use('downloads') : null; } catch(e){ dl = null; }
+  if (dl){
+    try { await dl.save({filename, data}); return; }
+    catch (e){
+      const code = e && e.code;
+      if (code === 'declined') return;
+      if (code === 'too_large'){
+        alert('That file is over the 16 MB limit this viewer allows. Save the notes instead, or open the app outside this viewer.');
+        return;
+      }
+      alert('Could not save the file (' + (code || 'unknown') + ').');
+      return;
+    }
+  }
+  // plain browser: a normal download link works
+  const blob = data instanceof Blob ? data : new Blob([data], {type:'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* Derive cards from "term: definition" or "term - definition" note lines. */
+function cardsFromNotes(r){
+  const out = [];
+  r.notes.forEach(n => {
+    const m = n.text.match(/^(.{2,60}?)\s*[:–-]\s+(.{2,})$/);
+    if (m) out.push({q: m[1].trim(), a: m[2].trim()});
+  });
+  return out;
+}
+
+/* ---- quiz ---- */
+const QUIZ = { cards:[], i:0, shown:false };
+function startQuiz(cards){
+  if (!cards.length){ alert('No cards yet. Add one, or build them from notes written as "term: definition".'); return; }
+  QUIZ.cards = cards.slice().sort(() => Math.random() - 0.5);
+  QUIZ.i = 0; QUIZ.shown = false;
+  $('#sheet').classList.add('on');
+  $('#sheetBody').style.display = 'none';
+  $('#quizBody').style.display = '';
+  drawQuiz();
+}
+function drawQuiz(){
+  const k = QUIZ.cards[QUIZ.i];
+  $('#quizCard').innerHTML = '<div class="qq">' + esc(k.q) + '</div>' +
+    (QUIZ.shown ? '<div class="qa">' + esc(k.a) + '</div>' : '<div class="hint">Tap to reveal</div>');
+  $('#quizPos').textContent = (QUIZ.i + 1) + ' of ' + QUIZ.cards.length;
+}
+
+/* ---- wiring ---- */
+function studyBoot(){
+  $('#recCourse').innerHTML = COURSES.map(c =>
+    '<option value="' + esc(c.key) + '">' + esc(c.short) + '</option>').join('');
+  const sug = suggestCourse();
+  if (sug) $('#recCourse').value = sug;
+
+  const SRok = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  if (!SRok) $('#transcribeRow').style.display = 'none';
+
+  $('#recBtn').onclick = () => {
+    if (LEC.rec || LEC.timer) stopRec(); else startRec(true);
+  };
+  $('#recNotesOnly').onclick = () => { $('#recWarn').style.display='none'; startRec(false); };
+  $('#noteAdd').onclick = addLiveNote;
+  $('#noteInput').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addLiveNote(); } });
+
+  $('#sheetClose').onclick = closeSheet;
+  $('#quizClose').onclick = closeSheet;
+  $('#sheet').addEventListener('click', e => { if (e.target === $('#sheet')) closeSheet(); });
+  $('#sheetCopy').onclick = async () => {
+    try { await navigator.clipboard.writeText($('#sheetText').value); $('#sheetCopy').textContent = 'Copied'; }
+    catch (e){ $('#sheetText').select(); $('#sheetCopy').textContent = 'Press copy on your keyboard'; }
+    setTimeout(() => { $('#sheetCopy').textContent = 'Copy'; }, 2200);
+  };
+  $('#quizCard').onclick = () => { QUIZ.shown = !QUIZ.shown; drawQuiz(); };
+  $('#quizNext').onclick = () => { QUIZ.i = (QUIZ.i + 1) % QUIZ.cards.length; QUIZ.shown = false; drawQuiz(); };
+
+  // delegated actions inside lecture bodies
+  $('#lectures').addEventListener('click', async e => {
+    const t = e.target.closest('[data-seek],[data-addcard],[data-build],[data-quiz],[data-pack],[data-dlnotes],[data-dlaudio],[data-del]');
+    if (!t) return;
+
+    if (t.dataset.seek !== undefined){
+      const au = document.getElementById('au_' + t.dataset.au);
+      if (au){ au.currentTime = +t.dataset.seek; au.play().catch(()=>{}); }
+      return;
+    }
+    const id = t.dataset.addcard || t.dataset.build || t.dataset.quiz || t.dataset.pack ||
+               t.dataset.dlnotes || t.dataset.dlaudio || t.dataset.del;
+    const r = await dbGet(id);
+    if (!r) return;
+    const c = courseByKey(r.key || r.code);
+    const base = ((c ? c.short : 'Lecture') + '-' + r.dateISO).replace(/[^a-z0-9-]+/gi,'-');
+
+    if (t.dataset.addcard){
+      const q = $('#fq_' + id).value.trim(), a = $('#fa_' + id).value.trim();
+      if (!q || !a) return;
+      r.cards = (r.cards || []).concat([{q,a}]);
+      await dbPut(r); renderLecBody(id); return;
+    }
+    if (t.dataset.build){
+      const found = cardsFromNotes(r);
+      if (!found.length){
+        alert('No cards found. Write notes as "term: definition" during class and this will pick them up.');
+        return;
+      }
+      const have = new Set((r.cards||[]).map(k => k.q.toLowerCase()));
+      r.cards = (r.cards||[]).concat(found.filter(k => !have.has(k.q.toLowerCase())));
+      await dbPut(r); renderLecBody(id); return;
+    }
+    if (t.dataset.quiz){ startQuiz(r.cards || []); return; }
+    if (t.dataset.pack){
+      showSheet('Study pack', 'Copy this and paste it to Claude. It already asks for a summary, key concepts and practice questions.', buildPack(r));
+      return;
+    }
+    if (t.dataset.dlnotes){ await saveFile(base + '.md', buildPack(r)); return; }
+    if (t.dataset.dlaudio){ await saveFile(base + '.' + extFor(r.mime), r.audio); return; }
+    if (t.dataset.del){
+      if (!confirm('Delete this lecture, its notes and its audio? This cannot be undone.')) return;
+      await dbDel(id); renderLectures(); return;
+    }
+  });
+
+  renderLectures();
+}
+
+
+/* =========================================================================
+   WALK THERE
+
+   A tile map cannot be drawn here: this page is blocked from loading images
+   from an outside map server, so there is nothing to draw a street map with.
+   What it does instead is real: your live GPS position, true distance and
+   compass heading to the door, and a north-up plot of your buildings.
+
+   Seed pins are approximate. Standing at a building, "Set pin here" replaces
+   the seed with your actual GPS fix, and that building is exact from then on.
+   ========================================================================= */
+
+const PIN_SEED = {
+  'Nielsen Hall':         { lat:35.2107, lng:-97.4442, addr:'440 W Brooks St, Norman, OK 73019' },
+  'Physical Science Ctr': { lat:35.2101, lng:-97.4437, addr:'440 W Brooks St, Norman, OK 73019' },
+  'Adams Hall':           { lat:35.2085, lng:-97.4450, addr:'307 W Brooks St, Norman, OK 73019' },
+  'Dale Hall':            { lat:35.2064, lng:-97.4455, addr:'455 W Lindsey St, Norman, OK 73019' },
+  'Cross Village':        { lat:35.2018, lng:-97.4402, addr:'Cross Village, 1400 Asp Ave, Norman, OK 73019' }
+};
+const PIN_KEY = 'schedhub.pins.' + SCHEDULE.id;
+
+function loadPins(){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(PIN_KEY) || '{}') || {}; } catch (e){ saved = {}; }
+  const out = {};
+  Object.keys(PIN_SEED).forEach(b => {
+    out[b] = saved[b]
+      ? { lat:saved[b].lat, lng:saved[b].lng, addr:PIN_SEED[b].addr, exact:true }
+      : { lat:PIN_SEED[b].lat, lng:PIN_SEED[b].lng, addr:PIN_SEED[b].addr, exact:false };
+  });
+  return out;
+}
+function savePin(bldg, lat, lng){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(PIN_KEY) || '{}') || {}; } catch (e){ saved = {}; }
+  saved[bldg] = {lat, lng};
+  try { localStorage.setItem(PIN_KEY, JSON.stringify(saved)); } catch (e){}
+}
+let PINS = loadPins();
+
+/* great-circle distance in metres */
+function distM(a, b){
+  const R = 6371000, tr = Math.PI/180;
+  const dLat = (b.lat-a.lat)*tr, dLng = (b.lng-a.lng)*tr;
+  const s = Math.sin(dLat/2)**2 +
+            Math.cos(a.lat*tr)*Math.cos(b.lat*tr)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+function bearing(a, b){
+  const tr = Math.PI/180;
+  const y = Math.sin((b.lng-a.lng)*tr)*Math.cos(b.lat*tr);
+  const x = Math.cos(a.lat*tr)*Math.sin(b.lat*tr) -
+            Math.sin(a.lat*tr)*Math.cos(b.lat*tr)*Math.cos((b.lng-a.lng)*tr);
+  return (Math.atan2(y,x)/tr + 360) % 360;
+}
+function compass(deg){
+  return ['north','north east','east','south east','south','south west','west','north west']
+    [Math.round(deg/45) % 8];
+}
+function feet(m){
+  const ft = m*3.28084;
+  if (ft < 1000) return Math.round(ft/10)*10 + ' ft';
+  return (ft/5280).toFixed(ft < 5280*2 ? 2 : 1) + ' mi';
+}
+function walkMins(m){ return Math.max(1, Math.round(m / 80)); }   // ~80 m/min
+
+const WALK = { bldg:null, room:null, watch:null, me:null };
+
+function openWalk(bldg, room, fromBldg){
+  WALK.bldg = bldg; WALK.room = room || null; WALK.from = fromBldg || null;
+  WALK.me = null;
+  $('#walkSheet').classList.add('on');
+  drawWalk();
+  startLocate();
+}
+function closeWalk(){
+  $('#walkSheet').classList.remove('on');
+  if (WALK.watch !== null && navigator.geolocation){
+    navigator.geolocation.clearWatch(WALK.watch); WALK.watch = null;
+  }
+}
+function startLocate(){
+  if (!navigator.geolocation){ $('#walkLive').innerHTML = liveMsg('This browser will not share a location.'); return; }
+  $('#walkLive').innerHTML = liveMsg('Finding you...');
+  try {
+    WALK.watch = navigator.geolocation.watchPosition(
+      pos => { WALK.me = {lat:pos.coords.latitude, lng:pos.coords.longitude, acc:pos.coords.accuracy}; drawWalk(); },
+      err => {
+        $('#walkLive').innerHTML = liveMsg(err && err.code === 1
+          ? 'Location is off for this page. Inside an embedded viewer it is usually blocked; on the home screen app it works.'
+          : 'Could not get a location fix.');
+        drawWalk();
+      },
+      {enableHighAccuracy:true, maximumAge:5000, timeout:15000}
+    );
+  } catch (e){ $('#walkLive').innerHTML = liveMsg('Location unavailable here.'); }
+}
+function liveMsg(t){ return '<div class="walkmsg">' + esc(t) + '</div>'; }
+
+function drawWalk(){
+  const b = WALK.bldg, pin = PINS[b];
+  $('#walkTitle').textContent = b;
+  $('#walkSub').innerHTML = (WALK.room
+      ? 'Floor ' + floorOf(WALK.room) + ' &middot; Room ' + roomShort(WALK.room) + ' &middot; '
+      : '') + esc(pin ? pin.addr : '');
+
+  if (!pin){ $('#walkLive').innerHTML = liveMsg('No pin for this building yet.'); return; }
+
+  if (WALK.me){
+    const d = distM(WALK.me, pin), br = bearing(WALK.me, pin);
+    const here = d < 25;
+    $('#walkLive').innerHTML =
+      '<div class="walkstat">' +
+        '<div class="wsbig">' + (here ? 'You are here' : feet(d)) + '</div>' +
+        '<div class="wslab">' +
+          (here
+            ? (WALK.room ? 'Head to floor ' + floorOf(WALK.room) + ', room ' + roomShort(WALK.room) : 'At the building')
+            : walkMins(d) + ' min walk &middot; head ' + compass(br)) +
+        '</div>' +
+        (WALK.me.acc > 40 ? '<div class="wsacc">GPS accurate to about ' + feet(WALK.me.acc) + '</div>' : '') +
+      '</div>';
+  }
+  $('#walkMap').innerHTML = miniMap(b);
+  $('#pinState').textContent = pin.exact
+    ? 'This pin was set from your own GPS.'
+    : 'This pin is approximate. Standing at the door, tap Set pin here to make it exact.';
+}
+
+/* North-up plot of the buildings you actually use, plus you. */
+function miniMap(focus){
+  const names = Object.keys(PINS);
+  const pts = names.map(n => ({n, ...PINS[n]}));
+  if (WALK.me) pts.push({n:'__me', lat:WALK.me.lat, lng:WALK.me.lng});
+
+  const lats = pts.map(p=>p.lat), lngs = pts.map(p=>p.lng);
+  let minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  let minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const padLat = Math.max((maxLat-minLat)*0.22, 0.0007);
+  const padLng = Math.max((maxLng-minLng)*0.22, 0.0009);
+  minLat-=padLat; maxLat+=padLat; minLng-=padLng; maxLng+=padLng;
+
+  const W = 320, H = 210;
+  const X = l => ((l - minLng)/(maxLng - minLng))*W;
+  const Y = l => H - ((l - minLat)/(maxLat - minLat))*H;
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Positions of your buildings, north up">';
+  svg += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="var(--bg2)" rx="12"/>';
+  for (let g=1; g<4; g++){
+    svg += '<line x1="0" y1="' + (H*g/4) + '" x2="' + W + '" y2="' + (H*g/4) + '" stroke="var(--line)" stroke-width="1"/>';
+    svg += '<line x1="' + (W*g/4) + '" y1="0" x2="' + (W*g/4) + '" y2="' + H + '" stroke="var(--line)" stroke-width="1"/>';
+  }
+  if (WALK.me){
+    const t = PINS[focus];
+    svg += '<line x1="' + X(WALK.me.lng) + '" y1="' + Y(WALK.me.lat) + '" x2="' + X(t.lng) + '" y2="' + Y(t.lat) +
+           '" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>';
+  }
+  pts.forEach(p => {
+    if (p.n === '__me'){
+      svg += '<circle cx="' + X(p.lng) + '" cy="' + Y(p.lat) + '" r="7" fill="#1d6ef5" stroke="#fff" stroke-width="2.5"/>';
+      svg += '<text x="' + X(p.lng) + '" y="' + (Y(p.lat)-13) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#1d6ef5">You</text>';
+      return;
+    }
+    const on = p.n === focus;
+    svg += '<circle cx="' + X(p.lng) + '" cy="' + Y(p.lat) + '" r="' + (on?8:5) + '" fill="' +
+           (on ? 'var(--accent)' : 'var(--dim2)') + '" stroke="#fff" stroke-width="2"/>';
+    svg += '<text x="' + X(p.lng) + '" y="' + (Y(p.lat)+ (on?21:18)) + '" text-anchor="middle" font-size="9.5" font-weight="' +
+           (on?'800':'600') + '" fill="' + (on?'var(--accent)':'var(--dim)') + '">' +
+           esc(p.n.replace(' Hall','').replace('Physical Science Ctr','Phys Sci')) + '</text>';
+  });
+  svg += '<text x="' + (W-12) + '" y="18" text-anchor="end" font-size="10" font-weight="800" fill="var(--dim2)">N &uarr;</text>';
+  svg += '</svg>';
+  return svg;
+}
+
+function walkBoot(){
+  $('#walkClose').onclick = closeWalk;
+  $('#walkSheet').addEventListener('click', e => { if (e.target === $('#walkSheet')) closeWalk(); });
+
+  $('#walkApple').onclick = () => openMaps(WALK.bldg, WALK.from);
+  $('#walkGoogle').onclick = () => {
+    const pin = PINS[WALK.bldg];
+    const url = pin && pin.exact
+      ? 'https://www.google.com/maps/dir/?api=1&destination=' + pin.lat + ',' + pin.lng + '&travelmode=walking'
+      : googleUrl(WALK.bldg, WALK.from);
+    openExternal(url, pin ? pin.addr : WALK.bldg);
+  };
+  $('#walkCopy').onclick = async () => {
+    const pin = PINS[WALK.bldg];
+    const txt = pin ? pin.addr : WALK.bldg;
+    try { await navigator.clipboard.writeText(txt); $('#walkCopy').textContent = 'Copied'; }
+    catch (e){ $('#walkCopy').textContent = txt; }
+    setTimeout(() => { $('#walkCopy').textContent = 'Copy address'; }, 2200);
+  };
+  $('#walkSetPin').onclick = () => {
+    if (!WALK.me){ alert('No location fix yet, so there is nothing to save.'); return; }
+    if (!confirm('Save your current spot as the pin for ' + WALK.bldg + '?')) return;
+    savePin(WALK.bldg, WALK.me.lat, WALK.me.lng);
+    PINS = loadPins();
+    drawWalk();
+  };
+}
+
+/* Best Apple Maps target for a building: exact coordinates once the pin has
+   been set from GPS, otherwise a name search Apple resolves itself. */
+function appleFor(bldg, from){
+  const pin = PINS[bldg];
+  if (pin && pin.exact) return 'daddr=' + pin.lat + ',' + pin.lng;
+  return 'daddr=' + enc(destQ(bldg)) + (from ? '&saddr=' + enc(destQ(from)) : '');
+}
+function appleWeb(bldg, from){ return 'https://maps.apple.com/?' + appleFor(bldg, from) + '&dirflg=w'; }
+function appleApp(bldg, from){ return 'maps://?' + appleFor(bldg, from) + '&dirflg=w'; }
+
+/* Open Apple Maps. A plain link is enough on the home-screen app or on a
+   normal browser; inside an embedded viewer the frame is not allowed to open
+   anything, so try each route in turn and only surface the address if every
+   one of them is refused. */
+function openMaps(bldg, from){
+  const web = appleWeb(bldg, from);
+  const addr = (PINS[bldg] && PINS[bldg].addr) || bldg;
+
+  let w = null;
+  try { w = window.open(web, '_blank'); } catch (e){ w = null; }
+  if (w){ try { w.opener = null; } catch (e){} return; }
+
+  // hand the whole tab over, where the host permits it
+  try {
+    if (window.top && window.top !== window.self){ window.top.location.href = web; }
+    else { window.location.href = web; }
+  } catch (e){
+    // blocked: the maps: scheme still launches the app on an iPhone without
+    // counting as a page navigation
+    try { window.location.href = appleApp(bldg, from); } catch (e2){}
+  }
+
+  // still on screen a moment later means nothing opened
+  setTimeout(() => {
+    if (!document.hidden) showToast(addr, 'Apple Maps is blocked here, use this address');
+  }, 1400);
+}
+
+function openExternal(url, addrForFallback){
+  let w = null;
+  try { w = window.open(url, '_blank'); } catch (e){ w = null; }
+  if (w){ try { w.opener = null; } catch (e){} return; }
+  showToast(addrForFallback, 'Open this in Maps');
+}
+
+
+/* =========================================================================
+   CROSS VILLAGE DINING
+
+   Hours below come from OU Daily's published campus dining listing and are
+   marked with what they cover. Anything not published is left as unknown
+   rather than guessed, and every venue's hours can be corrected in the app;
+   corrections are saved on the device and win over these defaults.
+   ========================================================================= */
+
+const DINING_SOURCE = {
+  label: 'OU Daily campus dining listings',
+  covers: 'compiled across recent semesters',
+  warn: 'Verify before a long walk. Edit hours fixes anything wrong, permanently.'
+};
+
+/* [open, close] | 'closed' | 'closed?' (not listed, almost certainly shut) | null */
+const VENUES = [
+  { id:'credo', name:'Credo Kitchen', serves:'Burgers, veggie burgers, corn dogs, chicken',
+    hours:{ M:['12:00','24:00'], T:['12:00','24:00'], W:['12:00','24:00'], R:['12:00','24:00'],
+            F:['12:00','22:00'], S:'closed', U:['16:00','24:00'] } },
+
+  { id:'glow', name:'Glow Kitchen', serves:'Acai bowls, smoothies, sandwiches, wraps',
+    hours:{ M:'closed?', T:['13:00','24:00'], W:['13:00','24:00'], R:['13:00','24:00'],
+            F:['13:00','22:00'], S:'closed', U:['16:00','24:00'] } },
+
+  { id:'knead', name:'Basic Knead', serves:'Pasta, pizza, calzones, wings',
+    hours:{ M:['11:00','22:00'], T:['11:00','22:00'], W:['11:00','22:00'], R:['11:00','22:00'],
+            F:['11:00','22:00'], S:'closed', U:['16:00','24:00'] } },
+
+  { id:'sushi', name:'Sushi with Gusto', serves:'Sushi, made to order noodle and rice bowls',
+    hours:{ M:['11:00','22:00'], T:['11:00','22:00'], W:['11:00','22:00'], R:['11:00','22:00'],
+            F:['11:00','22:00'], S:'closed', U:'closed' } },
+
+  { id:'hive', name:'The Hive', serves:'Coffee, tea and espresso drinks',
+    hours:{ M:['07:30','15:30'], T:['07:30','15:30'], W:['07:30','15:30'], R:['07:30','15:30'],
+            F:['07:30','15:30'], S:'closed', U:'closed' } },
+
+  { id:'milk', name:'Milkflower Gelateria', serves:'Gelato and desserts',
+    hours:{ M:['17:00','22:00'], T:['17:00','22:00'], W:['17:00','22:00'], R:['17:00','22:00'],
+            F:['17:00','22:00'], S:'closed', U:'closed' } },
+
+  { id:'acre', name:'Acre Provisions', serves:'Market: groceries, snacks, bottled drinks', market:true,
+    hours:{ M:['08:00','22:00'], T:['08:00','22:00'], W:['08:00','22:00'], R:['08:00','22:00'],
+            F:['08:00','22:00'], S:['13:00','22:00'], U:['15:00','24:00'] } },
+
+  { id:'trucks', name:'Brickwalk Bites food trucks', serves:'Rotating local food trucks on the Brickwalk',
+    hours:{ M:'closed', T:['18:00','22:00'], W:'closed', R:['18:00','22:00'],
+            F:'closed', S:'closed', U:'closed' } }
+];
+
+const DAYK = DAYKEY;
+const DAYFULL = {U:'Sunday',M:'Monday',T:'Tuesday',W:'Wednesday',R:'Thursday',F:'Friday',S:'Saturday'};
+const FAV_KEY = 'schedhub.fav.' + SCHEDULE.id;
+const HRS_KEY = 'schedhub.hours.' + SCHEDULE.id;
+
+/* Unique even for records created within the same millisecond. */
+function newId(prefix){
+  return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+function loadJSON(k, dflt){
+  try { return JSON.parse(localStorage.getItem(k)) || dflt; } catch (e){ return dflt; }
+}
+function saveJSON(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e){} }
+
+let FAVS = loadJSON(FAV_KEY, []);
+let HRSOVERRIDE = loadJSON(HRS_KEY, {});
+
+function hoursFor(v, day){
+  const o = HRSOVERRIDE[v.id];
+  const raw = (o && o[day] !== undefined) ? o[day] : v.hours[day];
+  return raw === 'closed?' ? 'closed' : raw;
+}
+function hoursInferred(v, day){
+  const o = HRSOVERRIDE[v.id];
+  return !(o && o[day] !== undefined) && v.hours[day] === 'closed?';
+}
+function isFav(id){ return FAVS.indexOf(id) >= 0; }
+function toggleFav(id){
+  const i = FAVS.indexOf(id);
+  if (i >= 0) FAVS.splice(i,1); else FAVS.push(id);
+  saveJSON(FAV_KEY, FAVS);
+}
+
+/* Status right now: open with a closing time, closed with the next opening,
+   or unknown when nothing is published for today. */
+function venueStatus(v, N){
+  const today = hoursFor(v, N.letter);
+  if (today === null) return { state:'unknown' };
+  if (today === 'closed') return { state:'closed', next: nextOpen(v, N) };
+  const o = mins(today[0]), c = mins(today[1]);
+  if (N.minutes >= o && N.minutes < c){
+    return { state:'open', closes:today[1], leftMin: c - N.minutes };
+  }
+  if (N.minutes < o) return { state:'closed', opensToday:today[0], inMin: o - N.minutes };
+  return { state:'closed', next: nextOpen(v, N) };
+}
+function nextOpen(v, N){
+  for (let i=1; i<=7; i++){
+    const d = DAYK[(N.dow + i) % 7];
+    const h = hoursFor(v, d);
+    if (h && h !== 'closed') return { day:d, at:h[0], inDays:i };
+  }
+  return null;
+}
+function hoursLine(v, day){
+  const h = hoursFor(v, day);
+  if (h === null) return 'not published';
+  if (h === 'closed') return hoursInferred(v, day) ? 'closed (not listed)' : 'closed';
+  return fmt(h[0]) + ' to ' + fmt(h[1] === '24:00' ? '23:59' : h[1]).replace('11:59 pm','midnight');
+}
+
+
+/* Original flat illustrations, one per venue. Drawn here rather than pulled
+   from the web: no outside request is allowed, and these are ours to ship.
+   A real photo the user attaches replaces the drawing. */
+function venueArt(id){
+  const A = {
+    credo:  ['#f6e0c8','#c9702a', '<ellipse cx="60" cy="30" rx="30" ry="13" fill="#d98a3d"/><rect x="30" y="38" width="60" height="7" rx="3.5" fill="#7fb069"/><rect x="30" y="45" width="60" height="9" rx="3" fill="#8a4b28"/><rect x="30" y="54" width="60" height="7" rx="3.5" fill="#f0c96a"/><path d="M30 62h60a0 0 0 010 0 14 14 0 01-14 8H44a14 14 0 01-14-8z" fill="#d98a3d"/><circle cx="48" cy="28" r="1.6" fill="#fff8ec"/><circle cx="60" cy="24" r="1.6" fill="#fff8ec"/><circle cx="72" cy="28" r="1.6" fill="#fff8ec"/>'],
+    glow:   ['#e6f4e4','#2f8f4e', '<path d="M36 34h48l-5 30a12 12 0 01-12 10H53a12 12 0 01-12-10z" fill="#8fd6a4"/><path d="M36 34h48l-1.5 9H37.5z" fill="#5fbe7d"/><circle cx="52" cy="52" r="5" fill="#e8557f"/><circle cx="66" cy="58" r="4" fill="#7b4bc9"/><circle cx="74" cy="48" r="3.5" fill="#f0a93b"/><path d="M60 34c0-9 7-15 15-16-1 9-6 15-15 16z" fill="#3f9c5c"/>'],
+    knead:  ['#fbe7d2','#c2453a', '<path d="M60 20l34 56a4 4 0 01-3.5 6h-61a4 4 0 01-3.5-6z" fill="#f2c14e"/><path d="M60 30l27 45H33z" fill="#f6d77a"/><circle cx="60" cy="52" r="4.5" fill="#c2453a"/><circle cx="48" cy="65" r="4" fill="#c2453a"/><circle cx="71" cy="64" r="4" fill="#c2453a"/><circle cx="60" cy="70" r="3.4" fill="#c2453a"/>'],
+    sushi:  ['#e4eef7','#2f5f8f', '<rect x="22" y="42" width="34" height="30" rx="6" fill="#fdfbf6"/><rect x="22" y="42" width="34" height="30" rx="6" fill="none" stroke="#2b3a4a" stroke-width="3.5"/><circle cx="39" cy="57" r="7" fill="#e8734a"/><rect x="64" y="42" width="34" height="30" rx="6" fill="#fdfbf6"/><rect x="64" y="42" width="34" height="30" rx="6" fill="none" stroke="#2b3a4a" stroke-width="3.5"/><circle cx="81" cy="57" r="7" fill="#7fb069"/><rect x="30" y="26" width="60" height="7" rx="3.5" fill="#2b3a4a"/>'],
+    hive:   ['#efe6dc','#6b4a2f', '<path d="M30 36h44v24a16 16 0 01-16 16H46a16 16 0 01-16-16z" fill="#8a5a37"/><path d="M74 42h8a10 10 0 010 20h-8z" fill="none" stroke="#8a5a37" stroke-width="5"/><rect x="26" y="76" width="52" height="6" rx="3" fill="#6b4a2f"/><path d="M44 22c-3 5 3 7 0 12M56 20c-3 5 3 7 0 12" stroke="#c9b6a3" stroke-width="3.5" fill="none" stroke-linecap="round"/>'],
+    milk:   ['#fbe4ef','#b23a70', '<path d="M44 46h32l-14 34a2 2 0 01-4 0z" fill="#e8c39a"/><circle cx="52" cy="40" r="11" fill="#f5a7c6"/><circle cx="68" cy="40" r="11" fill="#fdf0d0"/><circle cx="60" cy="32" r="11" fill="#a8d8c8"/><rect x="59" y="14" width="3" height="12" rx="1.5" fill="#b23a70"/>'],
+    acre:   ['#e8efe2','#4b6b3a', '<path d="M28 42h64l-6 34a6 6 0 01-6 5H40a6 6 0 01-6-5z" fill="#9ab88a"/><path d="M28 42h64l-1 6H29z" fill="#7fa06b"/><path d="M45 42V32a15 15 0 0130 0v10" fill="none" stroke="#4b6b3a" stroke-width="4.5"/><circle cx="50" cy="62" r="6" fill="#d95f5f"/><circle cx="66" cy="66" r="5.5" fill="#f0a93b"/><path d="M74 54c4 0 7 3 7 7s-3 7-7 7z" fill="#6b9b4a"/>'],
+    trucks: ['#e7eaf5','#3b4a8f', '<rect x="18" y="40" width="46" height="30" rx="4" fill="#f2f5fb"/><rect x="18" y="40" width="46" height="30" rx="4" fill="none" stroke="#3b4a8f" stroke-width="3.5"/><path d="M64 48h16l12 14v8H64z" fill="#8fa2e0"/><rect x="24" y="46" width="34" height="12" rx="2" fill="#8fa2e0"/><circle cx="36" cy="74" r="7" fill="#2b3a4a"/><circle cx="80" cy="74" r="7" fill="#2b3a4a"/><path d="M16 34h50l-4 6H20z" fill="#e8734a"/>']
+  };
+  const a = A[id] || A.acre;
+  return '<svg class="vart" viewBox="0 0 120 92" role="img" aria-hidden="true">' +
+         '<rect width="120" height="92" fill="' + a[0] + '"/>' + a[2] + '</svg>';
+}
+
+/* Photos the user takes, kept beside the lectures in IndexedDB. */
+async function photoTx(mode, fn){
+  const d = await idb();
+  if (!d.objectStoreNames.contains('photos')) return null;
+  return new Promise((res, rej) => {
+    const t = d.transaction('photos', mode);
+    const out = fn(t.objectStore('photos'));
+    t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
+    t.onerror = () => rej(t.error);
+  });
+}
+const PHOTOS = {};
+async function loadPhotos(){
+  try {
+    const all = await photoTx('readonly', s => s.getAll());
+    (all || []).forEach(r => { PHOTOS[r.id] = URL.createObjectURL(r.blob); });
+  } catch (e){}
+}
+/* Shrink before storing so a phone photo does not eat the quota. */
+function shrink(file, max){
+  return new Promise(res => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const sc = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      cv.toBlob(b => res(b || file), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+async function setVenuePhoto(id, file){
+  const blob = await shrink(file, 900);
+  try { await photoTx('readwrite', s => s.put({id, blob})); } catch (e){ return; }
+  if (PHOTOS[id]) URL.revokeObjectURL(PHOTOS[id]);
+  PHOTOS[id] = URL.createObjectURL(blob);
+  renderFood(campusNow());
+}
+async function clearVenuePhoto(id){
+  try { await photoTx('readwrite', s => s.delete(id)); } catch (e){}
+  if (PHOTOS[id]) URL.revokeObjectURL(PHOTOS[id]);
+  delete PHOTOS[id];
+  renderFood(campusNow());
+}
+
+function renderFood(N){
+  const rows = VENUES.map(v => ({ v, st: venueStatus(v, N) }));
+  const rank = r => (isFav(r.v.id) ? 0 : 10) + (r.st.state === 'open' ? 0 : r.st.state === 'unknown' ? 2 : 1);
+  rows.sort((a,b) => rank(a) - rank(b) || a.v.name.localeCompare(b.v.name));
+
+  const openNow = rows.filter(r => r.st.state === 'open').length;
+  $('#foodCount').textContent = openNow + ' open now';
+
+  $('#foodList').innerHTML = rows.map(r => {
+    const v = r.v, st = r.st;
+    let pill, sub;
+    if (st.state === 'open'){
+      pill = '<span class="pill open">OPEN</span>';
+      const closeTxt = hoursFor(v, N.letter)[1];
+      sub = 'Closes ' + (closeTxt === '24:00' ? 'midnight' : fmt(closeTxt)) +
+            (st.leftMin <= 60 ? ' &middot; ' + st.leftMin + ' min left' : '');
+    } else if (st.state === 'closed'){
+      pill = '<span class="pill shut">CLOSED</span>';
+      if (st.opensToday) sub = 'Opens ' + fmt(st.opensToday) + ' today';
+      else if (st.next) sub = 'Opens ' + (st.next.inDays === 1 ? 'tomorrow' : DAYFULL[st.next.day]) +
+                              ' at ' + fmt(st.next.at);
+      else sub = 'No upcoming hours published';
+    } else {
+      pill = '<span class="pill unk">HOURS UNKNOWN</span>';
+      sub = 'Nothing published for ' + DAYFULL[N.letter] + '. Tap Edit hours to set it.';
+    }
+    const pic = PHOTOS[v.id]
+      ? '<img class="vart" src="' + PHOTOS[v.id] + '" alt="' + esc(v.name) + '">'
+      : venueArt(v.id);
+    return '<div class="venue">' +
+      '<div class="vpic">' + pic +
+        '<label class="vcam">' + (PHOTOS[v.id] ? 'Replace' : 'Add photo') +
+          '<input type="file" accept="image/*" data-photo="' + v.id + '"></label>' +
+        (PHOTOS[v.id] ? '<button class="vcam vdrop" data-unphoto="' + v.id + '">Remove</button>' : '') +
+      '</div>' +
+      '<div class="vhead">' +
+        '<button class="star' + (isFav(v.id) ? ' on' : '') + '" data-fav="' + v.id + '" ' +
+          'aria-label="Favorite ' + esc(v.name) + '">' + (isFav(v.id) ? '&#9733;' : '&#9734;') + '</button>' +
+        '<div class="vname">' + esc(v.name) + '</div>' + pill +
+      '</div>' +
+      '<div class="vserves">' + esc(v.serves) + '</div>' +
+      '<div class="vsub">' + sub + '</div>' +
+      '<div class="minibtns">' +
+        '<button class="minibtn" data-vhours="' + v.id + '">Full hours</button>' +
+        '<button class="minibtn" data-vedit="' + v.id + '">Edit hours</button>' +
+        '<button class="minibtn" data-walk="Cross Village">Walk</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function showVenueHours(v){
+  const N = campusNow();
+  const body = DAYK.map(d =>
+    '<div class="kv"><span class="k">' + DAYFULL[d] + (d === N.letter ? ' (today)' : '') +
+    '</span><span class="v">' + hoursLine(v, d) + '</span></div>').join('');
+  $('#foodSheetTitle').textContent = v.name;
+  $('#foodSheetDesc').textContent = v.serves;
+  $('#foodSheetBody').innerHTML = body +
+    '<div class="pinnote" style="text-align:left">Source: ' + esc(DINING_SOURCE.label) +
+    ', ' + esc(DINING_SOURCE.covers) + '. ' + esc(DINING_SOURCE.warn) + '</div>';
+  $('#foodSheet').classList.add('on');
+}
+
+function showVenueEdit(v){
+  const cur = d => {
+    const h = hoursFor(v, d);
+    return (h && h !== 'closed') ? h : ['',''];
+  };
+  $('#foodSheetTitle').textContent = 'Edit ' + v.name;
+  $('#foodSheetDesc').textContent = 'Leave a day blank to mark it closed. Saved on this phone only.';
+  $('#foodSheetBody').innerHTML = DAYK.map(d => {
+    const c = cur(d);
+    return '<div class="edrow"><span class="edday">' + DAYFULL[d].slice(0,3) + '</span>' +
+      '<input type="time" id="eo_' + d + '" value="' + c[0] + '">' +
+      '<span class="edto">to</span>' +
+      '<input type="time" id="ec_' + d + '" value="' + (c[1] === '24:00' ? '23:59' : c[1]) + '">' +
+    '</div>';
+  }).join('') +
+  '<div class="minibtns"><button class="minibtn primary" data-vsave="' + v.id + '">Save hours</button>' +
+  '<button class="minibtn" data-vreset="' + v.id + '">Reset to published</button></div>';
+  $('#foodSheet').classList.add('on');
+}
+
+function foodBoot(){
+  $('#foodSrc').textContent = DINING_SOURCE.label + ', ' + DINING_SOURCE.covers + '. ' + DINING_SOURCE.warn;
+  $('#foodSheetClose').onclick = () => $('#foodSheet').classList.remove('on');
+  $('#foodSheet').addEventListener('click', e => {
+    if (e.target === $('#foodSheet')) $('#foodSheet').classList.remove('on');
+  });
+
+  $('#foodList').addEventListener('change', e => {
+    const inp = e.target.closest('input[data-photo]');
+    if (!inp || !inp.files || !inp.files[0]) return;
+    setVenuePhoto(inp.dataset.photo, inp.files[0]);
+  });
+  $('#foodList').addEventListener('click', e => {
+    const rm = e.target.closest('[data-unphoto]');
+    if (rm){ clearVenuePhoto(rm.dataset.unphoto); return; }
+    const t = e.target.closest('[data-fav],[data-vhours],[data-vedit]');
+    if (!t) return;
+    if (t.dataset.fav){ toggleFav(t.dataset.fav); renderFood(campusNow()); return; }
+    const v = VENUES.find(x => x.id === (t.dataset.vhours || t.dataset.vedit));
+    if (!v) return;
+    if (t.dataset.vhours) showVenueHours(v); else showVenueEdit(v);
+  });
+
+  $('#foodSheetBody').addEventListener('click', e => {
+    const t = e.target.closest('[data-vsave],[data-vreset]');
+    if (!t) return;
+    const id = t.dataset.vsave || t.dataset.vreset;
+    if (t.dataset.vreset){
+      delete HRSOVERRIDE[id]; saveJSON(HRS_KEY, HRSOVERRIDE);
+    } else {
+      const o = {};
+      DAYK.forEach(d => {
+        const a = $('#eo_' + d).value, z = $('#ec_' + d).value;
+        o[d] = (a && z) ? [a, z] : 'closed';
+      });
+      HRSOVERRIDE[id] = o; saveJSON(HRS_KEY, HRSOVERRIDE);
+    }
+    $('#foodSheet').classList.remove('on');
+    renderFood(campusNow());
+  });
+
+  renderFood(campusNow());
+  // photos load from IndexedDB after first paint, then swap in over the drawings
+  loadPhotos().then(() => renderFood(campusNow()));
+  photoWalkBoot();
+}
+/* ---- photo walk: capture all eight in one pass ---- */
+const WALKP = { i: 0 };
+function startPhotoWalk(){
+  WALKP.i = 0;
+  $('#pwSheet').classList.add('on');
+  drawPhotoWalk();
+}
+function drawPhotoWalk(){
+  if (WALKP.i >= VENUES.length){
+    $('#pwTitle').textContent = 'All done';
+    $('#pwDesc').textContent = 'Every spot has a picture. Share photos sends them to the other schedules.';
+    $('#pwBody').innerHTML = '<div class="pwgrid">' + VENUES.map(v =>
+      '<div class="pwcell">' + (PHOTOS[v.id]
+        ? '<img src="' + PHOTOS[v.id] + '" alt="' + esc(v.name) + '">'
+        : venueArt(v.id)) + '<span>' + esc(v.name) + '</span></div>').join('') + '</div>';
+    $('#pwNext').style.display = 'none';
+    $('#pwShoot').style.display = 'none';
+    return;
+  }
+  const v = VENUES[WALKP.i];
+  $('#pwTitle').textContent = v.name;
+  $('#pwDesc').textContent = 'Spot ' + (WALKP.i + 1) + ' of ' + VENUES.length + '. Point at the storefront and shoot.';
+  $('#pwBody').innerHTML = '<div class="pwbig">' +
+    (PHOTOS[v.id] ? '<img src="' + PHOTOS[v.id] + '" alt="">' : venueArt(v.id)) + '</div>';
+  $('#pwShoot').style.display = '';
+  $('#pwNext').style.display = '';
+  $('#pwNext').textContent = PHOTOS[v.id] ? 'Next' : 'Skip';
+  $('#pwShoot').firstChild.textContent = PHOTOS[v.id] ? 'Retake' : 'Take photo';
+}
+
+/* ---- move photos between the three schedules ---- */
+function blobToDataURL(b){
+  return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
+}
+function dataURLToBlob(u){
+  const [head, b64] = u.split(',');
+  const mime = (head.match(/:(.*?);/) || [])[1] || 'image/jpeg';
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type:mime});
+}
+async function exportPhotos(){
+  let rows = [];
+  try { rows = await photoTx('readonly', s => s.getAll()) || []; } catch (e){}
+  if (!rows.length){ alert('No photos to share yet. Take some first.'); return; }
+  const out = { kind:'cross-village-photos', v:1, photos:{} };
+  for (const r of rows) out.photos[r.id] = await blobToDataURL(r.blob);
+  await saveFile('cross-village-photos.json', JSON.stringify(out));
+}
+async function importPhotos(file){
+  let data;
+  try { data = JSON.parse(await file.text()); }
+  catch (e){ alert('That file could not be read.'); return; }
+  if (!data || data.kind !== 'cross-village-photos' || !data.photos){
+    alert('That is not a photo pack from this app.'); return;
+  }
+  let n = 0;
+  for (const id of Object.keys(data.photos)){
+    try {
+      const blob = dataURLToBlob(data.photos[id]);
+      await photoTx('readwrite', s => s.put({id, blob}));
+      if (PHOTOS[id]) URL.revokeObjectURL(PHOTOS[id]);
+      PHOTOS[id] = URL.createObjectURL(blob);
+      n++;
+    } catch (e){}
+  }
+  renderFood(campusNow());
+  alert(n + ' photo' + (n===1?'':'s') + ' brought in.');
+}
+
+function photoWalkBoot(){
+  $('#pwClose').onclick = () => { $('#pwSheet').classList.remove('on'); renderFood(campusNow()); };
+  $('#pwSheet').addEventListener('click', e => {
+    if (e.target === $('#pwSheet')){ $('#pwSheet').classList.remove('on'); renderFood(campusNow()); }
+  });
+  $('#pwNext').onclick = () => { WALKP.i++; drawPhotoWalk(); };
+  $('#pwShoot').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    await setVenuePhoto(VENUES[WALKP.i].id, f);
+    e.target.value = '';
+    WALKP.i++;
+    drawPhotoWalk();
+  });
+  $('#startWalk').onclick = startPhotoWalk;
+  $('#sharePhotos').onclick = exportPhotos;
+  $('#importPhotos').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) importPhotos(f);
+    e.target.value = '';
+  });
+}
+
+
+
+/* =========================================================================
+   ASSIGNMENTS AND GRADES
+   Both live in localStorage per schedule. Nothing leaves the device.
+   ========================================================================= */
+
+const WORK_KEY  = 'schedhub.work.'  + SCHEDULE.id;
+const GRADE_KEY = 'schedhub.grades.' + SCHEDULE.id;
+
+let WORK   = loadJSON(WORK_KEY, []);
+let GRADES = loadJSON(GRADE_KEY, {});
+
+function todayISO(N){ return N.iso; }
+function daysUntil(iso, N){
+  const a = new Date(N.y, N.mo-1, N.d);
+  const b = new Date(iso + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+function dueLabel(iso, N){
+  const d = daysUntil(iso, N);
+  if (d < 0)  return { txt: Math.abs(d) + (Math.abs(d)===1?' day late':' days late'), tone:'late' };
+  if (d === 0) return { txt:'Due today', tone:'soon' };
+  if (d === 1) return { txt:'Due tomorrow', tone:'soon' };
+  if (d <= 6)  return { txt:'Due ' + new Date(iso+'T00:00:00').toLocaleDateString('en-US',{weekday:'long'}), tone:d<=2?'soon':'ok' };
+  return { txt:'Due ' + new Date(iso+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}), tone:'ok' };
+}
+function openWork(){ return WORK.filter(w => !w.done).sort((a,b) => a.due.localeCompare(b.due)); }
+
+/* card on the Now tab */
+function renderDue(N){
+  const host = $('#dueCard');
+  const list = openWork();
+  if (!list.length){
+    host.innerHTML = '<div class="duewrap"><div class="duehead"><span>Coming up</span>' +
+      '<button class="duelink" id="openWorkA">Add</button></div>' +
+      '<div class="dueempty">Nothing due. Add an assignment when one lands.</div></div>';
+    return;
+  }
+  const show = list.slice(0, 3);
+  host.innerHTML = '<div class="duewrap"><div class="duehead"><span>Coming up</span>' +
+    '<button class="duelink" id="openWorkA">' + list.length + ' open</button></div>' +
+    show.map(w => {
+      const c = courseByKey(w.key), dl = dueLabel(w.due, N);
+      return '<button class="duerow" data-toggle="' + w.id + '">' +
+        '<span class="dbox"></span>' +
+        '<span class="dmain"><span class="dt">' + esc(w.title) + '</span>' +
+          '<span class="dc">' + esc(c ? c.short : 'General') + '</span></span>' +
+        '<span class="dwhen ' + dl.tone + '">' + dl.txt + '</span></button>';
+    }).join('') + '</div>';
+}
+
+function renderWorkSheet(N){
+  const done = WORK.filter(w => w.done).sort((a,b) => b.due.localeCompare(a.due)).slice(0,8);
+  const list = openWork();
+  $('#workBody').innerHTML =
+    '<div class="fcform">' +
+      '<input id="wTitle" placeholder="What is due" autocomplete="off">' +
+      '<div class="edrow" style="gap:8px">' +
+        '<select id="wCourse" class="wsel">' + COURSES.map(c =>
+          '<option value="' + esc(c.key) + '">' + esc(c.short) + '</option>').join('') +
+          '<option value="">General</option></select>' +
+        '<input type="date" id="wDue" value="' + N.iso + '">' +
+      '</div>' +
+      '<button class="minibtn primary" id="wAdd">Add assignment</button>' +
+    '</div>' +
+    '<div class="subhead">Open</div>' +
+    (list.length ? list.map(w => {
+      const c = courseByKey(w.key), dl = dueLabel(w.due, N);
+      return '<div class="wrow"><button class="dbox" data-toggle="' + w.id + '"></button>' +
+        '<div class="dmain"><div class="dt">' + esc(w.title) + '</div>' +
+        '<div class="dc">' + esc(c ? c.short : 'General') + ' &middot; ' +
+          new Date(w.due+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) + '</div></div>' +
+        '<span class="dwhen ' + dl.tone + '">' + dl.txt + '</span>' +
+        '<button class="wdel" data-delwork="' + w.id + '">&times;</button></div>';
+    }).join('') : '<div class="dueempty">Nothing open.</div>') +
+    (done.length ? '<div class="subhead">Finished</div>' + done.map(w =>
+      '<div class="wrow done"><button class="dbox on" data-toggle="' + w.id + '">&#10003;</button>' +
+      '<div class="dmain"><div class="dt">' + esc(w.title) + '</div></div>' +
+      '<button class="wdel" data-delwork="' + w.id + '">&times;</button></div>').join('') : '');
+}
+
+/* ---- grades ---- */
+function gradeFor(key){
+  const rows = (GRADES[key] || []).filter(r => r.outOf > 0);
+  if (!rows.length) return null;
+  const anyW = rows.some(r => r.weight > 0);
+  let num = 0, den = 0;
+  rows.forEach(r => {
+    const w = anyW ? (r.weight || 0) : 1;
+    if (!w) return;
+    num += w * (r.score / r.outOf);
+    den += w;
+  });
+  if (!den) return null;
+  return { pct: (num / den) * 100, count: rows.length, weighted: anyW, weightUsed: anyW ? den : null };
+}
+function letter(p){
+  return p >= 90 ? 'A' : p >= 80 ? 'B' : p >= 70 ? 'C' : p >= 60 ? 'D' : 'F';
+}
+function renderGradeSheet(key){
+  const c = courseByKey(key);
+  const rows = GRADES[key] || [];
+  const g = gradeFor(key);
+  $('#gradeTitle').textContent = c ? c.short : 'Grades';
+  $('#gradeDesc').textContent = 'Weight is optional. Leave every weight blank to treat entries equally.';
+  $('#gradeBody').innerHTML =
+    (g ? '<div class="gradebig"><span class="gp">' + g.pct.toFixed(1) + '%</span>' +
+         '<span class="gl">' + letter(g.pct) + '</span></div>' +
+         '<div class="pinnote" style="text-align:center;margin-top:0">' +
+           g.count + ' entr' + (g.count===1?'y':'ies') +
+           (g.weighted ? ', weighted, covering ' + g.weightUsed + '% of the grade' : ', unweighted') +
+         '</div>'
+       : '<div class="dueempty">No scores yet.</div>') +
+    rows.map((r,i) =>
+      '<div class="wrow"><div class="dmain"><div class="dt">' + esc(r.name) + '</div>' +
+      '<div class="dc">' + r.score + ' of ' + r.outOf +
+        (r.weight ? ' &middot; worth ' + r.weight + '%' : '') + '</div></div>' +
+      '<span class="dwhen ok">' + ((r.score/r.outOf)*100).toFixed(0) + '%</span>' +
+      '<button class="wdel" data-delgrade="' + key + '|' + i + '">&times;</button></div>').join('') +
+    '<div class="fcform"><input id="gName" placeholder="Exam 1, homework 3, quiz">' +
+      '<div class="edrow" style="gap:8px">' +
+        '<input id="gScore" type="number" inputmode="decimal" placeholder="Score">' +
+        '<span class="edto">of</span>' +
+        '<input id="gOut" type="number" inputmode="decimal" placeholder="Out of">' +
+        '<input id="gW" type="number" inputmode="decimal" placeholder="Weight %">' +
+      '</div>' +
+      '<button class="minibtn primary" data-addgrade="' + key + '">Add score</button></div>' +
+    (g ? '<div class="subhead">What do I need on the final</div>' +
+      '<div class="edrow" style="gap:8px">' +
+        '<input id="gTarget" type="number" inputmode="decimal" placeholder="Target %" value="90">' +
+        '<input id="gFinalW" type="number" inputmode="decimal" placeholder="Final worth %" value="20">' +
+        '<button class="minibtn" data-need="' + key + '">Work it out</button>' +
+      '</div><div class="pinnote" id="gNeed" style="text-align:left"></div>' : '');
+  $('#gradeSheet').classList.add('on');
+}
+
+function workBoot(){
+  $('#workClose').onclick = () => $('#workSheet').classList.remove('on');
+  $('#workSheet').addEventListener('click', e => {
+    if (e.target === $('#workSheet')) $('#workSheet').classList.remove('on');
+  });
+  $('#gradeClose').onclick = () => $('#gradeSheet').classList.remove('on');
+  $('#gradeSheet').addEventListener('click', e => {
+    if (e.target === $('#gradeSheet')) $('#gradeSheet').classList.remove('on');
+  });
+
+  document.addEventListener('click', e => {
+    const N = campusNow();
+
+    const openA = e.target.closest('#openWorkA');
+    if (openA){ renderWorkSheet(N); $('#workSheet').classList.add('on'); return; }
+
+    const tg = e.target.closest('[data-toggle]');
+    if (tg){
+      const w = WORK.find(x => x.id === tg.dataset.toggle);
+      if (w){ w.done = !w.done; saveJSON(WORK_KEY, WORK); renderDue(N);
+              if ($('#workSheet').classList.contains('on')) renderWorkSheet(N); }
+      return;
+    }
+    const dw = e.target.closest('[data-delwork]');
+    if (dw){
+      WORK = WORK.filter(x => x.id !== dw.dataset.delwork);
+      saveJSON(WORK_KEY, WORK); renderDue(N); renderWorkSheet(N); return;
+    }
+    if (e.target.closest('#wAdd')){
+      const t = $('#wTitle').value.trim();
+      if (!t) return;
+      WORK.push({ id:newId('w'), key:$('#wCourse').value, title:t, due:$('#wDue').value || N.iso, done:false });
+      saveJSON(WORK_KEY, WORK); renderDue(N); renderWorkSheet(N);
+      return;
+    }
+    const og = e.target.closest('[data-grades]');
+    if (og){ renderGradeSheet(og.dataset.grades); return; }
+
+    const ag = e.target.closest('[data-addgrade]');
+    if (ag){
+      const key = ag.dataset.addgrade;
+      const name = $('#gName').value.trim(), sc = parseFloat($('#gScore').value), out = parseFloat($('#gOut').value);
+      const w = parseFloat($('#gW').value);
+      if (!name || !(out > 0) || isNaN(sc)) return;
+      GRADES[key] = (GRADES[key] || []).concat([{name, score:sc, outOf:out, weight: isNaN(w) ? 0 : w}]);
+      saveJSON(GRADE_KEY, GRADES); renderGradeSheet(key); renderCourses();
+      return;
+    }
+    const dg = e.target.closest('[data-delgrade]');
+    if (dg){
+      const [key, i] = dg.dataset.delgrade.split('|');
+      (GRADES[key] || []).splice(+i, 1);
+      saveJSON(GRADE_KEY, GRADES); renderGradeSheet(key); renderCourses();
+      return;
+    }
+    const nd = e.target.closest('[data-need]');
+    if (nd){
+      const key = nd.dataset.need, g = gradeFor(key);
+      const target = parseFloat($('#gTarget').value), fw = parseFloat($('#gFinalW').value);
+      if (!g || isNaN(target) || !(fw > 0) || fw >= 100){
+        $('#gNeed').textContent = 'Enter a target and what the final is worth.'; return;
+      }
+      const need = (target - g.pct * (1 - fw/100)) / (fw/100);
+      $('#gNeed').textContent = need <= 0
+        ? 'You already have ' + target + '% locked up even with a zero on the final.'
+        : need > 100
+          ? 'A ' + target + '% is out of reach: you would need ' + need.toFixed(1) + '% on the final.'
+          : 'You need ' + need.toFixed(1) + '% on the final to finish at ' + target + '%.';
+      return;
+    }
+  });
+
+  renderDue(campusNow());
+}
+
+
+/* =========================================================================
+   CALENDAR EXPORT AND SHARED FREE TIME
+   ========================================================================= */
+
+/* Weekly repeating events for classes plus one-off finals, with a 15 minute
+   alarm on each. Opening the file once puts the whole semester into the
+   phone's own calendar, which is where real lock screen alerts come from. */
+const ICSDAY = {M:'MO', T:'TU', W:'WE', R:'TH', F:'FR'};
+
+function icsStamp(dateISO, hhmm){
+  return dateISO.replace(/-/g,'') + 'T' + hhmm.replace(':','') + '00';
+}
+function firstOnOrAfter(startISO, dayLetter){
+  const want = DAYKEY.indexOf(dayLetter);
+  const d = new Date(startISO + 'T12:00:00');
+  for (let i=0; i<7; i++){
+    if (d.getDay() === want) break;
+    d.setDate(d.getDate() + 1);
+  }
+  return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+}
+function buildICS(){
+  const L = [];
+  const push = a => L.push(a);
+  push('BEGIN:VCALENDAR'); push('VERSION:2.0');
+  push('PRODID:-//Schedule Hub//EN'); push('CALSCALE:GREGORIAN');
+  push('X-WR-CALNAME:' + SCHEDULE.label);
+  push('X-WR-TIMEZONE:America/Chicago');
+
+  const until = SEMESTER.lastClass.replace(/-/g,'') + 'T235959';
+  let n = 0;
+
+  COURSES.forEach(c => {
+    c.days.split('').forEach(d => {
+      if (!ICSDAY[d]) return;
+      const first = firstOnOrAfter(SEMESTER.start, d);
+      push('BEGIN:VEVENT');
+      push('UID:' + SCHEDULE.id + '-' + c.key + '-' + d + '@schedulehub');
+      push('DTSTAMP:' + icsStamp(SEMESTER.start, '00:00') + 'Z');
+      push('DTSTART;TZID=America/Chicago:' + icsStamp(first, c.start));
+      push('DTEND;TZID=America/Chicago:' + icsStamp(first, c.end));
+      push('RRULE:FREQ=WEEKLY;BYDAY=' + ICSDAY[d] + ';UNTIL=' + until);
+      push('SUMMARY:' + c.title);
+      push('LOCATION:' + c.bldg + ' ' + c.room + ', University of Oklahoma');
+      push('DESCRIPTION:Floor ' + floorOf(c.room) + ', room ' + roomShort(c.room));
+      push('BEGIN:VALARM'); push('TRIGGER:-PT15M'); push('ACTION:DISPLAY');
+      push('DESCRIPTION:' + c.short + ' in 15 minutes'); push('END:VALARM');
+      push('END:VEVENT');
+      n++;
+    });
+
+    if (c.final && c.final.date){
+      push('BEGIN:VEVENT');
+      push('UID:' + SCHEDULE.id + '-' + c.key + '-final@schedulehub');
+      push('DTSTAMP:' + icsStamp(SEMESTER.start, '00:00') + 'Z');
+      push('DTSTART;TZID=America/Chicago:' + icsStamp(c.final.date, c.final.start));
+      push('DTEND;TZID=America/Chicago:' + icsStamp(c.final.date, c.final.end));
+      push('SUMMARY:FINAL: ' + c.title);
+      push('LOCATION:' + (c.final.bldg ? c.final.bldg + ' ' + c.final.room + ', University of Oklahoma' : 'Room TBA'));
+      push('BEGIN:VALARM'); push('TRIGGER:-PT60M'); push('ACTION:DISPLAY');
+      push('DESCRIPTION:Final for ' + c.short + ' in one hour'); push('END:VALARM');
+      push('END:VEVENT');
+      n++;
+    }
+  });
+
+  push('END:VCALENDAR');
+  // calendar files want CRLF between lines
+  return { text: L.join('\r\n') + '\r\n', count: n };
+}
+
+async function exportICS(){
+  const { text, count } = buildICS();
+  const name = ('schedule-' + SCHEDULE.id).replace(/[^a-z0-9-]+/gi,'-') + '.ics';
+  let dl = null;
+  try { dl = window.claude && claude.use ? await claude.use('downloads') : null; } catch (e){ dl = null; }
+  if (dl){
+    try { await dl.save({ filename:name, data:text }); return; }
+    catch (e){
+      if (e && e.code === 'declined') return;
+      alert('This viewer will not hand over a calendar file. Open the app on your home screen or on the web and the button works.');
+      return;
+    }
+  }
+  const url = URL.createObjectURL(new Blob([text], {type:'text/calendar'}));
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* ---- when are all three of us free ---- */
+function busyFor(list){
+  const out = {M:[],T:[],W:[],R:[],F:[]};
+  list.forEach(m => { if (out[m.d]) out[m.d].push([m.s, m.e]); });
+  Object.keys(out).forEach(d => out[d].sort((a,b) => a[0]-b[0]));
+  return out;
+}
+function myBusy(){
+  const rows = [];
+  COURSES.forEach(c => c.days.split('').forEach(d => rows.push({d, s:mins(c.start), e:mins(c.end)})));
+  return busyFor(rows);
+}
+/* Gaps common to every schedule, inside a sensible campus day. */
+function commonFree(dayLetter, from, to){
+  const sets = Object.keys(PEERS).map(id => id === SCHEDULE.id ? myBusy() : PEERS[id].busy);
+  const blocks = [];
+  sets.forEach(b => (b[dayLetter] || []).forEach(x => blocks.push(x)));
+  blocks.sort((a,b) => a[0]-b[0]);
+  const free = [];
+  let cur = from;
+  blocks.forEach(([s,e]) => {
+    if (s > cur) free.push([cur, Math.min(s, to)]);
+    cur = Math.max(cur, e);
+  });
+  if (cur < to) free.push([cur, to]);
+  return free.filter(([s,e]) => e - s >= 30 && s < to);
+}
+function hhmm(m){
+  const h = Math.floor(m/60), mm = m%60, ap = h>=12?'pm':'am';
+  return (h%12||12) + ':' + pad2(mm) + ' ' + ap;
+}
+function renderFree(N){
+  const host = $('#freeList');
+  const names = Object.keys(PEERS).map(id => id === SCHEDULE.id ? 'you' : PEERS[id].label);
+  $('#freeWho').textContent = names.join(', ');
+  host.innerHTML = ['M','T','W','R','F'].map(d => {
+    const slots = commonFree(d, 8*60, 18*60);
+    return '<div class="freeday' + (d === N.letter ? ' today' : '') + '">' +
+      '<div class="fdname">' + DAYFULL[d] + (d === N.letter ? ' (today)' : '') + '</div>' +
+      (slots.length
+        ? '<div class="fdslots">' + slots.map(([s,e]) =>
+            '<span class="fdslot">' + hhmm(s) + ' to ' + hhmm(e) +
+            '<b>' + dur((e-s)*60000) + '</b></span>').join('') + '</div>'
+        : '<div class="fdnone">Someone is always in class</div>') +
+    '</div>';
+  }).join('');
+}
+
+/* ---------------- loop ---------------- */
+let lastMinute = -1;
+function tick(){
+  const N = campusNow();
+  const finalsMode = pastClasses(N);
+
+  if (finalsMode){
+    heroFinals(N);
+    $('#daychips').style.display = 'none';
+  } else {
+    heroCard(N, findCurrentAndNext(N));
+    $('#daychips').style.display = '';
+    renderChips(N);
+  }
+
+  if (N.minutes !== lastMinute){
+    lastMinute = N.minutes;
+    renderHeader(N);
+    renderGrid(N);
+    renderFinals(N);
+    try { renderFood(N); } catch (e){}
+    try { renderDue(N); } catch (e){}
+    try { renderFree(N); } catch (e){}
+  }
+
+  if (finalsMode) finalsTimeline(N); else renderTimeline(N);
+
+  const h12 = N.h % 12 || 12;
+  const dayFull = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][N.dow];
+  $('#nowclock').textContent = dayFull + '   ' + h12 + ':' + pad2(N.mi) +
+    ' ' + (N.h >= 12 ? 'PM' : 'AM') + ' Central';
+}
+
+function boot(){
+  renderCourses();
+  renderBuildings();
+  try { studyBoot(); } catch (e){ console.error('study init', e); }
+  try { walkBoot(); } catch (e){ console.error('walk init', e); }
+  try { foodBoot(); } catch (e){ console.error('food init', e); }
+  try { workBoot(); } catch (e){ console.error('work init', e); }
+  try { $('#icsBtn').onclick = exportICS; renderFree(campusNow()); } catch (e){ console.error('cal init', e); }
+  tick();
+  setInterval(tick, 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+}
+boot();
+</script>
+</body>
+</html>
