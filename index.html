@@ -123,26 +123,6 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .chip .cnt{font-size:10px;opacity:.65;margin-left:3px;font-weight:700}
 
 /* week grid */
-.gridscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 calc(var(--pad) * -1);padding:0 var(--pad)}
-.gridscroll::-webkit-scrollbar{display:none}
-.grid{display:grid;grid-template-columns:46px repeat(5,minmax(96px,1fr));min-width:540px;position:relative}
-.gh{position:sticky;top:0;z-index:3;background:var(--bg);padding:0 0 14px;text-align:center;font-size:12px;font-weight:800;color:var(--dim2);letter-spacing:.06em}
-.gh.today{color:var(--accent)}
-.gcol{position:relative;border-left:1px solid var(--line)}
-.gtime{position:relative}
-.gtime .hr{height:var(--hh);font-size:10.5px;color:var(--dim2);text-align:right;padding-right:7px;font-weight:600;
-  transform:translateY(-5px);font-variant-numeric:tabular-nums}
-.gtime{padding-top:6px}
-.gcol{margin-top:6px}
-.gline{position:absolute;left:46px;right:0;height:1px;background:var(--line);opacity:.5}
-.blk{position:absolute;left:3px;right:3px;border-radius:9px;padding:5px 6px;overflow:hidden;display:flex;flex-direction:column;gap:1px;
-  background:var(--bc);border-left:3px solid var(--bcs);color:var(--tx)}
-.blk .bn{font-size:10.5px;font-weight:800;line-height:1.1;letter-spacing:-.015em;overflow:hidden;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
-.blk .bl{font-size:9.5px;font-weight:700;opacity:.62;line-height:1.1;margin-top:auto;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gnow{position:absolute;left:46px;right:0;height:2px;background:var(--live);z-index:2}
-.gnow:before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:99px;background:var(--live)}
 
 /* course rows */
 .row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
@@ -167,7 +147,7 @@ details.row summary::-webkit-details-marker{display:none}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.93);
   backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
   border-top:1px solid var(--line);padding-bottom:var(--safeB)}
-.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr)}
+.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
 .nb{padding:10px 0 11px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--dim2)}
 .nb svg{display:block;margin:0 auto 3px;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
@@ -390,7 +370,6 @@ audio{width:100%;margin-bottom:12px}
 <nav>
   <div class="navin">
     <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
-    <button class="nb" data-v="week"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
     <button class="nb" data-v="due"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>Due</button>
     <button class="nb" data-v="courses"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5z"/><path d="M4 19.5A1.5 1.5 0 015.5 18H19v3H5.5A1.5 1.5 0 014 19.5z"/></svg>Classes</button>
     <button class="nb" data-v="food"><svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 004 0V3M8 11v10"/><path d="M17 3c-1.5 1.5-2 3.5-2 5.5S15.5 12 17 12v9"/></svg>Food</button>
@@ -421,14 +400,6 @@ audio{width:100%;margin-bottom:12px}
   </section>
 
   <!-- WEEK -->
-  <section class="view" id="v-week">
-    <div class="sechead"><h2>Week at a glance</h2><span class="aux">Scroll sideways</span></div>
-    <div class="gridscroll"><div class="grid" id="grid"></div></div>
-    <div class="sechead"><h2>When we are all free</h2><span class="aux" id="freeWho"></span></div>
-    <div class="card tight" id="freeList"></div>
-    <div class="card tight" id="bldglist"></div>
-  </section>
-
   <!-- DUE -->
   <section class="view" id="v-due">
     <div class="sechead"><h2>What is coming</h2><span class="aux" id="dueStamp"></span></div>
@@ -456,6 +427,11 @@ audio{width:100%;margin-bottom:12px}
   <section class="view" id="v-courses">
     <div class="sechead"><h2>All courses</h2><span class="aux" id="crcount"></span></div>
     <div class="card" id="courses"></div>
+
+    <!-- Rehoused from the old Week tab when the timetable was dropped. -->
+    <div class="sechead"><h2>When we are all free</h2><span class="aux" id="freeWho"></span></div>
+    <div class="card tight" id="freeList"></div>
+    <div class="card tight" id="bldglist"></div>
   </section>
 
   <!-- FOOD -->
@@ -1020,47 +996,6 @@ function renderTimeline(N){
     html += '<div class="ev" style="--ec:var(--good)"><div class="n">Done for the day</div></div>';
   }
   el.innerHTML = html;
-}
-
-/* ---------------- week grid ---------------- */
-const GH_START = 8, GH_END = 18, HH = 54;
-function renderGrid(N){
-  const g = $('#grid');
-  const hours = GH_END - GH_START;
-  let html = '<div class="gh"></div>';
-  ['M','T','W','R','F'].forEach(L => {
-    html += '<div class="gh' + (L === N.letter ? ' today' : '') + '">' + DAYNAME[L].slice(0,3).toUpperCase() + '</div>';
-  });
-
-  html += '<div class="gtime" style="--hh:' + HH + 'px">';
-  for (let h = GH_START; h < GH_END; h++){
-    const ap = h >= 12 ? 'p' : 'a', hh = h % 12 || 12;
-    html += '<div class="hr">' + hh + ap + '</div>';
-  }
-  html += '</div>';
-
-  ['M','T','W','R','F'].forEach(L => {
-    html += '<div class="gcol" style="height:' + (hours*HH) + 'px">';
-    for (let h = 1; h < hours; h++){
-      html += '<div style="position:absolute;left:0;right:0;top:' + (h*HH) + 'px;height:1px;background:var(--line);opacity:.45"></div>';
-    }
-    meetingsFor(L).forEach(m => {
-      const c = m.c;
-      const top = ((m.s - GH_START*60)/60)*HH;
-      const hgt = ((m.e - m.s)/60)*HH - 3;
-      html += '<div class="blk" style="top:' + top + 'px;height:' + hgt + 'px;--bc:' + wash(c.color, 0.87) + ';--bcs:' + c.color + '">' +
-                '<div class="bn">' + c.short + '</div>' +
-                '<div class="bl">' + c.bldg.replace(' Hall','') + ' ' + roomShort(c.room) + '</div>' +
-              '</div>';
-    });
-    if (L === N.letter && N.minutes >= GH_START*60 && N.minutes <= GH_END*60){
-      const top = ((N.minutes - GH_START*60)/60)*HH;
-      html += '<div style="position:absolute;left:0;right:0;top:' + top + 'px;height:2px;background:var(--live);z-index:2"></div>';
-    }
-    html += '</div>';
-  });
-
-  g.innerHTML = html;
 }
 
 function renderBuildings(){
@@ -2882,7 +2817,6 @@ function tick(){
   if (N.minutes !== lastMinute){
     lastMinute = N.minutes;
     renderHeader(N);
-    renderGrid(N);
     renderFinals(N);
     try { renderFood(N); } catch (e){}
     try { renderDue(N); } catch (e){}

@@ -14,10 +14,9 @@ no framework and no server. Open the file and it runs.
 - **Now** — the class happening right now with a live countdown, the floor and
   room read off the room number, and walking directions. Between classes it
   shows what is next and how long the gap is. Below that, assignments due soon.
-- **Week** — a scrollable timetable with a live time marker, plus the free
-  windows all three schedules share.
 - **Classes** — every course, its final, its current grade, and a grade
-  calculator that works out what a final needs to be.
+  calculator that works out what a final needs to be. The free windows all
+  three schedules share, and your buildings, sit at the bottom.
 - **Food** — the eight Cross Village spots with open or closed worked out
   against the clock, closing times, favourites and editable hours.
 - **Record** — record a lecture, type timestamped notes, turn them into
