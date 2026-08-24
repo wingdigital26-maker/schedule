@@ -128,6 +128,7 @@ data/b.js         Schedule B course data
 data/c.js         Schedule C course data
 build.py          regenerates b/ and c/ and the shared free-time map
 icon.png          512px home screen icon, copied into b/ and c/
+make_icon.py      redraws icon.png; run build.py after to copy it across
 ```
 
 ## Browser support
