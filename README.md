@@ -99,26 +99,49 @@ overwrites them.
 
 ## The Due tab and Canvas
 
-The Due tab reads `data/canvas.js`, which is generated from the Canvas API by
-`canvas_export.py`. That script lives outside this repo, next to a `.env`
-holding the Canvas token, because **a token must never be committed here**.
-This repo is public and a Canvas token can act as its owner.
+Anyone can fill in their own Due tab from their phone. Open Due, tap **Connect
+Canvas**, and follow the four steps it shows:
 
-To refresh after new assignments are posted:
+1. Canvas, then **Calendar**.
+2. **Calendar Feed** on the right.
+3. Copy that address, change `webcal://` to `https://`, open it. The phone
+   saves a `.ics` file.
+4. Back in the app, load that file.
+
+It is parsed in the browser and kept in that browser under a key naming the
+schedule, `schedhub.canvas.b` and so on. No token, no login, nothing uploaded.
+One person's coursework cannot surface in another person's app, and the three
+apps stay isolated even though they share an origin. **Disconnect** wipes it.
+
+The importer handles what Canvas actually emits: UTC stamps, zoned stamps and
+all-day dates, folded lines, and events outside the semester, which it drops.
+
+### The other route, for whoever owns the repo
+
+`canvas_export.py` pulls the same information from the Canvas API and writes
+`data/canvas.js`, which an app loads if it is sitting beside it. That script
+lives outside this repo, next to a `.env` holding a Canvas token, because **a
+token must never be committed here**. This repo is public and a Canvas token
+can act as its owner.
 
 ```bash
 python canvas_export.py     # in the folder holding .env
 python build.py             # here
 ```
 
-Each app looks for its own `data/canvas.js` sitting beside it, so `b/` and `c/`
-show an empty Due tab until their owner exports their own. Nobody sees anybody
-else's coursework by accident.
+An imported file always wins over a shipped one, so importing overrides this
+without deleting anything.
 
-The export deliberately leaves out names, logins, grades and scores. Only
-course codes, assignment titles and due dates are written, since this repo is
-public. Even so, that is a real person's coursework on the open web. Deleting
-`data/canvas.js` and rebuilding removes it completely.
+The export leaves out names, logins, grades and scores. Even so, a committed
+`data/canvas.js` puts a real person's coursework on the open web. Deleting it
+and rebuilding removes it, and the import route above then covers it with
+nothing public at all.
+
+## Sending it to somebody
+
+Send them the URL for their schedule, `/b/` or `/c/`. They add it to their home
+screen and connect their own Canvas. Nothing else is needed. Their schedule of
+classes is already built in; only the assignments come from their own import.
 
 ## Data provenance
 
@@ -139,6 +162,15 @@ shipped defaults permanently on that device.
 
 Building pins are approximate. Standing at a building, Set pin here replaces the
 seed with a real GPS fix and directions switch to exact coordinates.
+
+Directions are sent to Maps as a **street address**, never as a building name.
+Searching a name here is unreliable: "Physical Science Ctr" is not what that
+building is called, and Maps resolved it to the nearest plausible science
+building, which is Nielsen, and walked somebody to the wrong door. The verified
+addresses are Nielsen Hall 440 W Brooks St, Physical Sciences Center 601 Elm
+Ave, Adams Hall 307 W Brooks St, Dale Hall 455 W Lindsey St. Any new building
+added to `PIN_SEED` needs a real address checked against the campus directory,
+not a guess.
 
 Venue pictures are original illustrations, not photographs of the places.
 Photo walk captures real ones in a single pass, and Share photos writes a pack

@@ -195,6 +195,14 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .examcard .k{font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--cream);text-transform:uppercase}
 .examcard .n{font-size:14px;font-weight:800;margin-top:3px;line-height:1.2}
 .examcard .w{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:3px;font-weight:600}
+.steps{margin:2px 0 4px}
+.step{font-size:13px;color:var(--dim);line-height:1.5;padding:5px 0 5px 26px;position:relative}
+.step b:first-child{position:absolute;left:0;top:5px;width:18px;height:18px;border-radius:99px;
+  background:var(--bg2);color:var(--dim);font-size:11px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center}
+.icsmsg{font-size:13px;font-weight:600;margin-top:10px;min-height:18px}
+.icsmsg.ok{color:var(--good)}
+.icsmsg.bad{color:var(--crimson)}
 .tba{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;background:var(--card2);
   color:var(--warn);border:1px solid var(--line);border-radius:6px;padding:2px 6px;vertical-align:2px}
 .toast{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safeB));z-index:40;
@@ -421,6 +429,11 @@ audio{width:100%;margin-bottom:12px}
 
     <div class="sechead"><h2>Next two weeks</h2><span class="aux" id="soonAux"></span></div>
     <div class="card tight" id="soonList"></div>
+
+    <div class="minibtns" id="dueTools" style="display:none">
+      <button class="minibtn" id="dueRefresh">Update from Canvas</button>
+      <button class="minibtn danger" id="dueForget">Disconnect</button>
+    </div>
   </section>
 
   <!-- COURSES -->
@@ -485,6 +498,35 @@ audio{width:100%;margin-bottom:12px}
     <div class="foot" style="text-align:left;padding:10px 2px 0">Downloads a calendar file. Open it once and every
     class and final lands in your phone's calendar with a 15 minute heads up, so you get real alerts without opening this.</div>
   </section>
+
+  <div class="sheet" id="canvasSheet">
+    <div class="sheetin">
+      <h3>Connect Canvas</h3>
+      <div class="sd">
+        Canvas can hand you a file with every assignment and due date in it.
+        Load it here once and the Due tab fills itself in. It stays on this
+        phone, and no password or login is involved.
+      </div>
+      <div class="steps">
+        <div class="step"><b>1</b> Open Canvas and go to <b>Calendar</b>.</div>
+        <div class="step"><b>2</b> Scroll down the right side and tap <b>Calendar Feed</b>.</div>
+        <div class="step"><b>3</b> Copy the address it shows. Change <b>webcal://</b> at the front to <b>https://</b>, then open it. Your phone saves a <b>.ics</b> file.</div>
+        <div class="step"><b>4</b> Come back here and load that file.</div>
+      </div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="icsPick">Choose the file</button>
+        <button class="minibtn" id="icsPasteBtn">Paste it instead</button>
+      </div>
+      <input type="file" id="icsFile" accept=".ics,text/calendar" style="display:none">
+      <textarea id="icsText" placeholder="Paste the whole file here, starting with BEGIN:VCALENDAR"
+        style="display:none;margin-top:10px"></textarea>
+      <div id="icsMsg" class="icsmsg"></div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="icsLoad" style="display:none">Load it</button>
+        <button class="minibtn" id="canvasClose">Close</button>
+      </div>
+    </div>
+  </div>
 
   <div class="sheet" id="workSheet">
     <div class="sheetin">
@@ -682,7 +724,17 @@ function durClock(ms){
   const h = Math.floor(s/3600), m = Math.floor(s%3600/60), sec = s%60;
   return h ? (h + ':' + pad2(m) + ':' + pad2(sec)) : (m + ':' + pad2(sec));
 }
+/* Prefer a real street address, and a pin the user has set with GPS over
+   everything. Falling back to the bare building name is a last resort, since
+   that is exactly what sent people to the wrong building. */
 function destQ(bldg, room){
+  try {
+    const pin = (typeof PINS === 'object' && PINS) ? PINS[bldg] : null;
+    if (pin && pin.exact && pin.lat && pin.lng) return pin.lat + ',' + pin.lng;
+    if (pin && pin.addr) return pin.addr;
+  } catch (e){}
+  const seed = PIN_SEED[bldg];
+  if (seed && seed.addr) return seed.addr;
   return bldg + ', ' + CAMPUS;
 }
 function appleUrl(bldg, from){
@@ -1101,11 +1153,139 @@ function renderFinals(N){
    rather than looking broken. Times are already Central, converted at
    export, so nothing here has to reason about timezones. */
 
+/* Canvas import.
+   Everyone gets the same app, so nobody's assignments can be baked in for
+   them. Instead each person loads their own Canvas calendar file once and it
+   is kept in this browser under their own key. No token, no login, no server,
+   and one person's coursework can never appear in another person's app. */
+const CANVAS_KEY = 'schedhub.canvas.' + SCHEDULE.id;
+
+function storedCanvas(){
+  try {
+    const raw = localStorage.getItem(CANVAS_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    return (o && Array.isArray(o.items) && o.items.length) ? o : null;
+  } catch (e){ return null; }
+}
+
+/* Fold RFC 5545 continuation lines, where a long value is wrapped onto the
+   next line beginning with a space or tab. */
+function icsUnfold(text){
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n[ \t]/g, '');
+}
+
+/* Canvas writes DTSTART three ways: a UTC stamp, a stamp with a named zone,
+   and a bare date for all-day items. Convert each to Central. */
+function icsWhen(raw, param){
+  const m = raw.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/);
+  if (!m) return null;
+  const [, y, mo, d, hh, mi, ss, z] = m;
+  if (!hh) return { due: y + '-' + mo + '-' + d, time: '23:59', allDay: true };
+  if (z){
+    /* UTC: shift into Central by formatting the instant in that zone. */
+    const inst = new Date(Date.UTC(+y, +mo-1, +d, +hh, +mi, +ss));
+    const p = new Intl.DateTimeFormat('en-US', {
+      timeZone:'America/Chicago', hour12:false,
+      year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'
+    }).formatToParts(inst).reduce((a,x)=>(a[x.type]=x.value,a),{});
+    const h = p.hour === '24' ? '00' : p.hour;
+    return { due: p.year + '-' + p.month + '-' + p.day, time: h + ':' + p.minute };
+  }
+  /* A floating or zoned stamp: Canvas emits these already in the course zone. */
+  return { due: y + '-' + mo + '-' + d, time: hh + ':' + mi };
+}
+
+/* "Weekly quiz 01 [B AD-1523-Fall 2026]" -> title plus course. */
+function icsSplitSummary(s){
+  const m = s.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
+  if (!m) return { title: s.trim(), course: '', short: '' };
+  const course = m[2].trim();
+  const nice = course.replace(/\s*-\s*(Fall|Spring|Summer)\s*\d{4}\s*$/i, '')
+                     .replace(/-\d{3}$/, '').trim();
+  return { title: m[1].trim(), course: nice || course, short: nice || course };
+}
+
+function icsKind(name){
+  const n = name || '';
+  if (/\b(exam|final|midterm)\b/i.test(n) &&
+      !/practice|bonus|replacement|enter score|test your skills/i.test(n)) return 'exam';
+  if (/\bquiz\b/i.test(n)) return 'quiz';
+  if (/smartbook|reading|journal|discussion/i.test(n)) return 'reading';
+  return 'work';
+}
+
+function parseICS(text){
+  const body = icsUnfold(text);
+  if (!/BEGIN:VCALENDAR/i.test(body)) throw new Error('That does not look like a calendar file.');
+
+  const items = [];
+  const blocks = body.split(/BEGIN:VEVENT/i).slice(1);
+  for (const b of blocks){
+    const chunk = b.split(/END:VEVENT/i)[0];
+    const line = re => { const m = chunk.match(re); return m ? m[1].trim() : ''; };
+
+    const summary = line(/^SUMMARY(?:;[^:\n]*)?:(.*)$/mi)
+      .replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\n/gi, ' ').trim();
+    if (!summary) continue;
+
+    const dtRaw = chunk.match(/^DTSTART([^:\n]*):(.*)$/mi);
+    if (!dtRaw) continue;
+    const when = icsWhen(dtRaw[2].trim(), dtRaw[1]);
+    if (!when) continue;
+
+    const url = line(/^URL(?:;[^:\n]*)?:(.*)$/mi);
+    const { title, course, short } = icsSplitSummary(summary);
+
+    items.push({
+      course: course, short: short, title: title,
+      due: when.due, time: when.time,
+      kind: icsKind(title), points: null,
+      url: url || null
+    });
+  }
+
+  if (!items.length) throw new Error('No events found in that file.');
+
+  /* Keep this semester only, and drop exact duplicates. */
+  const seen = new Set();
+  const out = [];
+  for (const it of items){
+    if (it.due < SEMESTER.start || it.due > SEMESTER.finalsEnd) continue;
+    const k = it.due + it.time + it.title;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(it);
+  }
+  if (!out.length) throw new Error('That file had no events inside this semester.');
+  out.sort((a,b) => (a.due + a.time).localeCompare(b.due + b.time));
+  return out;
+}
+
+function saveCanvas(items){
+  const stamp = new Date().toLocaleDateString('en-US',
+    {year:'numeric', month:'short', day:'numeric'});
+  try {
+    localStorage.setItem(CANVAS_KEY, JSON.stringify({items, stamp}));
+  } catch (e){ throw new Error('This browser would not save it. Storage may be full.'); }
+}
+
 const DUE = { y:0, mo:0, sel:null, ready:false };
 const MONTHS = ['January','February','March','April','May','June','July',
                 'August','September','October','November','December'];
 
-const dueItems = () => (typeof CANVAS_ITEMS === 'undefined' ? [] : CANVAS_ITEMS);
+/* An imported file wins over anything shipped with the app. */
+const dueItems = () => {
+  const s = storedCanvas();
+  if (s) return s.items;
+  return (typeof CANVAS_ITEMS === 'undefined') ? [] : CANVAS_ITEMS;
+};
+const dueSource = () => {
+  const s = storedCanvas();
+  if (s) return 'imported ' + s.stamp;
+  if (typeof CANVAS_PULLED === 'string') return 'pulled ' + CANVAS_PULLED;
+  return '';
+};
 const isoOf = (y, mo, d) => y + '-' + pad2(mo) + '-' + pad2(d);
 const toMin = t => (+t.slice(0,2)) * 60 + (+t.slice(3,5));
 
@@ -1151,19 +1331,22 @@ function renderCanvasTab(){
   const today = N.iso;
 
   if (!items.length){
-    $('#dueStamp').textContent = '';
-    $('#dueNext').innerHTML = '<div class="empty">No Canvas data on this app yet.<br>' +
-      'Run <b>canvas_export.py</b> with your own token to fill this in.</div>';
+    $('#dueStamp').textContent = 'not connected';
+    $('#dueNext').innerHTML =
+      '<div class="empty">Nothing here yet.<br>Connect Canvas and this fills itself in.</div>' +
+      '<div class="minibtns"><button class="minibtn primary" id="dueConnect">Connect Canvas</button></div>';
+    $('#dueConnect').onclick = openCanvasSheet;
     $('#dayList').innerHTML = '';
     $('#soonList').innerHTML = '';
     $('#calGrid').innerHTML = '';
+    $('#calMon').textContent = '';
     return;
   }
 
   if (!DUE.ready){
     DUE.y = N.y; DUE.mo = N.mo; DUE.sel = today; DUE.ready = true;
   }
-  $('#dueStamp').textContent = typeof CANVAS_PULLED === 'string' ? 'pulled ' + CANVAS_PULLED : '';
+  $('#dueStamp').textContent = dueSource();
 
   /* Exams first, since those are the ones that actually matter. */
   const exams = items.filter(x => x.kind === 'exam' && x.due >= today).slice(0, 8);
@@ -1174,6 +1357,9 @@ function renderCanvasTab(){
         '<div class="w">' + esc(gapLabel(e.due, today)) + ' · ' + esc(hhmm(toMin(e.time))) + '</div></div>'
       ).join('') + '</div>'
     : '<div class="empty">No exams left on the calendar.</div>';
+
+  $('#dueTools').style.display = '';
+  $('#dueForget').style.display = storedCanvas() ? '' : 'none';
 
   renderCal(N);
   renderDay(today);
@@ -1259,6 +1445,58 @@ function renderDay(todayIso){
     ? list.map(it => rowHtml(it, false, todayIso)).join('')
     : '<div class="empty">Nothing due this day.</div>';
 }
+
+/* ----- Canvas sheet ----- */
+function icsSay(msg, bad){
+  const el = $('#icsMsg');
+  el.textContent = msg || '';
+  el.className = 'icsmsg' + (bad ? ' bad' : (msg ? ' ok' : ''));
+}
+function openCanvasSheet(){
+  icsSay('');
+  $('#icsText').style.display = 'none';
+  $('#icsText').value = '';
+  $('#icsLoad').style.display = 'none';
+  $('#canvasSheet').classList.add('on');
+}
+function acceptICS(text){
+  let items;
+  try { items = parseICS(text); }
+  catch (e){ icsSay(e.message, true); return; }
+  try { saveCanvas(items); }
+  catch (e){ icsSay(e.message, true); return; }
+  const exams = items.filter(x => x.kind === 'exam').length;
+  icsSay('Loaded ' + items.length + ' items' + (exams ? ', ' + exams + ' exams' : '') + '.');
+  renderCanvasTab();
+  setTimeout(() => $('#canvasSheet').classList.remove('on'), 900);
+}
+$('#canvasClose').onclick = () => $('#canvasSheet').classList.remove('on');
+$('#dueRefresh').onclick = openCanvasSheet;
+$('#dueForget').onclick = () => {
+  if (!confirm('Remove the Canvas assignments saved on this phone?')) return;
+  try { localStorage.removeItem(CANVAS_KEY); } catch (e){}
+  renderCanvasTab();
+};
+$('#icsPick').onclick = () => $('#icsFile').click();
+$('#icsFile').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => acceptICS(String(r.result || ''));
+  r.onerror = () => icsSay('Could not read that file.', true);
+  r.readAsText(f);
+  e.target.value = '';
+};
+$('#icsPasteBtn').onclick = () => {
+  $('#icsText').style.display = '';
+  $('#icsLoad').style.display = '';
+  $('#icsText').focus();
+};
+$('#icsLoad').onclick = () => {
+  const t = $('#icsText').value.trim();
+  if (!t){ icsSay('Nothing pasted yet.', true); return; }
+  acceptICS(t);
+};
 
 function calShift(step){
   let y = DUE.y, mo = DUE.mo + step;
@@ -1809,11 +2047,16 @@ function studyBoot(){
    the seed with your actual GPS fix, and that building is exact from then on.
    ========================================================================= */
 
+/* addr is what actually gets handed to Apple and Google Maps. Searching a
+   building NAME on this campus is unreliable: "Physical Science Ctr" is not
+   the building's real name, and Maps quietly resolves it to the nearest
+   plausible science building, which is Nielsen. A street address cannot be
+   misread that way, so directions always go through addr, never the name. */
 const PIN_SEED = {
-  'Nielsen Hall':         { lat:35.2107, lng:-97.4442, addr:'440 W Brooks St, Norman, OK 73019' },
-  'Physical Science Ctr': { lat:35.2101, lng:-97.4437, addr:'440 W Brooks St, Norman, OK 73019' },
-  'Adams Hall':           { lat:35.2085, lng:-97.4450, addr:'307 W Brooks St, Norman, OK 73019' },
-  'Dale Hall':            { lat:35.2064, lng:-97.4455, addr:'455 W Lindsey St, Norman, OK 73019' },
+  'Nielsen Hall':         { lat:35.2107, lng:-97.4442, addr:'Nielsen Hall, 440 W Brooks St, Norman, OK 73019' },
+  'Physical Science Ctr': { lat:35.2090, lng:-97.4469, addr:'Physical Sciences Center, 601 Elm Ave, Norman, OK 73019' },
+  'Adams Hall':           { lat:35.2085, lng:-97.4450, addr:'Adams Hall, 307 W Brooks St, Norman, OK 73019' },
+  'Dale Hall':            { lat:35.2064, lng:-97.4455, addr:'Dale Hall, 455 W Lindsey St, Norman, OK 73019' },
   'Cross Village':        { lat:35.2018, lng:-97.4402, addr:'Cross Village, 1400 Asp Ave, Norman, OK 73019' }
 };
 const PIN_KEY = 'schedhub.pins.' + SCHEDULE.id;
