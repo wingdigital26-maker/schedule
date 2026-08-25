@@ -5,8 +5,8 @@ no framework and no server. Open the file and it runs.
 
 | | Folder | Who |
 |---|---|---|
-| Schedule A | `index.html` | Astronomy, Micro, Math Modeling, Info Systems |
-| Schedule B | `b/index.html` | Macro, Innovation, Math Modeling |
+| Jack | `index.html` | Astronomy, Micro, Math Modeling, Info Systems |
+| Maddox | `b/index.html` | Macro, Innovation, Math Modeling |
 | Schedule C | `c/index.html` | Micro, Calculus I, Info Systems |
 
 ## What it does
@@ -44,8 +44,8 @@ Deploy from a branch. No build server, no Actions workflow.
 4. Wait about a minute. The URLs are then:
 
 ```
-https://<user>.github.io/<repo>/        Schedule A
-https://<user>.github.io/<repo>/b/      Schedule B
+https://<user>.github.io/<repo>/        Jack
+https://<user>.github.io/<repo>/b/      Maddox
 https://<user>.github.io/<repo>/c/      Schedule C
 ```
 
@@ -69,8 +69,8 @@ markers near the top of the `<script>`:
 /* ==DATA:START== */   ...one schedule's courses...   /* ==DATA:END== */
 ```
 
-- Schedule A's data lives inline in `index.html`, which doubles as the template.
-- Schedule B and C live in `data/b.js` and `data/c.js`.
+- Jack's data lives inline in `index.html`, which doubles as the template.
+- Maddox and Schedule C live in `data/b.js` and `data/c.js`.
 
 A course looks like this. Days are `M T W R F`, where `R` is Thursday. Times are
 24 hour. `code` is optional and only shown when present.
@@ -175,10 +175,10 @@ classes is already built in; only the assignments come from their own import.
 Class times, rooms and finals were transcribed from screenshots of one.ou.edu.
 Two things in there are inferred rather than read, and are worth confirming:
 
-- Schedule B's Macro final end time. The screenshot was cut off at `10:30 AM –`.
+- Maddox's Macro final end time. The screenshot was cut off at `10:30 AM –`.
   Every other final in those screenshots ran exactly two hours, so it is set to
   12:30 PM.
-- Schedule B's finals list was also cut off, so Innovation and Math Modeling
+- Maddox's finals list was also cut off, so Innovation and Math Modeling
   have no final recorded. The app says so rather than inventing one.
 
 Dining hours were compiled from OU Daily's campus dining listings across recent
@@ -209,7 +209,7 @@ file the other two apps can import so nobody shoots the walk twice.
 index.html        Schedule A, and the template every app is built from
 b/index.html      generated
 c/index.html      generated
-data/b.js         Schedule B course data
+data/b.js         Maddox course data
 data/c.js         Schedule C course data
 build.py          regenerates b/ and c/ and the shared free-time map
 icon.png          512px home screen icon, copied into b/ and c/

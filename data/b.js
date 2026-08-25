@@ -1,5 +1,5 @@
 /* ==DATA:START== */
-const SCHEDULE = { id:'b', label:'Fall 2026 · Schedule B' };
+const SCHEDULE = { id:'b', label:'Maddox · Fall 2026' };
 const SEMESTER = { start:'2026-08-24', lastClass:'2026-12-11', finalsEnd:'2026-12-18' };
 
 const CAMPUS = 'University of Oklahoma, Norman, OK';

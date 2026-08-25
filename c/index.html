@@ -733,8 +733,8 @@ const COURSES = [
 
 /* ==PEERS:START== */
 const PEERS = {
-  jack:{ label:'Fall 2026', busy:{M:[[540,590],[600,650],[660,710],[840,890],[900,950]],T:[[810,885]],W:[[540,590],[600,650],[660,710],[840,890]],R:[[810,885],[930,980]],F:[[540,590],[600,650],[660,710],[840,890]]} },
-  b:{ label:'Fall 2026 · Schedule B', busy:{M:[[840,890],[900,950]],T:[[630,705],[810,885]],W:[[840,890],[900,950]],R:[[630,705],[810,885]],F:[[720,770],[840,890],[900,950]]} },
+  jack:{ label:'Jack · Fall 2026', busy:{M:[[540,590],[600,650],[660,710],[840,890],[900,950]],T:[[810,885]],W:[[540,590],[600,650],[660,710],[840,890]],R:[[810,885],[930,980]],F:[[540,590],[600,650],[660,710],[840,890]]} },
+  b:{ label:'Maddox · Fall 2026', busy:{M:[[840,890],[900,950]],T:[[630,705],[810,885]],W:[[840,890],[900,950]],R:[[630,705],[810,885]],F:[[720,770],[840,890],[900,950]]} },
   c:{ label:'Fall 2026 · Schedule C', busy:{M:[[600,650],[660,710],[780,830],[840,890]],T:[],W:[[600,650],[660,710],[780,830],[840,890],[1080,1135]],R:[],F:[[600,650],[660,710],[780,830],[840,890]]} }
 };
 /* ==PEERS:END== */
@@ -3252,7 +3252,14 @@ function hhmm(m){
 }
 function renderFree(N){
   const host = $('#freeList');
-  const names = Object.keys(PEERS).map(id => id === SCHEDULE.id ? 'you' : PEERS[id].label);
+  /* Labels carry the term for the header eyebrow. Here we want the person,
+     so strip the term off and keep whatever names them. */
+  const peerName = (id) => {
+    const raw = (PEERS[id].label || id);
+    const bare = raw.replace(/Fall\s*\d{4}/i, '').replace(/^[\s·|,-]+|[\s·|,-]+$/g, '').trim();
+    return bare || (id.charAt(0).toUpperCase() + id.slice(1));
+  };
+  const names = Object.keys(PEERS).map(id => id === SCHEDULE.id ? 'you' : peerName(id));
   $('#freeWho').textContent = names.join(', ');
   host.innerHTML = ['M','T','W','R','F'].map(d => {
     const slots = commonFree(d, 8*60, 18*60);
