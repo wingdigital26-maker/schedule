@@ -19,8 +19,10 @@ no framework and no server. Open the file and it runs.
   three schedules share, and your buildings, sit at the bottom.
 - **Food** — the eight Cross Village spots with open or closed worked out
   against the clock, closing times, favourites and editable hours.
-- **Record** — record a lecture, type timestamped notes, turn them into
-  flashcards, quiz yourself, export a study pack.
+- **Record** — record a lecture and type timestamped notes. Afterwards,
+  **Summary** turns those notes into one page to read: the points that matter
+  first, then terms, then what you have to go and do, then the rest. Save as
+  PDF prints it.
 - **Due** — everything Canvas knows about, as a month calendar with a dot on
   every day that has something on it. Tap a day to see it. Exams ride along the
   top with a countdown, and the next fortnight is listed underneath. Each row
@@ -136,6 +138,31 @@ The export leaves out names, logins, grades and scores. Even so, a committed
 `data/canvas.js` puts a real person's coursework on the open web. Deleting it
 and rebuilding removes it, and the import route above then covers it with
 nothing public at all.
+
+## How the summary ranks things
+
+The page has no model in it and cannot write prose, so **the summary never
+invents anything**. It ranks and sorts what you already typed. Signals, in
+rough order of weight:
+
+- a line starting with `!`, `*` or a bullet, which is you flagging it yourself
+- words like exam, important, remember, will be on
+- A WORD IN CAPS
+- numbers, dates and formulas
+- words repeated across the whole lecture, which is what it was about
+- length, since you bothered to type it out
+
+Anything scoring 4 or more leads the page. If nothing clears that bar the top
+three go up anyway, so the summary is never empty when notes exist. Lines
+written `term: definition` become Terms, and lines mentioning due, homework,
+read, chapter and so on become what you have to do. Nothing appears twice.
+
+If a live transcript was captured, the strongest sentences in it get their own
+section, clearly marked as machine-picked rather than quoted.
+
+The threshold is deliberately absolute rather than measured against the top
+line. Scoring relative to the strongest note lets one heavily flagged line
+drag the bar up and bury everything else.
 
 ## Sending it to somebody
 

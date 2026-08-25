@@ -203,6 +203,60 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .icsmsg{font-size:13px;font-weight:600;margin-top:10px;min-height:18px}
 .icsmsg.ok{color:var(--good)}
 .icsmsg.bad{color:var(--crimson)}
+
+/* summary: built to be read on screen and to print as a clean sheet */
+.sumin{max-height:92vh}
+#sumDoc{overflow-y:auto;flex:1;padding-right:2px}
+.sumhead{border-bottom:2px solid var(--crimson);padding-bottom:12px;margin-bottom:4px}
+.sumcourse{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--crimson)}
+.sumtitle{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:3px 0 4px;line-height:1.15}
+.summeta{font-size:12.5px;color:var(--dim2);font-weight:600}
+.sumthemes{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.sumthemes .th{font-size:11px;font-weight:700;background:var(--bg2);border:1px solid var(--line);
+  color:var(--dim);border-radius:99px;padding:3px 9px}
+.sumh2{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);
+  font-weight:800;margin:20px 0 8px}
+.sumlist{margin:0;padding:0;list-style:none}
+.sumlist li{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.sumlist li:first-child{border-top:0}
+.sumlist .pt{flex:1 1 auto;min-width:0}
+.sumlist .at{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--dim2);font-variant-numeric:tabular-nums}
+.sumlist.lead li{padding:10px 0}
+.sumlist.lead .pt{font-size:16px;font-weight:650;line-height:1.35}
+.sumlist.lead{counter-reset:kp}
+.sumlist.lead li:before{counter-increment:kp;content:counter(kp);flex:0 0 22px;height:22px;
+  border-radius:99px;background:var(--crimson);color:#fff;font-size:11px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;transform:translateY(2px)}
+.sumlist.todo .pt{font-size:14.5px;font-weight:600}
+.sumlist.todo li:before{content:"";flex:0 0 8px;height:8px;border-radius:2px;
+  background:var(--warn);transform:translateY(-1px)}
+.sumlist.rest .pt{font-size:13.5px;color:var(--dim);line-height:1.45}
+.sumterms{margin:0}
+.trow{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.trow:first-child{border-top:0}
+.trow dt{flex:0 0 34%;font-size:13.5px;font-weight:800;margin:0}
+.trow dd{flex:1 1 auto;margin:0;font-size:13.5px;color:var(--dim);line-height:1.45}
+.sumquotes{margin:0;padding:0;list-style:none}
+.sumquotes li{font-size:13.5px;line-height:1.5;color:var(--tx);padding:7px 0 7px 11px;
+  border-left:3px solid var(--line);margin-bottom:6px}
+.sumfine,.sumfoot{font-size:11.5px;color:var(--dim2);margin-top:8px;line-height:1.5}
+.sumfoot{border-top:1px solid var(--line);padding-top:10px;margin-top:18px}
+.sumempty{font-size:14px;color:var(--dim);line-height:1.5}
+
+@media print{
+  body{background:#fff;padding:0}
+  body *{visibility:hidden}
+  #sumDoc,#sumDoc *{visibility:visible}
+  #sumDoc{position:absolute;left:0;top:0;width:100%;max-height:none;overflow:visible;
+    padding:0;color:#000;font-size:11.5pt}
+  .sumhead{border-bottom:2px solid #000}
+  .sumcourse{color:#000}
+  .sumlist.lead li:before{background:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sumlist li,.trow{border-top:1px solid #bbb;break-inside:avoid}
+  .sumh2{color:#000;break-after:avoid}
+  .sumlist.rest .pt,.trow dd{color:#222}
+  .sumthemes .th{border:1px solid #999;color:#222}
+}
 .tba{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;background:var(--card2);
   color:var(--warn);border:1px solid var(--line);border-radius:6px;padding:2px 6px;vertical-align:2px}
 .toast{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safeB));z-index:40;
@@ -466,8 +520,8 @@ audio{width:100%;margin-bottom:12px}
       <div class="rectarget"><select id="recCourse" aria-label="Which class"></select></div>
       <button class="recbig" id="recBtn"><span class="recdot"></span>Start recording</button>
       <div id="transcribeRow" class="recnote" style="display:flex;align-items:center;gap:8px;margin-top:12px">
-        <input type="checkbox" id="recTranscribe" style="width:18px;height:18px">
-        <label for="recTranscribe">Also try a live transcript (browser dependent, works best on a laptop)</label>
+        <input type="checkbox" id="recTranscribe" style="width:18px;height:18px" checked>
+        <label for="recTranscribe">Listen for a transcript too. The summary is better with one, and it is skipped if this browser cannot.</label>
       </div>
       <div id="recLive" style="display:none">
         <div class="recmeta">
@@ -479,11 +533,11 @@ audio{width:100%;margin-bottom:12px}
           <button id="noteAdd">Add</button>
         </div>
         <div class="livenotes" id="liveNotes"></div>
-        <div class="recnote">Each note is stamped with the moment you typed it, so you can jump straight back to it in the audio.</div>
+        <div class="recnote">Every note is stamped, so you can jump back to that moment in the audio.</div>
       </div>
       <div class="warnbox" id="recWarn" style="display:none"></div>
       <button class="minibtn" id="recNotesOnly" style="display:none;width:100%;margin-top:10px">Notes only</button>
-      <div class="recnote">Write notes as <b>term: definition</b> and the app can turn them into flashcards afterwards.</div>
+      <div class="recnote">Two habits make the summary good: start a line with <b>!</b> to force it to the top, and write <b>term: definition</b> so it lands in Terms.</div>
     </div>
 
     <div class="sechead"><h2>Saved lectures</h2><span class="aux" id="lecCount"></span></div>
@@ -498,6 +552,17 @@ audio{width:100%;margin-bottom:12px}
     <div class="foot" style="text-align:left;padding:10px 2px 0">Downloads a calendar file. Open it once and every
     class and final lands in your phone's calendar with a 15 minute heads up, so you get real alerts without opening this.</div>
   </section>
+
+  <div class="sheet" id="sumSheet">
+    <div class="sheetin sumin">
+      <div id="sumDoc"></div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="sumPrint">Save as PDF</button>
+        <button class="minibtn" id="sumClose">Close</button>
+      </div>
+      <div class="recnote" id="sumHow">On a phone this opens Print. Choose Save to Files, or pinch out on the preview, to get a PDF.</div>
+    </div>
+  </div>
 
   <div class="sheet" id="canvasSheet">
     <div class="sheetin">
@@ -1470,6 +1535,8 @@ function acceptICS(text){
   renderCanvasTab();
   setTimeout(() => $('#canvasSheet').classList.remove('on'), 900);
 }
+$('#sumClose').onclick = () => $('#sumSheet').classList.remove('on');
+$('#sumPrint').onclick = () => window.print();
 $('#canvasClose').onclick = () => $('#canvasSheet').classList.remove('on');
 $('#dueRefresh').onclick = openCanvasSheet;
 $('#dueForget').onclick = () => {
@@ -1855,9 +1922,11 @@ async function renderLecBody(id){
         '<button class="minibtn primary" data-quiz="' + id + '">Quiz me</button>' +
       '</div></div>';
 
+  /* One obvious action. The summary supersedes the old Study pack and Save
+     notes buttons, which both just dumped raw text. */
   html += '<div class="minibtns">' +
-      '<button class="minibtn primary" data-pack="' + id + '">Study pack</button>' +
-      '<button class="minibtn" data-dlnotes="' + id + '">Save notes</button>' +
+      '<button class="minibtn primary" data-sum="' + id + '">Summary</button>' +
+      (r.cards && r.cards.length ? '<button class="minibtn" data-quiz="' + id + '">Quiz me</button>' : '') +
       (r.audio ? '<button class="minibtn" data-dlaudio="' + id + '">Save audio</button>' : '') +
       '<button class="minibtn danger" data-del="' + id + '">Delete</button>' +
     '</div>';
@@ -1939,6 +2008,165 @@ function cardsFromNotes(r){
   return out;
 }
 
+/* =========================================================================
+   SUMMARY
+   Turns a recording into one page you can actually read: the points that
+   matter first, then the rest, then terms, then what you have to go and do.
+
+   Nothing here invents content. It ranks what is already in your notes and
+   the transcript, because the page has no model to write with. Ranking is
+   done on signals people genuinely use while typing in a lecture: saying a
+   thing is important, writing it in caps, starting a line with a bang,
+   quoting a number, and above all repeating it.
+   ========================================================================= */
+
+const SUM_FLAG = /\b(exam|test|quiz|final|midterm|important|importante|key|crucial|essential|remember|memoriz|must|required|will be on|note that|main point|takeaway|pay attention|emphasi)\w*/i;
+const SUM_TODO = /\b(due|homework|assignment|submit|turn in|read|chapter|problem set|pset|practice|study|review|bring|print|before next)\w*/i;
+const SUM_STOP = new Set(('the a an and or but of to in on at for with from by as is are was were be been being this that these those it its ' +
+  'we you they he she i our your their his her them us me my not no so if then than there here what which who whom when where how why all any ' +
+  'can will just do does did done have has had about into over under more most some such only same own too very s t don now').split(' '));
+
+function sumWords(s){
+  return (s.toLowerCase().match(/[a-z][a-z'-]{2,}/g) || []).filter(w => !SUM_STOP.has(w));
+}
+
+/* Words used more than once across the whole lecture are what it was about. */
+function sumThemes(texts){
+  const n = {};
+  texts.forEach(t => new Set(sumWords(t)).forEach(w => n[w] = (n[w] || 0) + 1));
+  return Object.entries(n).filter(([,c]) => c > 1)
+    .sort((a,b) => b[1] - a[1]).slice(0, 12);
+}
+
+function sumScore(text, themeSet){
+  let s = 0;
+  const t = text.trim();
+  if (/^[!*•]+/.test(t)) s += 3;                       // you flagged it yourself
+  if (SUM_FLAG.test(t)) s += 3;                             // you said it was important
+  if (/\b[A-Z]{3,}\b/.test(t)) s += 2;                      // shouted
+  if (/\d/.test(t)) s += 1;                                 // a number, date or formula
+  if (/[=<>+−×÷%]/.test(t)) s += 1;
+  const hits = new Set(sumWords(t)).size
+    ? sumWords(t).filter(w => themeSet.has(w)).length : 0;
+  s += Math.min(hits, 3);                                   // on theme
+  if (t.length > 90) s += 1;                                // you took the time
+  return s;
+}
+
+/* Pull the strongest sentences out of a live transcript. */
+function sumFromTranscript(tx, themeSet){
+  if (!tx || tx.length < 80) return [];
+  const sents = tx.replace(/\s+/g, ' ')
+    .split(/(?<=[.?!])\s+|\s{2,}/)
+    .map(s => s.trim())
+    .filter(s => s.length > 30 && s.length < 320);
+  const seen = new Set();
+  return sents
+    .map(s => ({ s, k: sumScore(s, themeSet) }))
+    .filter(o => o.k >= 3)
+    .sort((a,b) => b.k - a.k)
+    .filter(o => { const key = o.s.slice(0,40).toLowerCase();
+                   if (seen.has(key)) return false; seen.add(key); return true; })
+    .slice(0, 8)
+    .map(o => o.s);
+}
+
+function summarize(r){
+  const notes = (r.notes || []).filter(n => n.text && n.text.trim());
+  const themes = sumThemes(notes.map(n => n.text).concat(r.transcript || ''));
+  const themeSet = new Set(themes.map(t => t[0]));
+
+  const terms = [], todo = [], ranked = [];
+  for (const n of notes){
+    const text = n.text.trim();
+    const m = text.match(/^\s*[!*•]*\s*([^:]{2,48}):\s*(.+)$/);
+    if (m && !/^https?$/i.test(m[1])){
+      terms.push({ t: n.t, term: m[1].trim(), def: m[2].trim() });
+      continue;
+    }
+    if (SUM_TODO.test(text)) todo.push({ t: n.t, text });
+    ranked.push({ t: n.t, text, k: sumScore(text, themeSet) });
+  }
+
+  /* An absolute bar, not one measured off the top note. Scoring relative to
+     the strongest line lets one heavily flagged note drag the bar up and
+     bury everything else, which is the opposite of the job. */
+  const sorted = ranked.slice().sort((a,b) => b.k - a.k || a.t - b.t);
+  const strong = sorted.filter(x => x.k >= 4);
+  const key = (strong.length >= 3 ? strong : sorted.filter(x => x.k > 0).slice(0, 3)).slice(0, 8);
+
+  /* A line already listed as a term or a to-do must not appear again below. */
+  const idOf = x => x.t + '|' + x.text;
+  const spoken = new Set(key.map(idOf).concat(todo.map(idOf)));
+  const rest = ranked.filter(x => !spoken.has(idOf(x)));
+
+  return {
+    key, rest, terms, todo, themes,
+    quotes: sumFromTranscript(r.transcript, themeSet),
+    counts: { notes: notes.length, terms: terms.length }
+  };
+}
+
+function sumDocHtml(r, s){
+  const c = courseByKey(r.key || r.code);
+  const title = c ? (c.short || c.title) : 'Lecture';
+  const when = new Date(r.dateISO + 'T00:00:00')
+    .toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+  const li = (arr, cls) => arr.map(x =>
+    '<li class="' + cls + '"><span class="pt">' + esc(x.text) + '</span>' +
+    '<span class="at">' + mmss(x.t) + '</span></li>').join('');
+
+  let h = '';
+  h += '<div class="sumhead">' +
+       '<div class="sumcourse">' + esc(title) + '</div>' +
+       '<h1 class="sumtitle">Lecture summary</h1>' +
+       '<div class="summeta">' + esc(when) + (r.seconds ? ' &middot; ' + mmss(r.seconds) + ' recorded' : '') +
+       ' &middot; ' + s.counts.notes + ' notes</div>';
+  if (s.themes.length){
+    h += '<div class="sumthemes">' + s.themes.slice(0,7)
+          .map(t => '<span class="th">' + esc(t[0]) + '</span>').join('') + '</div>';
+  }
+  h += '</div>';
+
+  if (s.key.length){
+    h += '<h2 class="sumh2">The points that matter</h2>' +
+         '<ol class="sumlist lead">' + li(s.key, 'k') + '</ol>';
+  }
+  if (s.terms.length){
+    h += '<h2 class="sumh2">Terms</h2><dl class="sumterms">' +
+      s.terms.map(t => '<div class="trow"><dt>' + esc(t.term) + '</dt>' +
+        '<dd>' + esc(t.def) + '</dd></div>').join('') + '</dl>';
+  }
+  if (s.todo.length){
+    h += '<h2 class="sumh2">What you have to do</h2><ul class="sumlist todo">' +
+         li(s.todo, 'd') + '</ul>';
+  }
+  if (s.quotes.length){
+    h += '<h2 class="sumh2">Picked out of the recording</h2><ul class="sumquotes">' +
+         s.quotes.map(q => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
+         '<div class="sumfine">Chosen automatically from the live transcript, so read them as prompts rather than quotes.</div>';
+  }
+  if (s.rest.length){
+    h += '<h2 class="sumh2">Everything else, in order</h2><ul class="sumlist rest">' +
+         li(s.rest.slice().sort((a,b) => a.t - b.t), 'r') + '</ul>';
+  }
+  if (!s.key.length && !s.terms.length && !s.rest.length){
+    h += '<p class="sumempty">There were no notes on this recording, so there is nothing to rank. ' +
+         'Type notes while recording and this page writes itself.</p>';
+  }
+  h += '<div class="sumfoot">Ranked from your own notes. Timestamps point back into the audio.</div>';
+  return h;
+}
+
+let SUM_FOR = null;
+function openSummary(r){
+  SUM_FOR = r;
+  $('#sumDoc').innerHTML = sumDocHtml(r, summarize(r));
+  $('#sumSheet').classList.add('on');
+  $('#sumDoc').scrollTop = 0;
+}
+
 /* ---- quiz ---- */
 const QUIZ = { cards:[], i:0, shown:false };
 function startQuiz(cards){
@@ -1987,7 +2215,7 @@ function studyBoot(){
 
   // delegated actions inside lecture bodies
   $('#lectures').addEventListener('click', async e => {
-    const t = e.target.closest('[data-seek],[data-addcard],[data-build],[data-quiz],[data-pack],[data-dlnotes],[data-dlaudio],[data-del]');
+    const t = e.target.closest('[data-seek],[data-addcard],[data-build],[data-quiz],[data-sum],[data-pack],[data-dlnotes],[data-dlaudio],[data-del]');
     if (!t) return;
 
     if (t.dataset.seek !== undefined){
@@ -1995,8 +2223,8 @@ function studyBoot(){
       if (au){ au.currentTime = +t.dataset.seek; au.play().catch(()=>{}); }
       return;
     }
-    const id = t.dataset.addcard || t.dataset.build || t.dataset.quiz || t.dataset.pack ||
-               t.dataset.dlnotes || t.dataset.dlaudio || t.dataset.del;
+    const id = t.dataset.addcard || t.dataset.build || t.dataset.quiz || t.dataset.sum ||
+               t.dataset.pack || t.dataset.dlnotes || t.dataset.dlaudio || t.dataset.del;
     const r = await dbGet(id);
     if (!r) return;
     const c = courseByKey(r.key || r.code);
@@ -2018,6 +2246,7 @@ function studyBoot(){
       r.cards = (r.cards||[]).concat(found.filter(k => !have.has(k.q.toLowerCase())));
       await dbPut(r); renderLecBody(id); return;
     }
+    if (t.dataset.sum){ openSummary(r); return; }
     if (t.dataset.quiz){ startQuiz(r.cards || []); return; }
     if (t.dataset.pack){
       showSheet('Study pack', 'Copy this and paste it to Claude. It already asks for a summary, key concepts and practice questions.', buildPack(r));
