@@ -186,6 +186,15 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .duerow .ti{font-size:14.5px;font-weight:650;line-height:1.3}
 .duerow .mt{font-size:12px;color:var(--dim2);margin-top:2px;font-weight:600}
 .duerow.isexam .ti{color:var(--crimson);font-weight:800}
+.duechk{flex:0 0 22px;width:22px;height:22px;margin-top:1px;border-radius:50%;
+  border:1.6px solid var(--dim2);background:transparent;padding:0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.duechk svg{width:13px;height:13px;fill:none;stroke:transparent;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round}
+.duechk.on{border-color:var(--accent);background:var(--accent)}
+.duechk.on svg{stroke:#fff}
+.duerow.isdone .ti{text-decoration:line-through;color:var(--dim2)}
+.duerow.isdone .mt,.duerow.isdone .when{opacity:.55}
 .daysep{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--dim2);padding:13px 0 3px;border-top:1px solid var(--line)}
 .daysep:first-child{border-top:0;padding-top:2px}
@@ -1221,6 +1230,20 @@ function renderFinals(N){
    and one person's coursework can never appear in another person's app. */
 const CANVAS_KEY = 'schedhub.canvas.' + SCHEDULE.id;
 
+/* Which assignments this person has finished. Keyed the same way the
+   importer dedupes, so a re-import keeps everything already ticked. */
+const DONE_KEY = 'schedhub.done.' + SCHEDULE.id;
+const doneKeyOf = it => it.due + it.time + it.title;
+function doneSet(){
+  try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); }
+  catch (e){ return new Set(); }
+}
+function toggleDone(k){
+  const s = doneSet();
+  s.has(k) ? s.delete(k) : s.add(k);
+  try { localStorage.setItem(DONE_KEY, JSON.stringify([...s])); } catch (e){}
+}
+
 function storedCanvas(){
   try {
     const raw = localStorage.getItem(CANVAS_KEY);
@@ -1372,16 +1395,34 @@ function gapLabel(iso, todayIso){
   return d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
 }
 
-function rowHtml(it, showDate, todayIso){
+function rowHtml(it, showDate, todayIso, done){
   const exam = it.kind === 'exam';
+  const k = doneKeyOf(it);
+  const isDone = done ? done.has(k) : false;
   const left = showDate ? gapLabel(it.due, todayIso) : hhmm(toMin(it.time));
   const meta = [it.short, showDate ? hhmm(toMin(it.time)) : null,
                 it.points ? it.points + ' pts' : null].filter(Boolean).join(' · ');
+  const chk = '<button class="duechk' + (isDone ? ' on' : '') + '" data-k="' + esc(k) + '"' +
+              ' aria-label="' + (isDone ? 'Mark not done' : 'Mark done') + '">' +
+              '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>';
   const body = '<div class="ti">' + esc(it.title) + '</div><div class="mt">' + esc(meta) + '</div>';
-  const inner = '<div class="when">' + esc(left) + '</div><div class="what">' + body + '</div>';
+  const inner = chk + '<div class="when">' + esc(left) + '</div><div class="what">' + body + '</div>';
+  const cls = 'duerow' + (exam ? ' isexam' : '') + (isDone ? ' isdone' : '');
   return it.url
-    ? '<a class="duerow' + (exam ? ' isexam' : '') + '" href="' + it.url + '" target="_blank" rel="noopener">' + inner + '</a>'
-    : '<div class="duerow' + (exam ? ' isexam' : '') + '">' + inner + '</div>';
+    ? '<a class="' + cls + '" href="' + it.url + '" target="_blank" rel="noopener">' + inner + '</a>'
+    : '<div class="' + cls + '">' + inner + '</div>';
+}
+
+/* One delegated handler: the tick lives inside a link to Canvas, so it has
+   to swallow the click before the browser follows the href. */
+function wireDoneClicks(host){
+  host.addEventListener('click', e => {
+    const b = e.target.closest('.duechk');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    toggleDone(b.dataset.k);
+    renderCanvasTab();
+  });
 }
 
 /* Named for the tab, not just "due": renderDue already exists further down
@@ -1430,7 +1471,11 @@ function renderCanvasTab(){
     const n = daysBetween(today, x.due);
     return n >= 0 && n <= 14;
   });
-  $('#soonAux').textContent = soon.length + (soon.length === 1 ? ' item' : ' items');
+  const done = doneSet();
+  const doneCount = soon.filter(x => done.has(doneKeyOf(x))).length;
+  $('#soonAux').textContent = soon.length
+    ? (doneCount ? doneCount + ' of ' + soon.length + ' done' : soon.length + (soon.length === 1 ? ' item' : ' items'))
+    : '0 items';
   if (!soon.length){
     $('#soonList').innerHTML = '<div class="empty">Nothing due for two weeks. Enjoy it.</div>';
   } else {
@@ -1442,7 +1487,7 @@ function renderCanvasTab(){
         out += '<div class="daysep">' + esc(gapLabel(it.due, today)) + ' &middot; ' +
                esc(d.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'})) + '</div>';
       }
-      out += rowHtml(it, false, today);
+      out += rowHtml(it, false, today, done);
     }
     $('#soonList').innerHTML = out;
   }
@@ -1502,8 +1547,9 @@ function renderDay(todayIso){
     {weekday:'long', month:'long', day:'numeric'});
   $('#dayAux').textContent = DUE.sel === todayIso ? 'today'
     : gapLabel(DUE.sel, todayIso).toLowerCase();
+  const done = doneSet();
   $('#dayList').innerHTML = list.length
-    ? list.map(it => rowHtml(it, false, todayIso)).join('')
+    ? list.map(it => rowHtml(it, false, todayIso, done)).join('')
     : '<div class="empty">Nothing due this day.</div>';
 }
 
@@ -1535,6 +1581,8 @@ $('#sumClose').onclick = () => $('#sumSheet').classList.remove('on');
 $('#sumPrint').onclick = () => window.print();
 $('#canvasClose').onclick = () => $('#canvasSheet').classList.remove('on');
 $('#dueRefresh').onclick = openCanvasSheet;
+wireDoneClicks($('#soonList'));
+wireDoneClicks($('#dayList'));
 $('#dueForget').onclick = () => {
   if (!confirm('Remove the Canvas assignments saved on this phone?')) return;
   try { localStorage.removeItem(CANVAS_KEY); } catch (e){}
