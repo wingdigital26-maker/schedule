@@ -1806,16 +1806,18 @@ function recBlocked(msg){
   setRecUI(false);
 }
 
-function setRecUI(on){
+function setRecUI(on, keepNotes){
   const b = $('#recBtn');
   b.classList.toggle('stop', on);
   b.innerHTML = on
     ? '<span class="recdot pulse"></span>Stop and save'
     : '<span class="recdot"></span>Start recording';
-  $('#recLive').style.display = on ? '' : 'none';
+  /* keepNotes: a failed save promised the notes stay readable, so the live
+     panel and its notes are left up until the person moves on themselves. */
+  $('#recLive').style.display = (on || keepNotes) ? '' : 'none';
   $('#recCourse').disabled = on;
   $('#recNotesOnly').style.display = on ? 'none' : $('#recNotesOnly').style.display;
-  if (!on){ $('#liveNotes').innerHTML = ''; $('#recTime').textContent = '0:00'; $('#levelFill').style.width = '0%'; }
+  if (!on && !keepNotes){ $('#liveNotes').innerHTML = ''; $('#recTime').textContent = '0:00'; $('#levelFill').style.width = '0%'; }
 }
 
 function startMeter(){
@@ -1905,10 +1907,14 @@ async function stopRec(){
     /* keep the notes and reset the UI: leaving it on "Stop and save" means
        the next tap starts a fresh recording and wipes them. offer the audio
        as a download so at least that survives. */
-    alert('Could not save the recording. Storage may be full. Notes are still on screen; copy them before leaving. Offering the audio as a download instead.');
+    alert('Could not save the recording. Storage may be full. Your notes stay on screen; the audio and a text copy of the notes are offered as downloads.');
     if (blob){ try { await saveFile('lecture-' + N.iso + '.' + extFor(mime), blob); } catch (e2){} }
+    if (LEC.notes.length){
+      const txt = LEC.notes.map(n => mmss(n.t) + '  ' + n.text).join('\n');
+      try { await saveFile('lecture-notes-' + N.iso + '.txt', new Blob([txt], {type:'text/plain'})); } catch (e3){}
+    }
     LEC.chunks = [];
-    setRecUI(false);
+    setRecUI(false, true);
     return;
   }
   LEC.notes = []; LEC.chunks = []; LEC.transcript = '';
@@ -2847,7 +2853,9 @@ function showVenueEdit(v){
     return '<div class="edrow"><span class="edday">' + DAYFULL[d].slice(0,3) + '</span>' +
       '<input type="time" id="eo_' + d + '" value="' + c[0] + '">' +
       '<span class="edto">to</span>' +
-      '<input type="time" id="ec_' + d + '" value="' + (c[1] === '24:00' ? '23:59' : c[1]) + '">' +
+      /* a time input cannot hold 24:00, so show 23:59 but remember the real
+         close; save maps an untouched 23:59 back so midnight stays midnight */
+      '<input type="time" id="ec_' + d + '" data-real="' + c[1] + '" value="' + (c[1] === '24:00' ? '23:59' : c[1]) + '">' +
     '</div>';
   }).join('') +
   '<div class="minibtns"><button class="minibtn primary" data-vsave="' + v.id + '">Save hours</button>' +
@@ -2887,7 +2895,10 @@ function foodBoot(){
     } else {
       const o = {};
       DAYK.forEach(d => {
-        const a = $('#eo_' + d).value, z = $('#ec_' + d).value;
+        const ec = $('#ec_' + d);
+        const a = $('#eo_' + d).value;
+        let z = ec.value;
+        if (z === '23:59' && ec.dataset.real === '24:00') z = '24:00';
         o[d] = (a && z) ? [a, z] : 'closed';
       });
       HRSOVERRIDE[id] = o; saveJSON(HRS_KEY, HRSOVERRIDE);
