@@ -20,7 +20,7 @@ SOURCES = [('jack', TEMPLATE), ('b', ROOT / 'data' / 'b.js'), ('c', ROOT / 'data
 
 
 def data_block(path):
-    m = DATA.search(Path(path).read_text())
+    m = DATA.search(Path(path).read_text(encoding='utf-8'))
     if not m:
         sys.exit('no DATA block in ' + str(path))
     return m.group(0)
@@ -51,13 +51,13 @@ def peers_block():
 
 
 def build(block, out_html, copy_icon=True):
-    tpl = TEMPLATE.read_text()
+    tpl = TEMPLATE.read_text(encoding='utf-8')
     if not DATA.search(tpl) or not PEERS.search(tpl):
         sys.exit('template is missing a marker block')
     html = DATA.sub(lambda m: block, tpl, count=1)
     html = PEERS.sub(lambda m: peers_block(), html, count=1)
     out_html.parent.mkdir(parents=True, exist_ok=True)
-    out_html.write_text(html)
+    out_html.write_text(html, encoding='utf-8')
     if copy_icon:
         shutil.copyfile(ROOT / 'icon.png', out_html.parent / 'icon.png')
     print('built', out_html)

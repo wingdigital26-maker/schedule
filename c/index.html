@@ -187,8 +187,11 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .duerow .mt{font-size:12px;color:var(--dim2);margin-top:2px;font-weight:600}
 .duerow.isexam .ti{color:var(--crimson);font-weight:800}
 .duechk{flex:0 0 22px;width:22px;height:22px;margin-top:1px;border-radius:50%;
-  border:1.6px solid var(--dim2);background:transparent;padding:0;
+  border:1.6px solid var(--dim2);background:transparent;padding:0;position:relative;
   display:flex;align-items:center;justify-content:center;cursor:pointer}
+/* the row is a link to Canvas; a 22px target invites mis-taps that navigate.
+   grow the hit area to ~44px without moving anything on screen. */
+.duechk::before{content:'';position:absolute;inset:-11px;border-radius:50%}
 .duechk svg{width:13px;height:13px;fill:none;stroke:transparent;stroke-width:2.6;
   stroke-linecap:round;stroke-linejoin:round}
 .duechk.on{border-color:var(--accent);background:var(--accent)}
@@ -1021,7 +1024,9 @@ function heroCard(N, st){
   }
 
   const col = live ? 'var(--live)' : c.color;
-  const walkFrom = (!live && prev && prev.c.bldg !== c.bldg) ? prev.c.bldg : null;
+  /* only meaningful when the next class is today: "walk from" yesterday's
+     last room makes no sense tomorrow morning */
+  const walkFrom = (!live && st.nextDayOffset === 0 && prev && prev.c.bldg !== c.bldg) ? prev.c.bldg : null;
 
   // Second line under the building: where you go after this, or how to get here.
   let locSub;
@@ -1070,7 +1075,9 @@ function renderChips(N){
            DAYNAME[L].slice(0,3) + '<span class="cnt">' + n + '</span></button>';
   }).join('');
   el.querySelectorAll('.chip').forEach(b => b.onclick = () => {
-    viewDay = b.dataset.day; tick();
+    /* tapping today's chip goes back to live mode instead of freezing it */
+    viewDay = b.dataset.day === campusNow().letter ? null : b.dataset.day;
+    tick();
   });
 }
 
@@ -1233,7 +1240,8 @@ const CANVAS_KEY = 'schedhub.canvas.' + SCHEDULE.id;
 /* Which assignments this person has finished. Keyed the same way the
    importer dedupes, so a re-import keeps everything already ticked. */
 const DONE_KEY = 'schedhub.done.' + SCHEDULE.id;
-const doneKeyOf = it => it.due + it.time + it.title;
+/* course is in the key: two classes can both post "Homework 3" for 11:59pm */
+const doneKeyOf = it => it.due + it.time + (it.course || '') + it.title;
 function doneSet(){
   try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); }
   catch (e){ return new Set(); }
@@ -1336,7 +1344,7 @@ function parseICS(text){
   const out = [];
   for (const it of items){
     if (it.due < SEMESTER.start || it.due > SEMESTER.finalsEnd) continue;
-    const k = it.due + it.time + it.title;
+    const k = it.due + it.time + (it.course || '') + it.title;  // keep in sync with doneKeyOf
     if (seen.has(k)) continue;
     seen.add(k);
     out.push(it);
@@ -1408,8 +1416,10 @@ function rowHtml(it, showDate, todayIso, done){
   const body = '<div class="ti">' + esc(it.title) + '</div><div class="mt">' + esc(meta) + '</div>';
   const inner = chk + '<div class="when">' + esc(left) + '</div><div class="what">' + body + '</div>';
   const cls = 'duerow' + (exam ? ' isexam' : '') + (isDone ? ' isdone' : '');
-  return it.url
-    ? '<a class="' + cls + '" href="' + it.url + '" target="_blank" rel="noopener">' + inner + '</a>'
+  /* only link real web urls: anything else pasted into an ics could smuggle
+     javascript: into an href, so it renders as a plain row instead */
+  return (it.url && /^https?:\/\//i.test(it.url))
+    ? '<a class="' + cls + '" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + inner + '</a>'
     : '<div class="' + cls + '">' + inner + '</div>';
 }
 
@@ -1586,6 +1596,7 @@ wireDoneClicks($('#dayList'));
 $('#dueForget').onclick = () => {
   if (!confirm('Remove the Canvas assignments saved on this phone?')) return;
   try { localStorage.removeItem(CANVAS_KEY); } catch (e){}
+  try { localStorage.removeItem(DONE_KEY); } catch (e){}   // stale ticks would haunt a re-import
   renderCanvasTab();
 };
 $('#icsPick').onclick = () => $('#icsFile').click();
@@ -1887,7 +1898,13 @@ async function stopRec(){
   };
   try { await dbPut(rec); }
   catch (e){
-    alert('Could not save the recording. Storage may be full. Notes are still on screen; copy them before leaving.');
+    /* keep the notes and reset the UI: leaving it on "Stop and save" means
+       the next tap starts a fresh recording and wipes them. offer the audio
+       as a download so at least that survives. */
+    alert('Could not save the recording. Storage may be full. Notes are still on screen; copy them before leaving. Offering the audio as a download instead.');
+    if (blob){ try { await saveFile('lecture-' + N.iso + '.' + extFor(mime), blob); } catch (e2){} }
+    LEC.chunks = [];
+    setRecUI(false);
     return;
   }
   LEC.notes = []; LEC.chunks = []; LEC.transcript = '';
@@ -2123,7 +2140,9 @@ function summarize(r){
   const terms = [], todo = [], ranked = [];
   for (const n of notes){
     const text = n.text.trim();
-    const m = text.match(/^\s*[!*•]*\s*([^:]{2,48}):\s*(.+)$/);
+    /* a leading ! is the user flagging a key point; that beats the colon
+       reading it as "term: definition" */
+    const m = !/^\s*!/.test(text) && text.match(/^\s*[*•]*\s*([^:]{2,48}):\s*(.+)$/);
     if (m && !/^https?$/i.test(m[1])){
       terms.push({ t: n.t, term: m[1].trim(), def: m[2].trim() });
       continue;
@@ -2651,6 +2670,14 @@ function venueStatus(v, N){
   if (today === null) return { state:'unknown' };
   if (today === 'closed') return { state:'closed', next: nextOpen(v, N) };
   const o = mins(today[0]), c = mins(today[1]);
+  if (c < o){
+    /* overnight hours, e.g. 18:00 to 02:00: open late into the night and,
+       by the same listing, in the small hours before close. '24:00' never
+       lands here since it reads as 1440. */
+    if (N.minutes >= o) return { state:'open', closes:today[1], leftMin: 1440 - N.minutes + c };
+    if (N.minutes < c)  return { state:'open', closes:today[1], leftMin: c - N.minutes };
+    return { state:'closed', opensToday:today[0], inMin: o - N.minutes };
+  }
   if (N.minutes >= o && N.minutes < c){
     return { state:'open', closes:today[1], leftMin: c - N.minutes };
   }
@@ -3143,7 +3170,9 @@ function workBoot(){
       const key = ag.dataset.addgrade;
       const name = $('#gName').value.trim(), sc = parseFloat($('#gScore').value), out = parseFloat($('#gOut').value);
       const w = parseFloat($('#gW').value);
-      if (!name || !(out > 0) || isNaN(sc)) return;
+      /* a negative weight could zero the denominator, a negative score
+         makes the percent column read as nonsense */
+      if (!name || !(out > 0) || isNaN(sc) || sc < 0 || (!isNaN(w) && w <= 0)) return;
       GRADES[key] = (GRADES[key] || []).concat([{name, score:sc, outOf:out, weight: isNaN(w) ? 0 : w}]);
       saveJSON(GRADE_KEY, GRADES); renderGradeSheet(key); renderCourses();
       return;
@@ -3159,10 +3188,13 @@ function workBoot(){
     if (nd){
       const key = nd.dataset.need, g = gradeFor(key);
       const target = parseFloat($('#gTarget').value), fw = parseFloat($('#gFinalW').value);
-      if (!g || isNaN(target) || !(fw > 0) || fw >= 100){
+      if (!g || isNaN(target) || !(fw > 0) || fw > 100){
         $('#gNeed').textContent = 'Enter a target and what the final is worth.'; return;
       }
-      const need = (target - g.pct * (1 - fw/100)) / (fw/100);
+      /* renormalize over what is actually graded, matching the "covering X%"
+         line above: unentered weight is unknown, not banked at the average */
+      const coveredW = Math.min(g.weightUsed != null ? g.weightUsed : 100 - fw, 100 - fw);
+      const need = (target * (coveredW + fw) - g.pct * coveredW) / fw;
       $('#gNeed').textContent = need <= 0
         ? 'You already have ' + target + '% locked up even with a zero on the final.'
         : need > 100
@@ -3188,6 +3220,21 @@ const ICSDAY = {M:'MO', T:'TU', W:'WE', R:'TH', F:'FR'};
 function icsStamp(dateISO, hhmm){
   return dateISO.replace(/-/g,'') + 'T' + hhmm.replace(':','') + '00';
 }
+/* TEXT values must escape backslash, comma, semicolon and newline. */
+function icsEscape(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+/* RRULE UNTIL must be UTC when DTSTART carries a TZID. Convert the local
+   Chicago end-of-day by trying both offsets and keeping the one that
+   round-trips back to 11pm. */
+function icsUntilUTC(dateISO){
+  for (const off of [5, 6]){
+    const d = new Date(Date.UTC(+dateISO.slice(0,4), +dateISO.slice(5,7)-1, +dateISO.slice(8,10), 23 + off, 59, 59));
+    const h = new Intl.DateTimeFormat('en-US', {timeZone:'America/Chicago', hour12:false, hour:'2-digit'}).format(d);
+    if (+h % 24 === 23) return d.toISOString().replace(/[-:]/g,'').slice(0,15) + 'Z';
+  }
+  return dateISO.replace(/-/g,'') + 'T235959Z';
+}
 function firstOnOrAfter(startISO, dayLetter){
   const want = DAYKEY.indexOf(dayLetter);
   const d = new Date(startISO + 'T12:00:00');
@@ -3205,7 +3252,19 @@ function buildICS(){
   push('X-WR-CALNAME:' + SCHEDULE.label);
   push('X-WR-TIMEZONE:America/Chicago');
 
-  const until = SEMESTER.lastClass.replace(/-/g,'') + 'T235959';
+  /* define the zone the TZID lines point at, per RFC 5545 */
+  push('BEGIN:VTIMEZONE'); push('TZID:America/Chicago');
+  push('BEGIN:STANDARD'); push('DTSTART:20071104T020000');
+  push('RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU');
+  push('TZOFFSETFROM:-0500'); push('TZOFFSETTO:-0600'); push('TZNAME:CST');
+  push('END:STANDARD');
+  push('BEGIN:DAYLIGHT'); push('DTSTART:20070311T020000');
+  push('RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU');
+  push('TZOFFSETFROM:-0600'); push('TZOFFSETTO:-0500'); push('TZNAME:CDT');
+  push('END:DAYLIGHT');
+  push('END:VTIMEZONE');
+
+  const until = icsUntilUTC(SEMESTER.lastClass);
   let n = 0;
 
   COURSES.forEach(c => {
@@ -3218,11 +3277,11 @@ function buildICS(){
       push('DTSTART;TZID=America/Chicago:' + icsStamp(first, c.start));
       push('DTEND;TZID=America/Chicago:' + icsStamp(first, c.end));
       push('RRULE:FREQ=WEEKLY;BYDAY=' + ICSDAY[d] + ';UNTIL=' + until);
-      push('SUMMARY:' + c.title);
-      push('LOCATION:' + c.bldg + ' ' + c.room + ', University of Oklahoma');
-      push('DESCRIPTION:Floor ' + floorOf(c.room) + ', room ' + roomShort(c.room));
+      push('SUMMARY:' + icsEscape(c.title));
+      push('LOCATION:' + icsEscape(c.bldg + ' ' + c.room + ', University of Oklahoma'));
+      push('DESCRIPTION:' + icsEscape('Floor ' + floorOf(c.room) + ', room ' + roomShort(c.room)));
       push('BEGIN:VALARM'); push('TRIGGER:-PT15M'); push('ACTION:DISPLAY');
-      push('DESCRIPTION:' + c.short + ' in 15 minutes'); push('END:VALARM');
+      push('DESCRIPTION:' + icsEscape(c.short + ' in 15 minutes')); push('END:VALARM');
       push('END:VEVENT');
       n++;
     });
@@ -3233,10 +3292,10 @@ function buildICS(){
       push('DTSTAMP:' + icsStamp(SEMESTER.start, '00:00') + 'Z');
       push('DTSTART;TZID=America/Chicago:' + icsStamp(c.final.date, c.final.start));
       push('DTEND;TZID=America/Chicago:' + icsStamp(c.final.date, c.final.end));
-      push('SUMMARY:FINAL: ' + c.title);
-      push('LOCATION:' + (c.final.bldg ? c.final.bldg + ' ' + c.final.room + ', University of Oklahoma' : 'Room TBA'));
+      push('SUMMARY:' + icsEscape('FINAL: ' + c.title));
+      push('LOCATION:' + icsEscape(c.final.bldg ? c.final.bldg + ' ' + c.final.room + ', University of Oklahoma' : 'Room TBA'));
       push('BEGIN:VALARM'); push('TRIGGER:-PT60M'); push('ACTION:DISPLAY');
-      push('DESCRIPTION:Final for ' + c.short + ' in one hour'); push('END:VALARM');
+      push('DESCRIPTION:' + icsEscape('Final for ' + c.short + ' in one hour')); push('END:VALARM');
       push('END:VEVENT');
       n++;
     }
@@ -3324,29 +3383,34 @@ function renderFree(N){
 
 /* ---------------- loop ---------------- */
 let lastMinute = -1;
+let lastDayLetter = null;
 function tick(){
   const N = campusNow();
   const finalsMode = pastClasses(N);
 
+  /* a pinned day should not survive the campus day rolling over */
+  if (lastDayLetter !== null && lastDayLetter !== N.letter) viewDay = null;
+  lastDayLetter = N.letter;
+
   if (finalsMode){
-    heroFinals(N);
+    try { heroFinals(N); } catch (e){}
     $('#daychips').style.display = 'none';
   } else {
-    heroCard(N, findCurrentAndNext(N));
+    try { heroCard(N, findCurrentAndNext(N)); } catch (e){}
     $('#daychips').style.display = '';
-    renderChips(N);
+    try { renderChips(N); } catch (e){}
   }
 
   if (N.minutes !== lastMinute){
     lastMinute = N.minutes;
-    renderHeader(N);
-    renderFinals(N);
+    try { renderHeader(N); } catch (e){}
+    try { renderFinals(N); } catch (e){}
     try { renderFood(N); } catch (e){}
     try { renderDue(N); } catch (e){}
     try { renderFree(N); } catch (e){}
   }
 
-  if (finalsMode) finalsTimeline(N); else renderTimeline(N);
+  try { if (finalsMode) finalsTimeline(N); else renderTimeline(N); } catch (e){}
 
   const h12 = N.h % 12 || 12;
   const dayFull = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][N.dow];
