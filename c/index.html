@@ -2098,11 +2098,25 @@ function buildPack(r){
   if (r.segs && r.segs.length){
     const bullets = [];
     let cur = null;
+    let lastT = null;
     for (const g of r.segs){
+      if (!g) continue;
       const txt = (g.text || '').trim();
       if (!txt) continue;
+      const gt = (typeof g.t === 'number' && isFinite(g.t)) ? g.t : lastT;
+      if (gt != null) lastT = gt;
       if (cur && (cur.text + ' ' + txt).length <= 200){ cur.text += ' ' + txt; }
-      else { cur = { t: g.t, text: txt }; bullets.push(cur); }
+      else {
+        let rest = txt;
+        while (rest.length > 300){
+          let cut = rest.lastIndexOf(' ', 280);
+          if (cut < 200) cut = 280;
+          bullets.push({ t: gt, text: rest.slice(0, cut).trim() });
+          rest = rest.slice(cut).trim();
+        }
+        cur = { t: gt, text: rest };
+        bullets.push(cur);
+      }
     }
     while (bullets.length > 25){
       for (let i = 0; i + 1 < bullets.length && bullets.length > 25; i++){
@@ -2110,8 +2124,10 @@ function buildPack(r){
         bullets.splice(i + 1, 1);
       }
     }
-    out += '\n\n## The lecture as it happened\n' +
-      bullets.map(b => '- [' + mmss(b.t) + '] ' + b.text).join('\n');
+    if (bullets.length){
+      out += '\n\n## The lecture as it happened\n' +
+        bullets.map(b => (b.t == null ? '- ' : '- [' + mmss(b.t) + '] ') + b.text).join('\n');
+    }
   }
   if (r.transcript) out += '\n\n## Transcript\n' + r.transcript;
   if (r.cards && r.cards.length){
@@ -2210,19 +2226,43 @@ function sumScore(text, themeSet){
   return s;
 }
 
+/* Sentence split shared by the summary functions. Live SpeechRecognition
+   often emits long unpunctuated runs; a piece past ~320 chars is word-chunked
+   into ~30-word pieces (each keeps its source time) instead of being dropped,
+   so no stretch of lecture vanishes just because nobody said a period. */
+function sumSplit(text){
+  const out = [];
+  String(text).replace(/\s+/g, ' ').split(/(?<=[.?!])\s+/).forEach(p => {
+    p = p.trim();
+    if (!p) return;
+    if (p.length < 320){ out.push(p); return; }
+    const words = p.split(' ');
+    for (let i = 0; i < words.length; i += 30){
+      const c = words.slice(i, i + 30).join(' ');
+      if (c) out.push(c);
+    }
+  });
+  return out;
+}
+
+/* Dedupe key. A 40-char prefix alone erases distinct facts behind a repeated
+   opener ("the most important thing here is ..."), so the key carries the
+   tail of the line too; true near-repeats still collapse. */
+function sumKey(s){
+  const t = String(s).toLowerCase();
+  return t.slice(0, 40) + '|' + t.slice(-20);
+}
+
 /* Pull the strongest sentences out of a live transcript. */
 function sumFromTranscript(tx, themeSet){
   if (!tx || tx.length < 80) return [];
-  const sents = tx.replace(/\s+/g, ' ')
-    .split(/(?<=[.?!])\s+|\s{2,}/)
-    .map(s => s.trim())
-    .filter(s => s.length > 30 && s.length < 320);
+  const sents = sumSplit(tx).filter(s => s.length > 30);
   const seen = new Set();
   return sents
     .map(s => ({ s, k: sumScore(s, themeSet) }))
     .filter(o => o.k >= 3)
     .sort((a,b) => b.k - a.k)
-    .filter(o => { const key = o.s.slice(0,40).toLowerCase();
+    .filter(o => { const key = sumKey(o.s);
                    if (seen.has(key)) return false; seen.add(key); return true; })
     .slice(0, 12)
     .map(o => o.s);
@@ -2235,9 +2275,8 @@ function sumFromTranscript(tx, themeSet){
 function sumOutline(r, themeSet){
   const sents = [];
   const push = (text, t) => {
-    String(text).replace(/\s+/g, ' ').split(/(?<=[.?!])\s+|\s{2,}/).forEach(s => {
-      s = s.trim();
-      if (s.length >= 25 && s.length < 320) sents.push({ t, text: s });
+    sumSplit(text).forEach(s => {
+      if (s.length >= 25) sents.push({ t, text: s });
     });
   };
   if (r.segs && r.segs.length){
@@ -2246,6 +2285,13 @@ function sumOutline(r, themeSet){
     push(r.transcript, null);
   }
   if (!sents.length) return [];
+
+  /* mics can emit segments out of clock order; sort timed sentences into
+     order among themselves (untimed ones keep their positions) */
+  const timedIdx = [];
+  sents.forEach((s, i) => { if (typeof s.t === 'number') timedIdx.push(i); });
+  const timedSorted = timedIdx.map(i => sents[i]).sort((a, b) => a.t - b.t);
+  timedIdx.forEach((i, j) => { sents[i] = timedSorted[j]; });
 
   const seen = new Set();
   const out = [];
@@ -2263,21 +2309,29 @@ function sumOutline(r, themeSet){
       const long = bucket.slice().sort((a,b) => b.text.length - a.text.length)[0];
       if (long.text.length > 40) picks = [{ o: long }];
     }
-    picks.sort((a,b) => (a.o.t || 0) - (b.o.t || 0)).forEach((x, i) => {
-      const key = x.o.text.slice(0,40).toLowerCase();
+    /* the sheddable extra is the WEAKER pick, not whichever came second */
+    const weak = picks.length > 1
+      ? picks.reduce((a, b) => ((b.k || 0) < (a.k || 0) ? b : a)) : null;
+    picks.sort((a,b) => (a.o.t || 0) - (b.o.t || 0)).forEach(x => {
+      const key = sumKey(x.o.text);
       if (seen.has(key)) return; seen.add(key);
-      out.push({ t: x.o.t, text: x.o.text, k: x.k || 0, x2: i > 0 });
+      out.push({ t: x.o.t, text: x.o.text, k: x.k || 0, x2: x === weak });
     });
   };
 
-  if (sents[0].t === null){
+  /* a clock that never moves (all t:0) is no clock at all */
+  const tvals = sents.filter(s => typeof s.t === 'number').map(s => s.t);
+  const span = tvals.length
+    ? tvals.reduce((a, b) => Math.max(a, b), -Infinity) -
+      tvals.reduce((a, b) => Math.min(a, b), Infinity) : 0;
+  if (sents[0].t === null || (span < 60 && sents.length > 10)){
     /* old record: no clock, so bucket by count toward the same 10-25 density */
     const per = Math.max(1, Math.ceil(sents.length / 15));
     for (let i = 0; i < sents.length; i += per) flush(sents.slice(i, i + per), 1);
   } else {
     /* window scaled so short and marathon lectures both land near 10-25 bullets */
     const total = Math.max(sents[sents.length-1].t, r.seconds || 0);
-    const win = Math.max(90, Math.min(300, total / 20 || 150));
+    const win = Math.max(90, Math.min(600, total / 20 || 150));
     let bucket = [], end = win;
     for (const s of sents){
       while ((s.t || 0) >= end){ flush(bucket, 2); bucket = []; end += win; }
@@ -2300,18 +2354,27 @@ function sumOutline(r, themeSet){
 /* Definitions the mic heard but nobody typed: "X is / means / refers to Y".
    A term opening with a pronoun is conversation, not vocabulary. */
 function sumHeardTerms(r, typed){
-  const tx = (r.segs && r.segs.length) ? r.segs.map(g => g.text || '').join(' ') : (r.transcript || '');
+  const tx = (r.segs && r.segs.length) ? r.segs.map(g => (g && g.text) || '').join(' ') : (r.transcript || '');
   if (tx.length < 80) return [];
   const have = new Set(typed.map(t => t.term.toLowerCase()));
   const out = [];
-  tx.replace(/\s+/g, ' ').split(/(?<=[.?!])\s+|\s{2,}/).some(s => {
-    const m = s.trim().match(/^(.{2,40}?)\s+(?:is defined as|is called|refers to|means|is|are)\s+([^.?!]{8,200})[.?!]?$/i);
+  sumSplit(tx).some(s => {
+    const m = s.trim().match(/^(.{2,40}?)\s+(is defined as|is called|refers to|means|is|are)\s+([^.?!]{8,200})[.?!]?$/i);
     if (m){
       const term = m[1].trim();
+      const def = m[3].trim();
       const key = term.toLowerCase();
-      if (!/^(it|this|that|there|he|she|they|we|you|i|what|which|who)\b/i.test(term) && !have.has(key)){
+      /* bare is/are is how most English sentences work, not just definitions;
+         only trust it when the term reads like a noun phrase (no possessive/
+         demonstrative/quantifier opener) and the definition opens like one
+         too ("a ", "an ", "the ") */
+      const bare = /^(is|are)$/i.test(m[2]);
+      const junkTerm = /^(my|your|our|his|her|their|its|these|those|some|any|all|both|each|every|most|many|several|few|one|two|three|that)\b/i.test(term);
+      const junkDef = !/^(a|an|the)\s/i.test(def);
+      if (!/^(it|this|that|there|he|she|they|we|you|i|what|which|who)\b/i.test(term) && !have.has(key) &&
+          !(bare && (junkTerm || junkDef))){
         have.add(key);
-        out.push({ term, def: m[2].trim() });
+        out.push({ term, def });
       }
     }
     return out.length >= 8;
@@ -2415,7 +2478,7 @@ function sumDocHtml(r, s){
     h += '<h2 class="sumh2">Everything else, in order</h2><ul class="sumlist rest">' +
          li(s.rest.slice().sort((a,b) => a.t - b.t), 'r') + '</ul>';
   }
-  if (!s.key.length && !s.terms.length && !s.rest.length &&
+  if (!s.key.length && !s.terms.length && !s.rest.length && !s.todo.length && !s.quotes.length &&
       !(s.outline && s.outline.length) && !(s.heardTerms && s.heardTerms.length)){
     h += '<p class="sumempty">There were no notes on this recording, so there is nothing to rank. ' +
          'Type notes while recording and this page writes itself.</p>';
