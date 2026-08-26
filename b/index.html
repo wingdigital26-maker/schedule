@@ -1762,7 +1762,7 @@ document.addEventListener('click', e => {
    ========================================================================= */
 
 const LEC = { rec:null, stream:null, chunks:[], t0:0, timer:null, raf:null, ac:null,
-              notes:[], target:null, noAudio:false, sr:null, transcript:'' };
+              notes:[], target:null, noAudio:false, sr:null, transcript:'', segs:[] };
 
 /* ---- IndexedDB ---- */
 function idb(){
@@ -1827,7 +1827,7 @@ function extFor(mime){ return (mime || '').indexOf('mp4') >= 0 || (mime||'').ind
 function recElapsed(){ return (Date.now() - LEC.t0) / 1000; }
 
 async function startRec(withAudio){
-  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.noAudio = !withAudio;
+  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.segs = []; LEC.noAudio = !withAudio;
   LEC.target = $('#recCourse').value;
 
   if (withAudio){
@@ -1910,7 +1910,11 @@ function startSpeech(){
     r.continuous = true; r.interimResults = false; r.lang = 'en-US';
     r.onresult = e => {
       for (let i = e.resultIndex; i < e.results.length; i++){
-        if (e.results[i].isFinal) LEC.transcript += e.results[i][0].transcript.trim() + ' ';
+        if (e.results[i].isFinal){
+          const txt = e.results[i][0].transcript.trim();
+          LEC.transcript += txt + ' ';
+          if (txt) LEC.segs.push({ t: Math.max(0, Math.round(recElapsed())), text: txt });
+        }
       }
     };
     r.onend = () => { if (LEC.rec && LEC.rec.state === 'recording'){ try { r.start(); } catch(err){} } };
@@ -1958,6 +1962,7 @@ async function stopRec(){
     seconds,
     notes: LEC.notes.slice(),
     transcript: LEC.transcript.trim(),
+    segs: LEC.segs.slice(),
     cards: [],
     audio: blob, mime
   };
@@ -1976,7 +1981,7 @@ async function stopRec(){
     setRecUI(false, true);
     return;
   }
-  LEC.notes = []; LEC.chunks = []; LEC.transcript = '';
+  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.segs = [];
   setRecUI(false);
   renderLectures();
 }
@@ -2086,6 +2091,26 @@ function buildPack(r){
   if (r.seconds) out += ' | ' + mmss(r.seconds) + ' of audio';
   out += '\n\n## My notes\n';
   out += r.notes.length ? r.notes.map(n => '- [' + mmss(n.t) + '] ' + n.text).join('\n') : '(none)';
+  /* A compressed timeline of the talk itself: enough shape to study from
+     without pasting the raw transcript twice. */
+  if (r.segs && r.segs.length){
+    const bullets = [];
+    let cur = null;
+    for (const g of r.segs){
+      const txt = (g.text || '').trim();
+      if (!txt) continue;
+      if (cur && (cur.text + ' ' + txt).length <= 200){ cur.text += ' ' + txt; }
+      else { cur = { t: g.t, text: txt }; bullets.push(cur); }
+    }
+    while (bullets.length > 25){
+      for (let i = 0; i + 1 < bullets.length && bullets.length > 25; i++){
+        bullets[i].text += ' ' + bullets[i + 1].text;
+        bullets.splice(i + 1, 1);
+      }
+    }
+    out += '\n\n## The lecture as it happened\n' +
+      bullets.map(b => '- [' + mmss(b.t) + '] ' + b.text).join('\n');
+  }
   if (r.transcript) out += '\n\n## Transcript\n' + r.transcript;
   if (r.cards && r.cards.length){
     out += '\n\n## Cards I already made\n' + r.cards.map(k => '- Q: ' + k.q + '\n  A: ' + k.a).join('\n');
@@ -2197,8 +2222,99 @@ function sumFromTranscript(tx, themeSet){
     .sort((a,b) => b.k - a.k)
     .filter(o => { const key = o.s.slice(0,40).toLowerCase();
                    if (seen.has(key)) return false; seen.add(key); return true; })
-    .slice(0, 8)
+    .slice(0, 12)
     .map(o => o.s);
+}
+
+/* Chronological outline of the WHOLE lecture. The key-points list is a global
+   top slice, so on a long lecture everything outside its best minutes can
+   vanish; this walks time windows and keeps something from each one, because
+   a stretch of lecture with no bullet at all is worse than a plain one. */
+function sumOutline(r, themeSet){
+  const sents = [];
+  const push = (text, t) => {
+    String(text).replace(/\s+/g, ' ').split(/(?<=[.?!])\s+|\s{2,}/).forEach(s => {
+      s = s.trim();
+      if (s.length >= 25 && s.length < 320) sents.push({ t, text: s });
+    });
+  };
+  if (r.segs && r.segs.length){
+    r.segs.forEach(g => { if (g && g.text) push(g.text, (typeof g.t === 'number' ? g.t : null)); });
+  } else if (r.transcript && r.transcript.length >= 80){
+    push(r.transcript, null);
+  }
+  if (!sents.length) return [];
+
+  const seen = new Set();
+  const out = [];
+  /* the bar is LOW (>=1) on purpose; a second line from the same window has
+     to earn its place, and a window that scores nothing still contributes
+     its longest substantial line */
+  const flush = (bucket, max) => {
+    if (!bucket.length) return;
+    let picks = bucket.map(o => ({ o, k: sumScore(o.text, themeSet) }))
+      .filter(x => x.k >= 1)
+      .sort((a,b) => b.k - a.k)
+      .slice(0, max);
+    if (picks.length > 1 && picks[1].k < 3) picks = picks.slice(0, 1);
+    if (!picks.length){
+      const long = bucket.slice().sort((a,b) => b.text.length - a.text.length)[0];
+      if (long.text.length > 40) picks = [{ o: long }];
+    }
+    picks.sort((a,b) => (a.o.t || 0) - (b.o.t || 0)).forEach((x, i) => {
+      const key = x.o.text.slice(0,40).toLowerCase();
+      if (seen.has(key)) return; seen.add(key);
+      out.push({ t: x.o.t, text: x.o.text, k: x.k || 0, x2: i > 0 });
+    });
+  };
+
+  if (sents[0].t === null){
+    /* old record: no clock, so bucket by count toward the same 10-25 density */
+    const per = Math.max(1, Math.ceil(sents.length / 15));
+    for (let i = 0; i < sents.length; i += per) flush(sents.slice(i, i + per), 1);
+  } else {
+    /* window scaled so short and marathon lectures both land near 10-25 bullets */
+    const total = Math.max(sents[sents.length-1].t, r.seconds || 0);
+    const win = Math.max(90, Math.min(300, total / 20 || 150));
+    let bucket = [], end = win;
+    for (const s of sents){
+      while ((s.t || 0) >= end){ flush(bucket, 2); bucket = []; end += win; }
+      bucket.push(s);
+    }
+    flush(bucket, 2);
+  }
+  /* every window kept its best line above; if second picks pushed the page
+     past ~25 bullets, shed the weakest of those extras, never a window's only line */
+  let final = out;
+  if (final.length > 25){
+    const cut = final.filter(o => o.x2).sort((a,b) => a.k - b.k)
+      .slice(0, final.length - 25);
+    const gone = new Set(cut);
+    final = final.filter(o => !gone.has(o));
+  }
+  return final.map(o => ({ t: o.t, text: o.text }));
+}
+
+/* Definitions the mic heard but nobody typed: "X is / means / refers to Y".
+   A term opening with a pronoun is conversation, not vocabulary. */
+function sumHeardTerms(r, typed){
+  const tx = (r.segs && r.segs.length) ? r.segs.map(g => g.text || '').join(' ') : (r.transcript || '');
+  if (tx.length < 80) return [];
+  const have = new Set(typed.map(t => t.term.toLowerCase()));
+  const out = [];
+  tx.replace(/\s+/g, ' ').split(/(?<=[.?!])\s+|\s{2,}/).some(s => {
+    const m = s.trim().match(/^(.{2,40}?)\s+(?:is defined as|is called|refers to|means|is|are)\s+([^.?!]{8,200})[.?!]?$/i);
+    if (m){
+      const term = m[1].trim();
+      const key = term.toLowerCase();
+      if (!/^(it|this|that|there|he|she|they|we|you|i|what|which|who)\b/i.test(term) && !have.has(key)){
+        have.add(key);
+        out.push({ term, def: m[2].trim() });
+      }
+    }
+    return out.length >= 8;
+  });
+  return out;
 }
 
 function summarize(r){
@@ -2225,7 +2341,7 @@ function summarize(r){
      bury everything else, which is the opposite of the job. */
   const sorted = ranked.slice().sort((a,b) => b.k - a.k || a.t - b.t);
   const strong = sorted.filter(x => x.k >= 4);
-  const key = (strong.length >= 3 ? strong : sorted.filter(x => x.k > 0).slice(0, 3)).slice(0, 8);
+  const key = (strong.length >= 3 ? strong : sorted.filter(x => x.k > 0).slice(0, 3)).slice(0, 12);
 
   /* A line already listed as a term or a to-do must not appear again below. */
   const idOf = x => x.t + '|' + x.text;
@@ -2235,6 +2351,8 @@ function summarize(r){
   return {
     key, rest, terms, todo, themes,
     quotes: sumFromTranscript(r.transcript, themeSet),
+    outline: sumOutline(r, themeSet),
+    heardTerms: sumHeardTerms(r, terms),
     counts: { notes: notes.length, terms: terms.length }
   };
 }
@@ -2265,10 +2383,22 @@ function sumDocHtml(r, s){
     h += '<h2 class="sumh2">The points that matter</h2>' +
          '<ol class="sumlist lead">' + li(s.key, 'k') + '</ol>';
   }
-  if (s.terms.length){
+  const outline = s.outline || [];
+  if (outline.length){
+    h += '<h2 class="sumh2">The lecture, start to finish</h2>' +
+         '<ol class="sumlist outline">' + outline.map(x =>
+           '<li class="o"><span class="pt">' + esc(x.text) + '</span>' +
+           (x.t == null ? '' : '<span class="at">' + mmss(x.t) + '</span>') + '</li>').join('') + '</ol>' +
+         '<div class="sumfine">Assembled automatically from the transcript, in the order it was said.</div>';
+  }
+  const heard = s.heardTerms || [];
+  if (s.terms.length || heard.length){
     h += '<h2 class="sumh2">Terms</h2><dl class="sumterms">' +
-      s.terms.map(t => '<div class="trow"><dt>' + esc(t.term) + '</dt>' +
+      s.terms.concat(heard).map(t => '<div class="trow"><dt>' + esc(t.term) + '</dt>' +
         '<dd>' + esc(t.def) + '</dd></div>').join('') + '</dl>';
+    if (heard.length){
+      h += '<div class="sumfine">Some of these were picked out of the recording itself, not your notes.</div>';
+    }
   }
   if (s.todo.length){
     h += '<h2 class="sumh2">What you have to do</h2><ul class="sumlist todo">' +
@@ -2283,7 +2413,8 @@ function sumDocHtml(r, s){
     h += '<h2 class="sumh2">Everything else, in order</h2><ul class="sumlist rest">' +
          li(s.rest.slice().sort((a,b) => a.t - b.t), 'r') + '</ul>';
   }
-  if (!s.key.length && !s.terms.length && !s.rest.length){
+  if (!s.key.length && !s.terms.length && !s.rest.length &&
+      !(s.outline && s.outline.length) && !(s.heardTerms && s.heardTerms.length)){
     h += '<p class="sumempty">There were no notes on this recording, so there is nothing to rank. ' +
          'Type notes while recording and this page writes itself.</p>';
   }
