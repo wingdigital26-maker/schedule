@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "schedule-hub", "runtimeExecutable": "python", "runtimeArgs": ["-m", "http.server", "8899", "-d", "C:/Users/wjack/schedule-hub"], "port": 8899 }
+  ]
+}

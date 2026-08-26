@@ -122,7 +122,34 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
 .chip .cnt{font-size:10px;opacity:.65;margin-left:3px;font-weight:700}
 
-/* week grid */
+/* plan: weekly block calendar */
+.plangrid{position:relative;margin:6px 0 2px}
+.phour{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.phour span{position:absolute;top:2px;left:0;font-size:10px;color:var(--dim2);font-weight:700;
+  font-variant-numeric:tabular-nums}
+.pblk{position:absolute;border-radius:10px;padding:4px 8px;overflow:hidden;text-align:left;
+  border:1px solid rgba(27,21,20,.1);box-shadow:0 1px 2px rgba(27,21,20,.06)}
+.pblk .bn{font-size:12.5px;font-weight:800;letter-spacing:-.01em;line-height:1.2;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pblk .bt{font-size:10.5px;color:var(--dim);font-weight:700;display:block;margin-top:1px}
+.pblk.mine{cursor:pointer}
+.pblk.mine:active{transform:scale(.985)}
+.pnowline{position:absolute;left:40px;right:0;height:2px;background:var(--live);z-index:5;pointer-events:none}
+.pnowline:before{content:"";position:absolute;left:-6px;top:-3px;width:8px;height:8px;border-radius:99px;background:var(--live)}
+.pdays{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 2px}
+.pday{flex:1 1 0;min-width:34px;min-height:42px;text-align:center;background:var(--bg2);border:1px solid var(--line);
+  border-radius:11px;font-size:13px;font-weight:700;color:var(--dim)}
+.pday.on{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.pcolors{display:flex;gap:10px;margin:4px 0 2px;flex-wrap:wrap}
+.pcol{width:36px;height:36px;border-radius:99px;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(27,21,20,.08)}
+.pcol.on{border-color:var(--tx)}
+.plabel{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:12px 0 5px}
+.ptimes{display:flex;gap:9px;align-items:center}
+.ptimes input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
+  border:1px solid var(--line);border-radius:12px;padding:10px}
+.ptimes .edto{flex:0 0 auto}
+#planTitle{width:100%;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
+  border:1px solid var(--line);border-radius:12px;padding:11px}
 
 /* course rows */
 .row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
@@ -147,7 +174,7 @@ details.row summary::-webkit-details-marker{display:none}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.93);
   backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
   border-top:1px solid var(--line);padding-bottom:var(--safeB)}
-.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr)}
 .nb{padding:10px 0 11px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--dim2)}
 .nb svg{display:block;margin:0 auto 3px;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
@@ -445,6 +472,7 @@ audio{width:100%;margin-bottom:12px}
   <div class="navin">
     <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
     <button class="nb" data-v="due"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>Due</button>
+    <button class="nb" data-v="plan"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><rect x="6" y="12" width="5" height="3" rx="1"/><rect x="13" y="12" width="5" height="6" rx="1"/></svg>Plan</button>
     <button class="nb" data-v="courses"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5z"/><path d="M4 19.5A1.5 1.5 0 015.5 18H19v3H5.5A1.5 1.5 0 014 19.5z"/></svg>Classes</button>
     <button class="nb" data-v="food"><svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 004 0V3M8 11v10"/><path d="M17 3c-1.5 1.5-2 3.5-2 5.5S15.5 12 17 12v9"/></svg>Food</button>
     <button class="nb" data-v="study"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>Record</button>
@@ -500,6 +528,17 @@ audio{width:100%;margin-bottom:12px}
       <button class="minibtn" id="dueRefresh">Update from Canvas</button>
       <button class="minibtn danger" id="dueForget">Disconnect</button>
     </div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="view" id="v-plan">
+    <div class="sechead"><h2>Block calendar</h2><span class="aux" id="planAux"></span></div>
+    <div class="chips" id="planChips"></div>
+    <div class="card tight"><div class="plangrid" id="planGrid"></div></div>
+    <div class="minibtns"><button class="minibtn primary" id="planAdd">Add a block</button></div>
+    <div class="foot" style="text-align:left;padding:10px 2px 0">Classes are placed for you. Add your own blocks
+    for work, gym, study, meals, anything. Tap one of your blocks to change or delete it.
+    Blocks stay on this phone.</div>
   </section>
 
   <!-- COURSES -->
@@ -685,6 +724,31 @@ audio{width:100%;margin-bottom:12px}
           <button class="minibtn primary" id="quizNext">Next</button>
           <button class="minibtn" id="quizClose">Done</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="planSheet">
+    <div class="sheetin">
+      <h3 id="planSheetTitle">New block</h3>
+      <div style="overflow-y:auto">
+        <div class="plabel">What is it</div>
+        <input id="planTitle" type="text" placeholder="Gym, work, study, dinner..." maxlength="40">
+        <div class="plabel">Which days</div>
+        <div class="pdays" id="planDays"></div>
+        <div class="plabel">From / to</div>
+        <div class="ptimes">
+          <input id="planStart" type="time" step="300">
+          <span class="edto">to</span>
+          <input id="planEnd" type="time" step="300">
+        </div>
+        <div class="plabel">Color</div>
+        <div class="pcolors" id="planColors"></div>
+      </div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="planSave">Save</button>
+        <button class="minibtn danger" id="planDelete" style="display:none">Delete</button>
+        <button class="minibtn" id="planCancel">Cancel</button>
       </div>
     </div>
   </div>
@@ -1635,6 +1699,7 @@ document.querySelectorAll('.nb').forEach(b => {
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
     /* Re-render on open so the tab is still right after the day rolls over. */
     if (b.dataset.v === 'due') renderCanvasTab();
+    if (b.dataset.v === 'plan') renderPlan();
     window.scrollTo({top:0, behavior:'smooth'});
   };
 });
@@ -3390,6 +3455,163 @@ function renderFree(N){
   }).join('');
 }
 
+/* ---------------- plan: block calendar ----------------
+   Classes are drawn from COURSES automatically; everything else is a
+   hand-added block kept in localStorage per schedule. Nothing leaves
+   the device. */
+const PLAN_KEY = 'schedhub.plan.' + SCHEDULE.id;
+const PLAN_DAYS = ['U','M','T','W','R','F','S'];
+const PLAN_DAYLAB = {U:'Sun',M:'Mon',T:'Tue',W:'Wed',R:'Thu',F:'Fri',S:'Sat'};
+let planBlocks = loadJSON(PLAN_KEY, []);
+let planDay = null;          // null = today
+let planEditing = null;      // block id being edited, or null
+
+function planSave(){ saveJSON(PLAN_KEY, planBlocks); }
+
+function planBlocksFor(L){
+  return planBlocks
+    .filter(b => (b.days || '').includes(L))
+    .map(b => ({ b, s:mins(b.start), e:mins(b.end) }))
+    .sort((a,x) => a.s - x.s);
+}
+
+/* greedy lanes so overlapping blocks sit side by side instead of stacking */
+function planLanes(items){
+  const lanes = [];
+  items.forEach(it => {
+    let n = lanes.findIndex(end => end <= it.s);
+    if (n === -1){ n = lanes.length; lanes.push(0); }
+    lanes[n] = it.e;
+    it.lane = n;
+  });
+  const total = lanes.length || 1;
+  items.forEach(it => {
+    it.lanes = items.some(o => o !== it && o.s < it.e && o.e > it.s) ? total : 1;
+    if (it.lanes === 1) it.lane = 0;
+  });
+  return items;
+}
+
+function renderPlanChips(N){
+  const wrap = $('#planChips');
+  wrap.innerHTML = PLAN_DAYS.map(L => {
+    const n = (L !== 'U' && L !== 'S' && !pastClasses(N) ? meetingsFor(L).length : 0) + planBlocksFor(L).length;
+    const on = (planDay || N.letter) === L;
+    return '<button class="chip' + (on ? ' on' : '') + '" data-day="' + L + '">' +
+      PLAN_DAYLAB[L] + (n ? '<span class="cnt">' + n + '</span>' : '') + '</button>';
+  }).join('');
+  wrap.querySelectorAll('.chip').forEach(b => {
+    b.onclick = () => { planDay = b.dataset.day === campusNow().letter ? null : b.dataset.day; renderPlan(); };
+  });
+}
+
+function renderPlan(){
+  const N = campusNow();
+  renderPlanChips(N);
+  const L = planDay || N.letter;
+  const isToday = L === N.letter;
+  $('#planAux').textContent = isToday ? 'Today' : DAYNAME[L] || PLAN_DAYLAB[L] + 'day';
+
+  const classes = (!pastClasses(N) && 'MTWRF'.includes(L))
+    ? meetingsFor(L).map(m => ({ s:m.s, e:m.e, title:m.c.short || m.c.title,
+        sub:fmt(m.c.start) + ' – ' + fmt(m.c.end) + ' · ' + m.c.bldg, color:m.c.color, cls:true }))
+    : [];
+  const own = planBlocksFor(L).map(x => ({ s:x.s, e:x.e, title:x.b.title,
+    sub:fmt(x.b.start) + ' – ' + fmt(x.b.end), color:x.b.color, id:x.b.id }));
+  const items = planLanes(classes.concat(own).sort((a,b) => a.s - b.s || a.e - b.e));
+
+  const lo = Math.min(8 * 60, ...items.map(i => i.s - (i.s % 60)));
+  const hi = Math.max(21 * 60, ...items.map(i => i.e + (60 - i.e % 60) % 60));
+  const PXM = 1.15;
+  const grid = $('#planGrid');
+  grid.style.height = (hi - lo) * PXM + 'px';
+
+  let html = '';
+  for (let m = lo; m <= hi; m += 60){
+    const h12 = (m / 60) % 12 || 12;
+    html += '<div class="phour" style="top:' + (m - lo) * PXM + 'px"><span>' +
+      h12 + (m / 60 >= 12 ? 'pm' : 'am') + '</span></div>';
+  }
+  items.forEach(it => {
+    const laneW = (100 - 9) / it.lanes;   // 9% left gutter for hour labels
+    const left = 9 + it.lane * laneW;
+    const short = (it.e - it.s) * PXM < 44;
+    html += '<' + (it.cls ? 'div' : 'button') + ' class="pblk' + (it.cls ? '' : ' mine') + '"' +
+      (it.id !== undefined ? ' data-id="' + it.id + '"' : '') +
+      ' style="top:' + (it.s - lo) * PXM + 'px;height:' + Math.max(20, (it.e - it.s) * PXM - 3) +
+      'px;left:' + left + '%;width:calc(' + laneW + '% - 4px);background:' + wash(it.color, .8) +
+      ';border-left:4px solid ' + it.color + '">' +
+      '<span class="bn">' + esc(it.title) + '</span>' +
+      (short ? '' : '<span class="bt">' + esc(it.sub) + '</span>') +
+      '</' + (it.cls ? 'div' : 'button') + '>';
+  });
+  if (isToday && N.minutes >= lo && N.minutes <= hi)
+    html += '<div class="pnowline" style="top:' + (N.minutes - lo) * PXM + 'px"></div>';
+  grid.innerHTML = html || '<div class="empty">Nothing planned yet.</div>';
+
+  grid.querySelectorAll('.pblk.mine').forEach(el => {
+    el.onclick = () => openPlanSheet(planBlocks.find(b => String(b.id) === el.dataset.id));
+  });
+}
+
+function openPlanSheet(block){
+  planEditing = block ? block.id : null;
+  $('#planSheetTitle').textContent = block ? 'Edit block' : 'New block';
+  $('#planDelete').style.display = block ? '' : 'none';
+  $('#planTitle').value = block ? block.title : '';
+  $('#planStart').value = block ? block.start : '17:00';
+  $('#planEnd').value = block ? block.end : '18:00';
+  const days = block ? block.days : (planDay || campusNow().letter);
+  $('#planDays').innerHTML = PLAN_DAYS.map(L =>
+    '<button class="pday' + (days.includes(L) ? ' on' : '') + '" data-day="' + L + '">' +
+    PLAN_DAYLAB[L][0] + '</button>').join('');
+  $('#planDays').querySelectorAll('.pday').forEach(b => {
+    b.onclick = () => b.classList.toggle('on');
+  });
+  const col = block ? block.color : PLAN_COLORS_SOLID[0];
+  $('#planColors').innerHTML = PLAN_COLORS_SOLID.map(c =>
+    '<button class="pcol' + (c === col ? ' on' : '') + '" data-c="' + c + '" style="background:' + c + '"></button>').join('');
+  $('#planColors').querySelectorAll('.pcol').forEach(b => {
+    b.onclick = () => {
+      $('#planColors').querySelectorAll('.pcol').forEach(x => x.classList.toggle('on', x === b));
+    };
+  });
+  $('#planSheet').classList.add('on');
+}
+/* solid marks readable as the block's left edge; the fill is washed at render */
+const PLAN_COLORS_SOLID = ['#2f6fed','#0f7b4f','#b45c09','#7b3fa0','#0e7490','#a8412b','#841617'];
+
+function planBoot(){
+  $('#planAdd').onclick = () => openPlanSheet(null);
+  $('#planCancel').onclick = () => $('#planSheet').classList.remove('on');
+  $('#planSheet').onclick = e => { if (e.target === $('#planSheet')) $('#planSheet').classList.remove('on'); };
+  $('#planDelete').onclick = () => {
+    planBlocks = planBlocks.filter(b => b.id !== planEditing);
+    planSave();
+    $('#planSheet').classList.remove('on');
+    renderPlan();
+  };
+  $('#planSave').onclick = () => {
+    const title = $('#planTitle').value.trim() || 'Block';
+    const start = $('#planStart').value, end = $('#planEnd').value;
+    const days = [...$('#planDays').querySelectorAll('.pday.on')].map(b => b.dataset.day).join('');
+    const colEl = $('#planColors').querySelector('.pcol.on');
+    const color = colEl ? colEl.dataset.c : PLAN_COLORS_SOLID[0];
+    if (!start || !end || mins(end) <= mins(start)){ alert('The end time has to come after the start.'); return; }
+    if (!days){ alert('Pick at least one day.'); return; }
+    if (planEditing !== null){
+      const b = planBlocks.find(x => x.id === planEditing);
+      if (b) Object.assign(b, {title, start, end, days, color});
+    } else {
+      const id = planBlocks.reduce((m, b) => Math.max(m, b.id), 0) + 1;
+      planBlocks.push({id, title, start, end, days, color});
+    }
+    planSave();
+    $('#planSheet').classList.remove('on');
+    renderPlan();
+  };
+}
+
 /* ---------------- loop ---------------- */
 let lastMinute = -1;
 let lastDayLetter = null;
@@ -3398,7 +3620,7 @@ function tick(){
   const finalsMode = pastClasses(N);
 
   /* a pinned day should not survive the campus day rolling over */
-  if (lastDayLetter !== null && lastDayLetter !== N.letter) viewDay = null;
+  if (lastDayLetter !== null && lastDayLetter !== N.letter){ viewDay = null; planDay = null; }
   lastDayLetter = N.letter;
 
   if (finalsMode){
@@ -3417,6 +3639,8 @@ function tick(){
     try { renderFood(N); } catch (e){}
     try { renderDue(N); } catch (e){}
     try { renderFree(N); } catch (e){}
+    /* keep the now line moving while the tab is open */
+    try { if ($('#v-plan').classList.contains('on')) renderPlan(); } catch (e){}
   }
 
   try { if (finalsMode) finalsTimeline(N); else renderTimeline(N); } catch (e){}
@@ -3436,6 +3660,7 @@ function boot(){
   try { workBoot(); } catch (e){ console.error('work init', e); }
   try { $('#icsBtn').onclick = exportICS; renderFree(campusNow()); } catch (e){ console.error('cal init', e); }
   try { renderCanvasTab(); } catch (e){ console.error('due init', e); }
+  try { planBoot(); } catch (e){ console.error('plan init', e); }
   tick();
   setInterval(tick, 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
