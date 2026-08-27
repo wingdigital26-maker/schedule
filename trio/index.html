@@ -1,4 +1,5 @@
 <title>The Trio Calendar</title>
+<meta name="color-scheme" content="only light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -23,7 +24,10 @@
 }
 /* This page is light only, on purpose. Every color above is explicit so it
    holds the same look whatever theme the viewer is in. */
-:root{color-scheme:light}
+:root{color-scheme:only light}
+/* Chrome on Android force-darkens pages it thinks are light-only by accident.
+   Opting the whole tree out keeps the palette exactly as designed. */
+html{forced-color-adjust:none}
 
 *{box-sizing:border-box}
 body{
