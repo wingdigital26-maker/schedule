@@ -1,0 +1,371 @@
+<title>The Trio Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#f7f6f3;
+  --panel:#ffffff;
+  --line:#ded9d0;
+  --ink:#1d1c1a;
+  --ink-2:#5d5a54;
+  --ink-3:#8b877f;
+  --accent:#0f6d5f;
+  --accent-soft:#e3efeb;
+  --jack:#0f6d5f;
+  --grant:#b4531c;
+  --maddox:#4b4396;
+  --jack-soft:#dfeeea;
+  --grant-soft:#f6e5d9;
+  --maddox-soft:#e5e3f3;
+  --shadow:0 1px 0 rgba(29,28,26,.04), 0 8px 24px -18px rgba(29,28,26,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#15161a;
+    --panel:#1d1f24;
+    --line:#31343b;
+    --ink:#eceae6;
+    --ink-2:#a8a49c;
+    --ink-3:#7b7770;
+    --accent:#5fc9b3;
+    --accent-soft:#1c332f;
+    --jack:#5fc9b3;
+    --grant:#e79358;
+    --maddox:#9d95e6;
+    --jack-soft:#1c332f;
+    --grant-soft:#3a2a1e;
+    --maddox-soft:#282540;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#15161a;
+  --panel:#1d1f24;
+  --line:#31343b;
+  --ink:#eceae6;
+  --ink-2:#a8a49c;
+  --ink-3:#7b7770;
+  --accent:#5fc9b3;
+  --accent-soft:#1c332f;
+  --jack:#5fc9b3;
+  --grant:#e79358;
+  --maddox:#9d95e6;
+  --jack-soft:#1c332f;
+  --grant-soft:#3a2a1e;
+  --maddox-soft:#282540;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:'Public Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 72px;display:flex;flex-direction:column;gap:28px}
+
+/* header */
+header{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:20px}
+h1{
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(28px,6vw,42px);
+  letter-spacing:-.02em;margin:0;text-wrap:balance;
+}
+.sub{color:var(--ink-2);margin:0;max-width:62ch}
+.eyebrow{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);
+}
+.who{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;padding:4px 11px 4px 9px;border-radius:999px;
+  border:1px solid var(--line);background:var(--panel);font-size:13px;font-weight:600;
+}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+
+/* panels */
+section{display:flex;flex-direction:column;gap:14px}
+h2{
+  font-family:'Archivo',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.01em;margin:0;
+}
+.note{color:var(--ink-3);font-size:14px;margin:0}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
+}
+
+/* status */
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.person{padding:16px 18px;display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--pc)}
+.person .name{font-family:'Archivo',sans-serif;font-weight:700;font-size:15px;letter-spacing:.01em}
+.state{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.badge{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;padding:3px 8px;border-radius:4px;
+}
+.badge.free{background:var(--accent-soft);color:var(--accent)}
+.badge.busy{background:var(--pc-soft);color:var(--pc)}
+.detail{font-size:14px;color:var(--ink-2)}
+.detail b{color:var(--ink);font-weight:600}
+.clock{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+
+/* call windows */
+.slots{display:flex;flex-direction:column}
+.day-row{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:14px 18px;border-top:1px solid var(--line)}
+.day-row:first-child{border-top:0}
+.day-row.today{background:var(--accent-soft)}
+.day-name{font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding-top:3px}
+.day-name span{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:11px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+.slot-list{display:flex;flex-wrap:wrap;gap:8px}
+.slot{
+  font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;font-weight:500;
+  padding:5px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;
+}
+.slot.long{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.none{font-size:14px;color:var(--ink-3);font-style:italic}
+
+/* grid */
+.gridwrap{overflow-x:auto;padding:16px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th{
+  font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;text-align:left;
+  padding:0 6px 10px;color:var(--ink-2);
+}
+th:first-child{width:62px}
+td{vertical-align:top;padding:0;border-top:1px solid var(--line)}
+.hour{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);
+  padding:4px 8px 0 0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+.cell{padding:3px 4px;height:46px}
+.blk{
+  border-radius:5px;padding:3px 6px;font-size:11px;line-height:1.3;margin-bottom:2px;
+  border-left:3px solid var(--bc);background:var(--bs);color:var(--ink);
+}
+.blk .t{font-weight:600;display:block}
+.blk .r{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-2)}
+
+/* course lists */
+.courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.clist{padding:16px 18px;display:flex;flex-direction:column;gap:10px;border-top:3px solid var(--pc)}
+.clist h3{font-family:'Archivo',sans-serif;font-size:15px;margin:0;font-weight:700}
+.crow{display:flex;justify-content:space-between;gap:12px;font-size:14px;align-items:baseline}
+.crow .cn{color:var(--ink)}
+.crow .ct{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+footer{border-top:1px solid var(--line);padding-top:18px;color:var(--ink-3);font-size:13px;display:flex;flex-direction:column;gap:6px}
+footer b{color:var(--ink-2)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:520px){
+  .day-row{grid-template-columns:1fr;gap:8px}
+  .day-name span{display:inline;margin-left:8px}
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Fall 2026 &middot; Norman &amp; College Station</div>
+  <h1>The Trio Calendar</h1>
+  <p class="sub">Class times for Jack, Grant and Maddox in one place, and the windows when all three are off the hook at once. Times are Central.</p>
+  <div class="who" id="who"></div>
+</header>
+
+<section>
+  <h2>Right now</h2>
+  <div class="status" id="status"></div>
+</section>
+
+<section>
+  <h2>When all three are free</h2>
+  <p class="note">Weekdays between 8:00am and 8:00pm, nobody in class. Filled blocks are an hour or longer.</p>
+  <div class="card slots" id="slots"></div>
+</section>
+
+<section>
+  <h2>The week</h2>
+  <div class="card gridwrap"><table id="grid"></table></div>
+</section>
+
+<section>
+  <h2>Everybody's classes</h2>
+  <div class="courses" id="courses"></div>
+</section>
+
+<footer>
+  <div><b>Where this came from.</b> Jack's and Maddox's classes are the same data the school app runs on. Grant's were read off a screenshot of his schedule.</div>
+  <div><b>Worth confirming with Grant:</b> the CHEM&nbsp;117 lab length, the MATH&nbsp;251 start time, and the CLEN&nbsp;181 Thursday slot. Everything else matches the standard class blocks exactly.</div>
+</footer>
+
+</div>
+
+<script>
+const PEOPLE = [
+  { id:'jack',   name:'Jack',   school:'OU Norman' },
+  { id:'grant',  name:'Grant',  school:'Texas A&M' },
+  { id:'maddox', name:'Maddox', school:'OU Norman' }
+];
+
+// days: M T W R F   |   times 24h, Central
+const COURSES = {
+  jack:[
+    {n:'Math Modeling',      d:'MWF', s:'09:00', e:'09:50', w:'Physical Sciences 0108'},
+    {n:'Business for People',d:'MWF', s:'10:00', e:'10:50', w:'Dale Hall 0112'},
+    {n:'Microeconomics',     d:'MWF', s:'11:00', e:'11:50', w:'Dale Hall 0200'},
+    {n:'Info Systems',       d:'TR',  s:'13:30', e:'14:45', w:'Adams Hall 0150'},
+    {n:'Astronomy',          d:'MWF', s:'14:00', e:'14:50', w:'Nielsen Hall 0170'},
+    {n:'Personal Computing', d:'M',   s:'15:00', e:'15:50', w:'Adams Hall 0150'},
+    {n:'Astro Discussion',   d:'R',   s:'15:30', e:'16:20', w:'Nielsen Hall 0302'}
+  ],
+  grant:[
+    {n:'ENGR 102',  d:'MW', s:'10:20', e:'12:20', w:'Zachry 218 · Cahill'},
+    {n:'CHEM 117 lab', d:'T', s:'11:30', e:'14:20', w:'ILSQ E309 · Martinez'},
+    {n:'CLEN 181',  d:'R',  s:'11:10', e:'12:00', w:'Zachry 160'},
+    {n:'CHEM 107',  d:'MWF',s:'12:40', e:'13:30', w:'ILCB 113 · Ghanbaripour'},
+    {n:'MATH 251',  d:'TR', s:'14:00', e:'14:50', w:'Heldenfels 113 · Sengupta'},
+    {n:'POLS 207',  d:'MWF',s:'15:00', e:'15:50', w:'ILCB 111 · Smith'}
+  ],
+  maddox:[
+    {n:'Math Modeling',      d:'TR',  s:'10:30', e:'11:45', w:'Physical Sciences 0201'},
+    {n:'Personal Computing', d:'F',   s:'12:00', e:'12:50', w:'Adams Hall 0150'},
+    {n:'Innovation',         d:'TR',  s:'13:30', e:'14:45', w:'Dale Hall 0128'},
+    {n:'Macroeconomics',     d:'MWF', s:'14:00', e:'14:50', w:'Dale Hall 0200'},
+    {n:'Business for People',d:'MWF', s:'15:00', e:'15:50', w:'Dale Hall 0112'}
+  ]
+};
+
+const DAYS = [['M','Monday'],['T','Tuesday'],['W','Wednesday'],['R','Thursday'],['F','Friday']];
+const DAY_INDEX = {1:'M',2:'T',3:'W',4:'R',5:'F'};
+const WIN_START = 8*60, WIN_END = 20*60;
+
+const mins = t => (+t.slice(0,2))*60 + (+t.slice(3,5));
+const fmt = m => {
+  const h = Math.floor(m/60), mm = String(m%60).padStart(2,'0');
+  const ampm = h >= 12 ? 'pm' : 'am';
+  return ((h%12)||12) + ':' + mm + ampm;
+};
+const dur = m => {
+  const h = Math.floor(m/60), r = m%60;
+  return (h ? h + 'h' : '') + (r ? (h?' ':'') + r + 'm' : '');
+};
+
+function meetings(pid, day){
+  return COURSES[pid]
+    .filter(c => c.d.includes(day))
+    .map(c => ({...c, S:mins(c.s), E:mins(c.e)}))
+    .sort((a,b) => a.S - b.S);
+}
+
+/* ---------- who ---------- */
+document.getElementById('who').innerHTML = PEOPLE.map(p =>
+  `<span class="chip"><span class="dot" style="background:var(--${p.id})"></span>${p.name} <span style="color:var(--ink-3);font-weight:400">${p.school}</span></span>`
+).join('');
+
+/* ---------- right now ---------- */
+function nowCentral(){
+  const parts = new Intl.DateTimeFormat('en-US',{
+    timeZone:'America/Chicago', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false
+  }).formatToParts(new Date());
+  const g = t => parts.find(p => p.type === t).value;
+  const wd = {Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:0}[g('weekday')];
+  return { day: DAY_INDEX[wd] || null, m: (+g('hour'))*60 + (+g('minute')), wd };
+}
+
+function renderStatus(){
+  const now = nowCentral();
+  document.getElementById('status').innerHTML = PEOPLE.map(p => {
+    let badge = '<span class="badge free">Free</span>', detail;
+    if(!now.day){
+      detail = 'No classes on the weekend.';
+    } else {
+      const today = meetings(p.id, now.day);
+      const inClass = today.find(c => now.m >= c.S && now.m < c.E);
+      const next = today.find(c => c.S > now.m);
+      if(inClass){
+        badge = '<span class="badge busy">In class</span>';
+        detail = `<b>${inClass.n}</b> until <span class="clock">${fmt(inClass.E)}</span><br>${inClass.w}`;
+      } else if(next){
+        detail = `<b>${next.n}</b> at <span class="clock">${fmt(next.S)}</span> — ${dur(next.S - now.m)} from now`;
+      } else {
+        detail = today.length ? 'Done for the day.' : 'Nothing scheduled today.';
+      }
+    }
+    return `<div class="card person" style="--pc:var(--${p.id});--pc-soft:var(--${p.id}-soft)">
+      <div class="name">${p.name}</div>
+      <div class="state">${badge}</div>
+      <div class="detail">${detail}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- shared free windows ---------- */
+function freeWindows(day){
+  const busy = PEOPLE.flatMap(p => meetings(p.id, day)).sort((a,b) => a.S - b.S);
+  const out = [];
+  let cursor = WIN_START;
+  for(const b of busy){
+    if(b.S > cursor) out.push([cursor, Math.min(b.S, WIN_END)]);
+    cursor = Math.max(cursor, b.E);
+    if(cursor >= WIN_END) break;
+  }
+  if(cursor < WIN_END) out.push([cursor, WIN_END]);
+  return out.filter(([s,e]) => e - s >= 30 && s < WIN_END);
+}
+
+function renderSlots(){
+  const today = nowCentral().day;
+  document.getElementById('slots').innerHTML = DAYS.map(([k,label]) => {
+    const w = freeWindows(k);
+    const list = w.length
+      ? w.map(([s,e]) => `<span class="slot${e-s >= 60 ? ' long' : ''}">${fmt(s)} – ${fmt(e)} <span style="opacity:.7">${dur(e-s)}</span></span>`).join('')
+      : '<span class="none">No shared gap today.</span>';
+    return `<div class="day-row${k === today ? ' today' : ''}">
+      <div class="day-name">${label}${k === today ? '<span>today</span>' : ''}</div>
+      <div class="slot-list">${list}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- week grid ---------- */
+function renderGrid(){
+  const all = PEOPLE.flatMap(p => DAYS.flatMap(([k]) => meetings(p.id,k)));
+  const first = Math.floor(Math.min(...all.map(c => c.S)) / 60) * 60;
+  const last  = Math.ceil(Math.max(...all.map(c => c.E)) / 60) * 60;
+
+  let html = '<thead><tr><th></th>' + DAYS.map(d => `<th>${d[1]}</th>`).join('') + '</tr></thead><tbody>';
+  for(let h = first; h < last; h += 60){
+    html += `<tr><td class="hour">${fmt(h)}</td>`;
+    for(const [k] of DAYS){
+      const here = PEOPLE.flatMap(p => meetings(p.id,k)
+        .filter(c => c.S >= h && c.S < h + 60)
+        .map(c => ({...c, who:p.id})));
+      html += '<td class="cell">' + here.map(c =>
+        `<div class="blk" style="--bc:var(--${c.who});--bs:var(--${c.who}-soft)">
+           <span class="t">${c.n}</span>
+           <span class="r">${fmt(c.S)}–${fmt(c.E)}</span>
+         </div>`).join('') + '</td>';
+    }
+    html += '</tr>';
+  }
+  document.getElementById('grid').innerHTML = html + '</tbody>';
+}
+
+/* ---------- course lists ---------- */
+document.getElementById('courses').innerHTML = PEOPLE.map(p =>
+  `<div class="card clist" style="--pc:var(--${p.id})">
+     <h3>${p.name}</h3>
+     ${COURSES[p.id].map(c => `<div class="crow"><span class="cn">${c.n}</span>
+        <span class="ct">${c.d} ${fmt(mins(c.s))}</span></div>`).join('')}
+   </div>`
+).join('');
+
+renderStatus();
+renderSlots();
+renderGrid();
+setInterval(renderStatus, 30000);
+</script>
