@@ -20,6 +20,8 @@
   --jack-soft:#dfeeea;
   --grant-soft:#f6e5d9;
   --maddox-soft:#e5e3f3;
+  --live:#b4531c;
+  --live-ring:rgba(180,83,28,.16);
   --shadow:0 1px 0 rgba(29,28,26,.04), 0 8px 24px -18px rgba(29,28,26,.5);
 }
 /* This page is light only, on purpose. Every color above is explicit so it
@@ -97,7 +99,19 @@ h2{
   padding:5px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;
 }
 .slot.long{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.slot.past{border-color:var(--line);color:var(--ink-3);background:transparent}
+.slot.open{
+  border-color:var(--live);background:var(--live);color:#fff;
+  box-shadow:0 0 0 4px var(--live-ring);
+}
+.slot .tag{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-left:2px}
 .none{font-size:14px;color:var(--ink-3);font-style:italic}
+
+/* live clock */
+.live{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--live);flex:none;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
 
 /* grid */
 .gridwrap{overflow-x:auto;padding:16px}
@@ -112,11 +126,20 @@ td{vertical-align:top;padding:0;border-top:1px solid var(--line)}
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);
   padding:4px 8px 0 0;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;
 }
-.cell{padding:3px 4px;height:46px}
+.cell{padding:3px 4px;height:46px;position:relative}
+th.is-today{color:var(--live)}
+td.is-today{background:rgba(180,83,28,.05)}
+.nowline{position:absolute;left:0;right:0;height:2px;background:var(--live);z-index:2;pointer-events:none}
+.nowline::before{
+  content:'';position:absolute;left:-1px;top:-3px;width:8px;height:8px;
+  border-radius:50%;background:var(--live);
+}
 .blk{
   border-radius:5px;padding:3px 6px;font-size:11px;line-height:1.3;margin-bottom:2px;
   border-left:3px solid var(--bc);background:var(--bs);color:var(--ink);
 }
+.blk.on{box-shadow:0 0 0 2px var(--bc)}
+.blk.done{opacity:.45}
 .blk .t{font-weight:600;display:block}
 .blk .r{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-2)}
 
@@ -143,7 +166,8 @@ a{color:var(--accent)}
 <header>
   <div class="eyebrow">Fall 2026 &middot; Norman &amp; College Station</div>
   <h1>The Trio Calendar</h1>
-  <p class="sub">Class times for Jack, Grant and Maddox in one place, and the windows when all three are off the hook at once. Times are Central.</p>
+  <p class="sub">Class times for Jack, Grant and Maddox in one place, and the windows when all three are off the hook at once. Everything on this page runs off the clock and updates itself.</p>
+  <div class="live"><span class="pulse"></span><span id="clock"></span></div>
   <div class="who" id="who"></div>
 </header>
 
@@ -154,7 +178,7 @@ a{color:var(--accent)}
 
 <section>
   <h2>When all three are free</h2>
-  <p class="note">Weekdays between 8:00am and 8:00pm, nobody in class. Filled blocks are an hour or longer.</p>
+  <p class="note">Weekdays between 8:00am and 8:00pm, nobody in class. Filled blocks are an hour or longer, and the window that is open right now is marked.</p>
   <div class="card slots" id="slots"></div>
 </section>
 
@@ -240,15 +264,33 @@ document.getElementById('who').innerHTML = PEOPLE.map(p =>
 /* ---------- right now ---------- */
 function nowCentral(){
   const parts = new Intl.DateTimeFormat('en-US',{
-    timeZone:'America/Chicago', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false
+    timeZone:'America/Chicago', weekday:'short',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
   }).formatToParts(new Date());
   const g = t => parts.find(p => p.type === t).value;
   const wd = {Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:0}[g('weekday')];
-  return { day: DAY_INDEX[wd] || null, m: (+g('hour'))*60 + (+g('minute')), wd };
+  const h = +g('hour') % 24;
+  return { day: DAY_INDEX[wd] || null, m: h*60 + (+g('minute')), s:+g('second'), h, wd };
 }
 
-function renderStatus(){
-  const now = nowCentral();
+// A countdown reads better to the second under a minute and to the minute above it.
+function countdown(mins, secs){
+  if(mins <= 0) return secs + 's';
+  if(mins < 60) return mins + 'm ' + String(secs).padStart(2,'0') + 's';
+  return Math.floor(mins/60) + 'h ' + String(mins%60).padStart(2,'0') + 'm';
+}
+
+function renderClock(now){
+  const day = now.day
+    ? {M:'Monday',T:'Tuesday',W:'Wednesday',R:'Thursday',F:'Friday'}[now.day]
+    : (now.wd === 6 ? 'Saturday' : 'Sunday');
+  const hh = (now.h % 12) || 12;
+  const ampm = now.h >= 12 ? 'pm' : 'am';
+  document.getElementById('clock').textContent =
+    `${day} ${hh}:${String(now.m%60).padStart(2,'0')}:${String(now.s).padStart(2,'0')}${ampm} Central`;
+}
+
+function renderStatus(now){
   document.getElementById('status').innerHTML = PEOPLE.map(p => {
     let badge = '<span class="badge free">Free</span>', detail;
     if(!now.day){
@@ -259,9 +301,9 @@ function renderStatus(){
       const next = today.find(c => c.S > now.m);
       if(inClass){
         badge = '<span class="badge busy">In class</span>';
-        detail = `<b>${inClass.n}</b> until <span class="clock">${fmt(inClass.E)}</span><br>${inClass.w}`;
+        detail = `<b>${inClass.n}</b> — out in <span class="clock">${countdown(inClass.E - now.m - 1, 60 - now.s)}</span><br>${inClass.w}`;
       } else if(next){
-        detail = `<b>${next.n}</b> at <span class="clock">${fmt(next.S)}</span> — ${dur(next.S - now.m)} from now`;
+        detail = `<b>${next.n}</b> at <span class="clock">${fmt(next.S)}</span> — starts in <span class="clock">${countdown(next.S - now.m - 1, 60 - now.s)}</span>`;
       } else {
         detail = today.length ? 'Done for the day.' : 'Nothing scheduled today.';
       }
@@ -288,38 +330,64 @@ function freeWindows(day){
   return out.filter(([s,e]) => e - s >= 30 && s < WIN_END);
 }
 
-function renderSlots(){
-  const today = nowCentral().day;
+function renderSlots(now){
+  const today = now.day;
   document.getElementById('slots').innerHTML = DAYS.map(([k,label]) => {
     const w = freeWindows(k);
+    const isToday = k === today;
     const list = w.length
-      ? w.map(([s,e]) => `<span class="slot${e-s >= 60 ? ' long' : ''}">${fmt(s)} – ${fmt(e)} <span style="opacity:.7">${dur(e-s)}</span></span>`).join('')
-      : '<span class="none">No shared gap today.</span>';
-    return `<div class="day-row${k === today ? ' today' : ''}">
-      <div class="day-name">${label}${k === today ? '<span>today</span>' : ''}</div>
+      ? w.map(([s,e]) => {
+          let cls = e - s >= 60 ? 'long' : '';
+          let tag = `<span class="tag">${dur(e-s)}</span>`;
+          if(isToday){
+            if(now.m >= s && now.m < e){
+              cls = 'open';
+              tag = `<span class="tag">open · ${countdown(e - now.m - 1, 60 - now.s)} left</span>`;
+            } else if(now.m >= e){
+              cls = 'past';
+              tag = '<span class="tag">gone</span>';
+            } else {
+              tag = `<span class="tag">${dur(e-s)} · in ${dur(s - now.m)}</span>`;
+            }
+          }
+          return `<span class="slot ${cls}">${fmt(s)} – ${fmt(e)} ${tag}</span>`;
+        }).join('')
+      : '<span class="none">No shared gap that day.</span>';
+    return `<div class="day-row${isToday ? ' today' : ''}">
+      <div class="day-name">${label}${isToday ? '<span>today</span>' : ''}</div>
       <div class="slot-list">${list}</div>
     </div>`;
   }).join('');
 }
 
 /* ---------- week grid ---------- */
-function renderGrid(){
+function renderGrid(now){
   const all = PEOPLE.flatMap(p => DAYS.flatMap(([k]) => meetings(p.id,k)));
   const first = Math.floor(Math.min(...all.map(c => c.S)) / 60) * 60;
   const last  = Math.ceil(Math.max(...all.map(c => c.E)) / 60) * 60;
 
-  let html = '<thead><tr><th></th>' + DAYS.map(d => `<th>${d[1]}</th>`).join('') + '</tr></thead><tbody>';
+  let html = '<thead><tr><th></th>' + DAYS.map(d =>
+    `<th class="${d[0] === now.day ? 'is-today' : ''}">${d[1]}</th>`).join('') + '</tr></thead><tbody>';
+
   for(let h = first; h < last; h += 60){
     html += `<tr><td class="hour">${fmt(h)}</td>`;
     for(const [k] of DAYS){
+      const isToday = k === now.day;
       const here = PEOPLE.flatMap(p => meetings(p.id,k)
         .filter(c => c.S >= h && c.S < h + 60)
         .map(c => ({...c, who:p.id})));
-      html += '<td class="cell">' + here.map(c =>
-        `<div class="blk" style="--bc:var(--${c.who});--bs:var(--${c.who}-soft)">
+
+      // The now-line sits inside whichever cell of today's column holds this minute.
+      const line = (isToday && now.m >= h && now.m < h + 60)
+        ? `<div class="nowline" style="top:${((now.m - h) / 60 * 100).toFixed(2)}%"></div>` : '';
+
+      html += `<td class="cell${isToday ? ' is-today' : ''}">` + line + here.map(c => {
+        const state = !isToday ? '' : (now.m >= c.E ? ' done' : (now.m >= c.S ? ' on' : ''));
+        return `<div class="blk${state}" style="--bc:var(--${c.who});--bs:var(--${c.who}-soft)">
            <span class="t">${c.n}</span>
            <span class="r">${fmt(c.S)}–${fmt(c.E)}</span>
-         </div>`).join('') + '</td>';
+         </div>`;
+      }).join('') + '</td>';
     }
     html += '</tr>';
   }
@@ -335,8 +403,25 @@ document.getElementById('courses').innerHTML = PEOPLE.map(p =>
    </div>`
 ).join('');
 
-renderStatus();
-renderSlots();
-renderGrid();
-setInterval(renderStatus, 30000);
+/* ---------- the tick ---------- */
+// Countdowns move every second. The grid only redraws when the minute rolls
+// over, so scrolling it never fights a repaint.
+let lastMinute = null;
+
+function tick(){
+  const now = nowCentral();
+  renderClock(now);
+  renderStatus(now);
+  renderSlots(now);
+  const stamp = now.day + ':' + now.m;
+  if(stamp !== lastMinute){
+    lastMinute = stamp;
+    renderGrid(now);
+  }
+}
+
+tick();
+setInterval(tick, 1000);
+// A phone that slept has a stale page; catch it up the moment it comes back.
+document.addEventListener('visibilitychange', () => { if(!document.hidden) tick(); });
 </script>
