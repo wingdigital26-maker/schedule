@@ -21,42 +21,9 @@
   --maddox-soft:#e5e3f3;
   --shadow:0 1px 0 rgba(29,28,26,.04), 0 8px 24px -18px rgba(29,28,26,.5);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --ground:#15161a;
-    --panel:#1d1f24;
-    --line:#31343b;
-    --ink:#eceae6;
-    --ink-2:#a8a49c;
-    --ink-3:#7b7770;
-    --accent:#5fc9b3;
-    --accent-soft:#1c332f;
-    --jack:#5fc9b3;
-    --grant:#e79358;
-    --maddox:#9d95e6;
-    --jack-soft:#1c332f;
-    --grant-soft:#3a2a1e;
-    --maddox-soft:#282540;
-    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
-  }
-}
-:root[data-theme="dark"]{
-  --ground:#15161a;
-  --panel:#1d1f24;
-  --line:#31343b;
-  --ink:#eceae6;
-  --ink-2:#a8a49c;
-  --ink-3:#7b7770;
-  --accent:#5fc9b3;
-  --accent-soft:#1c332f;
-  --jack:#5fc9b3;
-  --grant:#e79358;
-  --maddox:#9d95e6;
-  --jack-soft:#1c332f;
-  --grant-soft:#3a2a1e;
-  --maddox-soft:#282540;
-  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 30px -20px #000;
-}
+/* This page is light only, on purpose. Every color above is explicit so it
+   holds the same look whatever theme the viewer is in. */
+:root{color-scheme:light}
 
 *{box-sizing:border-box}
 body{
