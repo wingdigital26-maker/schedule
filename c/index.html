@@ -524,6 +524,16 @@ audio{width:100%;margin-bottom:12px}
     <div class="sechead"><h2>Next two weeks</h2><span class="aux" id="soonAux"></span></div>
     <div class="card tight" id="soonList"></div>
 
+    <div id="annSec" style="display:none">
+      <div class="sechead"><h2>Announcements</h2><span class="aux" id="annAux"></span></div>
+      <div class="card tight" id="annList"></div>
+    </div>
+
+    <div id="undatedSec" style="display:none">
+      <div class="sechead"><h2>No due date yet</h2><span class="aux" id="undatedAux"></span></div>
+      <div class="card tight" id="undatedList"></div>
+    </div>
+
     <div class="minibtns" id="dueTools" style="display:none">
       <button class="minibtn" id="dueRefresh">Update from Canvas</button>
       <button class="minibtn danger" id="dueForget">Disconnect</button>
@@ -1470,7 +1480,9 @@ function gapLabel(iso, todayIso){
 function rowHtml(it, showDate, todayIso, done){
   const exam = it.kind === 'exam';
   const k = doneKeyOf(it);
-  const isDone = done ? done.has(k) : false;
+  /* Canvas knowing it was submitted beats the local tick: no unticking
+     something the school already has. */
+  const isDone = it.done === true || (done ? done.has(k) : false);
   const left = showDate ? gapLabel(it.due, todayIso) : hhmm(toMin(it.time));
   const meta = [it.short, showDate ? hhmm(toMin(it.time)) : null,
                 it.points ? it.points + ' pts' : null].filter(Boolean).join(' · ');
@@ -1516,6 +1528,8 @@ function renderCanvasTab(){
     $('#soonList').innerHTML = '';
     $('#calGrid').innerHTML = '';
     $('#calMon').textContent = '';
+    $('#annSec').style.display = 'none';
+    $('#undatedSec').style.display = 'none';
     return;
   }
 
@@ -1546,7 +1560,7 @@ function renderCanvasTab(){
     return n >= 0 && n <= 14;
   });
   const done = doneSet();
-  const doneCount = soon.filter(x => done.has(doneKeyOf(x))).length;
+  const doneCount = soon.filter(x => x.done === true || done.has(doneKeyOf(x))).length;
   $('#soonAux').textContent = soon.length
     ? (doneCount ? doneCount + ' of ' + soon.length + ' done' : soon.length + (soon.length === 1 ? ' item' : ' items'))
     : '0 items';
@@ -1565,6 +1579,51 @@ function renderCanvasTab(){
     }
     $('#soonList').innerHTML = out;
   }
+
+  renderAnnouncements(today);
+  renderUndated(done);
+}
+
+/* Recent instructor announcements, shipped by canvas_export.py. An ICS
+   import cannot carry these, so the section simply stays hidden then. */
+function renderAnnouncements(today){
+  const list = (typeof CANVAS_ANN === 'undefined') ? [] : CANVAS_ANN;
+  const recent = list.filter(a => daysBetween(a.posted, today) <= 14);
+  const sec = $('#annSec');
+  if (!recent.length){ sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  $('#annAux').textContent = recent.length + (recent.length === 1 ? ' recent' : ' recent');
+  $('#annList').innerHTML = recent.map(a => {
+    const meta = [a.short, gapLabel(a.posted, today)].filter(Boolean).join(' · ');
+    const inner = '<div class="what"><div class="ti">' + esc(a.title) + '</div>' +
+                  '<div class="mt">' + esc(meta) + '</div></div>';
+    return (a.url && /^https?:\/\//i.test(a.url))
+      ? '<a class="duerow" href="' + esc(a.url) + '" target="_blank" rel="noopener">' + inner + '</a>'
+      : '<div class="duerow">' + inner + '</div>';
+  }).join('');
+}
+
+/* Assignments Canvas has posted with no due date yet. They used to be
+   dropped at export and were invisible, which is how work sneaks up. */
+function renderUndated(done){
+  const list = (typeof CANVAS_UNDATED === 'undefined') ? [] : CANVAS_UNDATED;
+  /* An imported ICS wins over the shipped file, so hide the shipped
+     undated list too when an import is in charge: it may be someone else's. */
+  const items = storedCanvas() ? [] : list.filter(x => x.done !== true);
+  const sec = $('#undatedSec');
+  if (!items.length){ sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  $('#undatedAux').textContent = items.length + (items.length === 1 ? ' item' : ' items');
+  $('#undatedList').innerHTML = items.map(it => {
+    const meta = [it.short, it.points ? it.points + ' pts' : null, 'date TBA']
+      .filter(Boolean).join(' · ');
+    const inner = '<div class="what"><div class="ti">' + esc(it.title) + '</div>' +
+                  '<div class="mt">' + esc(meta) + '</div></div>';
+    const cls = 'duerow' + (it.kind === 'exam' ? ' isexam' : '');
+    return (it.url && /^https?:\/\//i.test(it.url))
+      ? '<a class="' + cls + '" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + inner + '</a>'
+      : '<div class="' + cls + '">' + inner + '</div>';
+  }).join('');
 }
 
 function renderCal(N){
