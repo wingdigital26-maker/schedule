@@ -482,8 +482,6 @@ audio{width:100%;margin-bottom:12px}
     <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
     <button class="nb" data-v="due"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>Due</button>
     <button class="nb" data-v="plan"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><rect x="6" y="12" width="5" height="3" rx="1"/><rect x="13" y="12" width="5" height="6" rx="1"/></svg>Plan</button>
-    <button class="nb" data-v="courses"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5z"/><path d="M4 19.5A1.5 1.5 0 015.5 18H19v3H5.5A1.5 1.5 0 014 19.5z"/></svg>Classes</button>
-    <button class="nb" data-v="food"><svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 004 0V3M8 11v10"/><path d="M17 3c-1.5 1.5-2 3.5-2 5.5S15.5 12 17 12v9"/></svg>Food</button>
     <button class="nb" data-v="study"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>Record</button>
     <button class="nb" data-v="finals"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M7 10.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-5.5"/></svg>Finals</button>
   </div>
@@ -3966,8 +3964,53 @@ function parseQuick(text){
     t = t.replace(dm[0], ' ');
   }
 
+  /* relative to a class: "after micro", "before astronomy", "when math
+     ends". The schedule is right here, so use it instead of guessing. */
+  const relWhole = t.match(/\b(after|before|when)\s+(?:my\s+)?([a-z][a-z0-9 ]+)/);
+  if (relWhole){
+    const dir = relWhole[1] === 'before' ? 'before' : 'after';
+    const words = relWhole[2].trim().split(/\s+/);
+    let course = null, used = 0;
+    for (let n = Math.min(4, words.length); n > 0 && !course; n--){
+      const phrase = words.slice(0, n).join(' ');
+      if (phrase.length < 3) break;
+      course = COURSES.find(c =>
+        (c.short || '').toLowerCase().includes(phrase) ||
+        (c.title || '').toLowerCase().includes(phrase));
+      if (course) used = n;
+    }
+    if (course){
+      /* pick the day: an explicit one wins, else today if it meets today,
+         else its next meeting day this week */
+      if (!out.days){
+        if ((course.days || '').includes(N.letter)) out.days = N.letter;
+        else {
+          for (let i = 1; i <= 7; i++){
+            const L = PLAN_DAYS[(N.dow + i) % 7];
+            if ((course.days || '').includes(L)){ out.days = L; break; }
+          }
+        }
+      }
+      if (dir === 'after'){
+        out.start = course.end;
+      } else {
+        const s = mins(course.start) - (out.dur || 60);
+        out.start = pad2(Math.floor(s / 60)) + ':' + pad2(s % 60);
+        out.end = course.start;
+      }
+      out.rel = dir + ' ' + (course.short || course.title);
+      t = t.replace(relWhole[1] + ' ' + words.slice(0, used).join(' '), ' ')
+           .replace(/\b(ends|is over|gets out|lets out|my)\b/g, ' ');
+    }
+  }
+
   /* times: "at 3pm", "from 3 to 4:30pm", "3-4pm", "until 5" */
   const T = '(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)?';
+  if (out.start){
+    /* a class anchored the start; only an "until 5" style end applies */
+    const till = t.match(new RegExp('\\b(?:to|until|till)\\s+' + T));
+    if (till){ out.end = quickTime(till[1], till[2], till[3]); t = t.replace(till[0], ' '); }
+  } else {
   const range = t.match(new RegExp('\\b(?:from\\s+|at\\s+)?' + T + '\\s*(?:to|until|till|-|through)\\s*' + T));
   if (range){
     /* "3 to 4pm": the first number borrows the second's am/pm */
@@ -3980,6 +4023,7 @@ function parseQuick(text){
       out.start = quickTime(at[1], at[2], at[3]);
       t = t.replace(at[0], ' ');
     }
+  }
   }
   if (out.start && !out.end){
     const s = mins(out.start) + (out.dur || 60);
@@ -4006,7 +4050,7 @@ function applyQuick(text){
   const bits = [];
   if (q.title) bits.push(q.title);
   if (q.days)  bits.push([...q.days].map(L => PLAN_DAYLAB[L]).join(' '));
-  if (q.start) bits.push(fmt(q.start) + ' – ' + fmt(q.end));
+  if (q.start) bits.push(fmt(q.start) + ' – ' + fmt(q.end) + (q.rel ? ' (' + q.rel + ')' : ''));
   h.textContent = bits.length ? 'Got it: ' + bits.join(' · ') + '. Check it, then Save.'
                               : 'Could not read that. Try "gym at 3pm on tuesday".';
   h.className = 'qhint' + (bits.length ? ' ok' : '');
