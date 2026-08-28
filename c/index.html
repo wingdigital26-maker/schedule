@@ -148,8 +148,17 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .ptimes input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
   border:1px solid var(--line);border-radius:12px;padding:10px}
 .ptimes .edto{flex:0 0 auto}
-#planTitle{width:100%;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
+#planTitle,#planQuick{width:100%;font:inherit;font-size:16px;color:var(--tx);background:var(--bg2);
   border:1px solid var(--line);border-radius:12px;padding:11px}
+.qadd{display:flex;gap:8px;align-items:stretch}
+.qadd #planQuick{flex:1;min-width:0}
+.qmic{flex:0 0 auto;width:46px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);
+  color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.qmic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.qmic.live{background:#a8412b;border-color:#a8412b;color:#fff;animation:qpulse 1.1s ease infinite}
+@keyframes qpulse{50%{opacity:.55}}
+.qhint{font-size:12.5px;color:var(--dim);min-height:16px;margin-top:6px}
+.qhint.ok{color:var(--tx)}
 
 /* course rows */
 .row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
@@ -545,7 +554,10 @@ audio{width:100%;margin-bottom:12px}
     <div class="sechead"><h2>Block calendar</h2><span class="aux" id="planAux"></span></div>
     <div class="chips" id="planChips"></div>
     <div class="card tight"><div class="plangrid" id="planGrid"></div></div>
-    <div class="minibtns"><button class="minibtn primary" id="planAdd">Add a block</button></div>
+    <div class="minibtns">
+      <button class="minibtn primary" id="planAdd">Add a block</button>
+      <button class="minibtn" id="planNotify">Notify me</button>
+    </div>
     <div class="foot" style="text-align:left;padding:10px 2px 0">Classes are placed for you. Add your own blocks
     for work, gym, study, meals, anything. Tap one of your blocks to change or delete it.
     Blocks stay on this phone.</div>
@@ -742,6 +754,14 @@ audio{width:100%;margin-bottom:12px}
     <div class="sheetin">
       <h3 id="planSheetTitle">New block</h3>
       <div style="overflow-y:auto">
+        <div class="plabel">Say it or type it, and the form fills itself</div>
+        <div class="qadd">
+          <input id="planQuick" type="text" placeholder="gym at 3pm for an hour on tue and thu">
+          <button class="qmic" id="planMic" aria-label="Speak a block">
+            <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
+        </div>
+        <div class="qhint" id="planQuickHint"></div>
         <div class="plabel">What is it</div>
         <input id="planTitle" type="text" placeholder="Gym, work, study, dinner..." maxlength="40">
         <div class="plabel">Which days</div>
@@ -3838,6 +3858,9 @@ function renderPlan(){
 function openPlanSheet(block){
   planEditing = block ? block.id : null;
   $('#planSheetTitle').textContent = block ? 'Edit block' : 'New block';
+  $('#planQuick').value = '';
+  $('#planQuickHint').textContent = '';
+  $('#planQuickHint').className = 'qhint';
   $('#planDelete').style.display = block ? '' : 'none';
   $('#planTitle').value = block ? block.title : '';
   $('#planStart').value = block ? block.start : '17:00';
@@ -3891,6 +3914,235 @@ function planBoot(){
     $('#planSheet').classList.remove('on');
     renderPlan();
   };
+  quickBoot();
+  notifyBoot();
+}
+
+/* ---------------- quick add: one spoken or typed line ----------------
+   "gym at 3pm for an hour on tue and thu" fills the form. It only fills;
+   Save still commits, so a misheard sentence costs nothing. */
+const QUICK_DAYS = {
+  sunday:'U', sun:'U', monday:'M', mon:'M', tuesday:'T', tues:'T', tue:'T',
+  wednesday:'W', wed:'W', thursday:'R', thurs:'R', thur:'R', thu:'R',
+  friday:'F', fri:'F', saturday:'S', sat:'S'
+};
+
+function quickTime(h, m, mer){
+  h = +h; m = m ? +m : 0;
+  if (mer){
+    if (/p/i.test(mer) && h < 12) h += 12;
+    if (/a/i.test(mer) && h === 12) h = 0;
+  } else if (h >= 1 && h <= 7){
+    h += 12;   /* a bare "at 3" almost always means afternoon */
+  }
+  return pad2(h) + ':' + pad2(m);
+}
+
+function parseQuick(text){
+  let t = ' ' + text.toLowerCase().replace(/[.,!?]/g, ' ') + ' ';
+  const out = { days:'', start:null, end:null, dur:null };
+
+  /* days, including today / tomorrow / weekdays / every day */
+  const N = campusNow();
+  for (const [w, L] of Object.entries(QUICK_DAYS)){
+    const re = new RegExp('\\b' + w + 's?\\b');
+    if (re.test(t)){ if (!out.days.includes(L)) out.days += L; t = t.replace(new RegExp('\\b' + w + 's?\\b', 'g'), ' '); }
+  }
+  if (/\bweekdays?\b/.test(t)){ out.days = 'MTWRF'; t = t.replace(/\bweekdays?\b/g, ' '); }
+  if (/\bevery ?day\b|\bdaily\b/.test(t)){ out.days = 'UMTWRFS'; t = t.replace(/\bevery ?day\b|\bdaily\b/g, ' '); }
+  if (/\btomorrow\b/.test(t)){ out.days += PLAN_DAYS[(N.dow + 1) % 7]; t = t.replace(/\btomorrow\b/g, ' '); }
+  if (/\btoday\b/.test(t)){ out.days += N.letter; t = t.replace(/\btoday\b/g, ' '); }
+
+  /* duration: "for an hour", "for 90 minutes", "for 2 hours" */
+  const dm = t.match(/\bfor\s+(?:(a|an|one|half an?|\d+(?:\.\d+)?)\s*)?(hours?|hrs?|minutes?|mins?)\b/);
+  if (dm){
+    let n = dm[1];
+    n = (!n || n === 'a' || n === 'an' || n === 'one') ? 1 : /half/.test(n) ? .5 : +n;
+    out.dur = Math.round(/h/.test(dm[2]) ? n * 60 : n);
+    t = t.replace(dm[0], ' ');
+  }
+
+  /* times: "at 3pm", "from 3 to 4:30pm", "3-4pm", "until 5" */
+  const T = '(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)?';
+  const range = t.match(new RegExp('\\b(?:from\\s+|at\\s+)?' + T + '\\s*(?:to|until|till|-|through)\\s*' + T));
+  if (range){
+    /* "3 to 4pm": the first number borrows the second's am/pm */
+    out.start = quickTime(range[1], range[2], range[3] || range[6]);
+    out.end   = quickTime(range[4], range[5], range[6]);
+    t = t.replace(range[0], ' ');
+  } else {
+    const at = t.match(new RegExp('\\b(?:at|from)\\s+' + T)) || t.match(new RegExp('\\b' + T + '\\b'));
+    if (at && !(at[1].length > 2)){
+      out.start = quickTime(at[1], at[2], at[3]);
+      t = t.replace(at[0], ' ');
+    }
+  }
+  if (out.start && !out.end){
+    const s = mins(out.start) + (out.dur || 60);
+    out.end = pad2(Math.floor(s / 60) % 24) + ':' + pad2(s % 60);
+  }
+
+  /* whatever is left, minus connective scraps, is the name */
+  out.title = t.replace(/\b(on|and|the|a|an|at|from|to|for|me|my|add|schedule|put|block)\b/g, ' ')
+               .replace(/\s+/g, ' ').trim();
+  if (out.title) out.title = out.title[0].toUpperCase() + out.title.slice(1);
+  return out;
+}
+
+function applyQuick(text){
+  const q = parseQuick(text);
+  if (q.title) $('#planTitle').value = q.title.slice(0, 40);
+  if (q.start) $('#planStart').value = q.start;
+  if (q.end)   $('#planEnd').value = q.end;
+  if (q.days){
+    $('#planDays').querySelectorAll('.pday').forEach(b =>
+      b.classList.toggle('on', q.days.includes(b.dataset.day)));
+  }
+  const h = $('#planQuickHint');
+  const bits = [];
+  if (q.title) bits.push(q.title);
+  if (q.days)  bits.push([...q.days].map(L => PLAN_DAYLAB[L]).join(' '));
+  if (q.start) bits.push(fmt(q.start) + ' – ' + fmt(q.end));
+  h.textContent = bits.length ? 'Got it: ' + bits.join(' · ') + '. Check it, then Save.'
+                              : 'Could not read that. Try "gym at 3pm on tuesday".';
+  h.className = 'qhint' + (bits.length ? ' ok' : '');
+}
+
+function quickBoot(){
+  const inp = $('#planQuick');
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); applyQuick(inp.value); } });
+  inp.addEventListener('blur', () => { if (inp.value.trim()) applyQuick(inp.value); });
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = $('#planMic');
+  if (!SR){
+    mic.onclick = () => {
+      $('#planQuickHint').textContent = 'This browser cannot listen. Type it instead.';
+      $('#planQuickHint').className = 'qhint';
+    };
+    return;
+  }
+  let rec = null;
+  mic.onclick = () => {
+    if (rec){ rec.stop(); return; }
+    rec = new SR();
+    rec.lang = 'en-US';
+    rec.interimResults = false;
+    mic.classList.add('live');
+    $('#planQuickHint').textContent = 'Listening...';
+    $('#planQuickHint').className = 'qhint';
+    rec.onresult = e => {
+      const said = e.results[0][0].transcript;
+      inp.value = said;
+      applyQuick(said);
+    };
+    rec.onerror = e => {
+      $('#planQuickHint').textContent = e.error === 'not-allowed'
+        ? 'Microphone blocked. Allow it in the browser, or type it.'
+        : 'Did not catch that. Try again or type it.';
+    };
+    rec.onend = () => { mic.classList.remove('live'); rec = null; };
+    try { rec.start(); } catch (e){ mic.classList.remove('live'); rec = null; }
+  };
+}
+
+/* ---------------- notifications: what is next ----------------
+   A heads-up 10 minutes before every class and every plan block, and one
+   as it starts. Fired locally by the running app, so they arrive while
+   the app is open or freshly backgrounded from the home screen; a fully
+   killed app cannot fire them, because there is deliberately no server. */
+const NOTIFY_KEY = 'schedhub.notify.' + SCHEDULE.id;
+const FIRED_KEY = 'schedhub.fired.' + SCHEDULE.id;
+const notifyOn = () => { try { return localStorage.getItem(NOTIFY_KEY) === '1'; } catch (e){ return false; } };
+
+function notifyLabel(){
+  const b = $('#planNotify');
+  if (!b) return;
+  b.textContent = notifyOn() ? 'Alerts on' : 'Notify me';
+  b.classList.toggle('primary', false);
+}
+
+function swPath(){
+  /* one worker at the repo root serves all three apps */
+  return /\/(b|c)\/[^/]*$/.test(location.pathname) ? '../sw.js' : 'sw.js';
+}
+
+function showNote(title, body){
+  const opts = { body, icon: 'icon.png', badge: 'icon.png', tag: title + body };
+  if (navigator.serviceWorker && navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(r => r.showNotification(title, opts)).catch(() => {});
+  } else {
+    try { new Notification(title, opts); } catch (e){
+      /* some phones only allow notifications through a worker */
+      if (navigator.serviceWorker) navigator.serviceWorker.ready
+        .then(r => r.showNotification(title, opts)).catch(() => {});
+    }
+  }
+}
+
+function notifyBoot(){
+  notifyLabel();
+  if (notifyOn() && 'serviceWorker' in navigator){
+    navigator.serviceWorker.register(swPath()).catch(() => {});
+  }
+  $('#planNotify').onclick = () => {
+    if (notifyOn()){
+      try { localStorage.setItem(NOTIFY_KEY, '0'); } catch (e){}
+      notifyLabel();
+      return;
+    }
+    if (!('Notification' in window)){
+      alert('This browser cannot show notifications here. On an iPhone, add the app to the home screen first (Share, then Add to Home Screen) and open it from that icon.');
+      return;
+    }
+    Notification.requestPermission().then(p => {
+      if (p !== 'granted'){
+        alert('Notifications are blocked for this app. Allow them in the browser settings and try again.');
+        return;
+      }
+      try { localStorage.setItem(NOTIFY_KEY, '1'); } catch (e){}
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register(swPath()).catch(() => {});
+      notifyLabel();
+      showNote('Alerts are on', 'You will get a heads-up 10 minutes before every class and block.');
+    });
+  };
+}
+
+function firedSet(iso){
+  try {
+    const o = JSON.parse(localStorage.getItem(FIRED_KEY) || '{}');
+    return (o.d === iso && Array.isArray(o.k)) ? new Set(o.k) : new Set();
+  } catch (e){ return new Set(); }
+}
+function firedSave(iso, s){
+  try { localStorage.setItem(FIRED_KEY, JSON.stringify({d: iso, k: [...s]})); } catch (e){}
+}
+
+function notifyTick(N){
+  if (!notifyOn()) return;
+  const items = [];
+  if (!pastClasses(N) && 'MTWRF'.includes(N.letter)){
+    for (const m of meetingsFor(N.letter))
+      items.push({ s: m.s, title: m.c.short || m.c.title,
+                   where: m.c.bldg ? m.c.bldg + (m.c.room ? ' ' + m.c.room : '') : '' });
+  }
+  for (const x of planBlocksFor(N.letter))
+    items.push({ s: x.s, title: x.b.title, where: '' });
+
+  const fired = firedSet(N.iso);
+  let dirty = false;
+  for (const it of items){
+    const stages = [[it.s - 10, 'in 10 minutes'], [it.s, 'now']];
+    for (const [when, word] of stages){
+      if (N.minutes !== when) continue;
+      const key = it.title + '@' + it.s + '@' + word;
+      if (fired.has(key)) continue;
+      fired.add(key); dirty = true;
+      showNote(it.title + ' ' + word,
+        fmt(pad2(Math.floor(it.s / 60)) + ':' + pad2(it.s % 60)) + (it.where ? ' · ' + it.where : ''));
+    }
+  }
+  if (dirty) firedSave(N.iso, fired);
 }
 
 /* ---------------- loop ---------------- */
@@ -3915,6 +4167,7 @@ function tick(){
 
   if (N.minutes !== lastMinute){
     lastMinute = N.minutes;
+    try { notifyTick(N); } catch (e){}
     try { renderHeader(N); } catch (e){}
     try { renderFinals(N); } catch (e){}
     try { renderFood(N); } catch (e){}

@@ -31,6 +31,14 @@ no framework and no server. Open the file and it runs.
   assignments posted with no due date yet, so nothing sneaks up.
 - **Finals** — every exam, and a button that writes the whole semester into the
   phone's calendar.
+- **Plan** — a block calendar with classes placed automatically. Add a block by
+  typing or speaking one line ("gym at 3pm for an hour on tue and thu") and the
+  form fills itself; Save commits it. **Notify me** turns on a heads-up 10
+  minutes before every class and block, plus one as it starts. Alerts are fired
+  locally by the app (there is deliberately no server), so they arrive while
+  the app is open or recently backgrounded from a home-screen install; a fully
+  killed app cannot fire them. On iPhone, add to the home screen first —
+  Safari tabs cannot show notifications at all.
 
 Everything a person enters (notes, audio, grades, photos, favourites) stays in
 that browser. Nothing is uploaded and there is no account.
