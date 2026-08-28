@@ -26,7 +26,9 @@ no framework and no server. Open the file and it runs.
 - **Due** — everything Canvas knows about, as a month calendar with a dot on
   every day that has something on it. Tap a day to see it. Exams ride along the
   top with a countdown, and the next fortnight is listed underneath. Each row
-  opens the assignment in Canvas.
+  opens the assignment in Canvas. Work Canvas already has a submission for
+  arrives ticked. Below the fortnight sit recent course announcements and the
+  assignments posted with no due date yet, so nothing sneaks up.
 - **Finals** — every exam, and a button that writes the whole semester into the
   phone's calendar.
 
