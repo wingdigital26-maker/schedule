@@ -60,6 +60,9 @@ def build(block, out_html, copy_icon=True):
     out_html.write_text(html, encoding='utf-8')
     if copy_icon:
         shutil.copyfile(ROOT / 'icon.png', out_html.parent / 'icon.png')
+        # sync.js is loaded with a relative src, so each generated app needs
+        # its own copy or sync would silently be missing from b/ and c/.
+        shutil.copyfile(ROOT / 'sync.js', out_html.parent / 'sync.js')
     print('built', out_html)
 
 

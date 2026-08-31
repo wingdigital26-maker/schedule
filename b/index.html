@@ -258,6 +258,7 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 @keyframes qpulse{50%{opacity:.55}}
 .qhint{font-size:12.5px;color:var(--dim);min-height:16px;margin-top:6px}
 .qhint.ok{color:var(--tx)}
+.qhint.warn{color:var(--tx);border-left:3px solid var(--signal);padding-left:8px;font-weight:600;line-height:1.45}
 
 /* course rows */
 .row{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--line)}
@@ -613,6 +614,36 @@ audio{width:100%;margin-bottom:12px}
 .quizcard .qa{font-size:16px;color:var(--dim);line-height:1.4}
 .quizcard .hint{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
 .quizmeta{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim2);font-weight:600;margin-top:10px}
+/* ---- study load: the weekly study-hour panel on the Schedule tab ----
+   Collapsed by default so it never pushes the schedule grid off a phone
+   screen; the summary line stays readable either way. */
+.sldisc{margin:14px 0 0}
+.sltog{width:100%;display:flex;align-items:center;gap:10px;text-align:left;min-height:48px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px;
+  color:var(--tx);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.sltog .slsum{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--dim2);text-align:right}
+.sltog .slcar{flex:0 0 auto;color:var(--dim2);font-size:11px;transition:transform .15s}
+.sldisc.on .sltog .slcar{transform:rotate(90deg)}
+.sldisc .slbody{display:none}
+.sldisc.on .slbody{display:block}
+.slnote{font-size:12px;color:var(--dim2);line-height:1.55;margin:0 0 12px}
+.slrow{padding:12px 0;border-top:1px solid var(--line)}
+.slrow:first-child{border-top:0}
+.slhead{display:flex;align-items:baseline;gap:8px}
+.slhead .sldot{flex:0 0 auto;width:9px;height:9px;border-radius:3px;align-self:center}
+.slhead .slname{flex:1;min-width:0;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slhead .slhrs{flex:0 0 auto;font-size:14.5px;font-weight:800}
+.slmeta{font-size:12px;color:var(--dim2);margin-top:3px;line-height:1.5}
+.slwhy{font-size:12.5px;color:var(--dim);margin-top:6px;line-height:1.55}
+.slact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:9px}
+.slact .minibtn{flex:0 1 auto;min-width:0;padding:0 12px;font-size:12.5px;min-height:40px}
+.slratio{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim2);font-weight:600}
+.slratio input{width:56px;min-height:40px;font:inherit;font-size:13px;font-weight:700;text-align:center;
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--tx);padding:0 4px}
+.slsay{font-size:12.5px;line-height:1.55;margin-top:8px;padding:9px 11px;border-radius:11px;
+  background:var(--bg2);border:1px solid var(--line);color:var(--dim)}
+.slsay.ok{background:var(--good-bg);border-color:var(--good-line);color:var(--good)}
+.slsay.no{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
 .foot{color:var(--dim2);font-size:12px;text-align:center;padding:22px 10px 8px;line-height:1.6}
 /* the page footer sits in the same column as every card above it, edge for
    edge, so nothing appears to slide left or right at the bottom */
@@ -711,6 +742,23 @@ audio{width:100%;margin-bottom:12px}
       <button class="minibtn primary" id="planAdd">Add a block</button>
       <button class="minibtn" id="planNotify">Notify me</button>
     </div>
+
+    <!-- STUDY LOAD -->
+    <div class="sldisc" id="sload">
+      <button class="sltog" id="sloadTog" aria-expanded="false" aria-controls="sloadBody">
+        <span class="slcar">&#9654;</span><span>Study time</span>
+        <span class="slsum" id="sloadSum"></span>
+      </button>
+      <div class="slbody" id="sloadBody">
+        <div class="card"><div id="sloadList"></div></div>
+        <div class="minibtns">
+          <button class="minibtn primary" id="sloadAll">Place every class</button>
+          <button class="minibtn danger" id="sloadClear">Remove study blocks</button>
+        </div>
+        <div id="sloadSay"></div>
+      </div>
+    </div>
+
     <div class="foot" style="text-align:left;padding:10px 2px 0">Classes are placed for you. Add your own blocks
     for work, gym, study, meals, anything. Tap an open stretch of the grid to start a block there,
     or tap one of your own blocks to change or delete it. Blocks stay on this phone.</div>
@@ -742,6 +790,7 @@ audio{width:100%;margin-bottom:12px}
   <!-- STUDY -->
   <section class="view" id="v-study">
     <div class="sechead"><h2>Record a lecture</h2><span class="aux">Stays on this phone</span></div>
+    <div id="recRecover" style="display:none"></div>
     <div class="recwrap">
       <div class="rectarget"><select id="recCourse" aria-label="Which class"></select></div>
       <button class="recbig" id="recBtn"><span class="recdot"></span>Start recording</button>
@@ -760,6 +809,7 @@ audio{width:100%;margin-bottom:12px}
         </div>
         <div class="livenotes" id="liveNotes"></div>
         <div class="recnote">Every note is stamped, so you can jump back to that moment in the audio.</div>
+        <div class="recnote" id="recWake" style="display:none"></div>
       </div>
       <div class="warnbox" id="recWarn" style="display:none"></div>
       <button class="minibtn" id="recNotesOnly" style="display:none;width:100%;margin-top:10px">Notes only</button>
@@ -1516,8 +1566,10 @@ function renderFinals(N){
 /* Canvas import.
    Everyone gets the same app, so nobody's assignments can be baked in for
    them. Instead each person loads their own Canvas calendar file once and it
-   is kept in this browser under their own key. No token, no login, no server,
-   and one person's coursework can never appear in another person's app. */
+   is kept in this browser under their own key. No token and no login, and one
+   person's coursework can never appear in another person's app. It leaves this
+   browser only if the person turns on sync (sync.js), which copies it to their
+   own other devices and nowhere else. */
 const CANVAS_KEY = 'schedhub.canvas.' + SCHEDULE.id;
 
 /* Which assignments this person has finished. Keyed the same way the
@@ -2060,16 +2112,23 @@ document.addEventListener('click', e => {
    ========================================================================= */
 
 const LEC = { rec:null, stream:null, chunks:[], t0:0, timer:null, raf:null, ac:null,
-              notes:[], target:null, noAudio:false, sr:null, transcript:'', segs:[] };
+              notes:[], target:null, noAudio:false, sr:null, transcript:'', segs:[],
+              wl:null, wlWanted:false, live:null, seq:0, writeFail:0,
+              bytes:0, lastChunk:0, lost:false, quotaWarned:false };
 
 /* ---- IndexedDB ---- */
 function idb(){
   return new Promise((res, rej) => {
-    const r = indexedDB.open('schedhub_' + SCHEDULE.id, 2);
+    const r = indexedDB.open('schedhub_' + SCHEDULE.id, 3);
     r.onupgradeneeded = () => {
       const d = r.result;
       if (!d.objectStoreNames.contains('lectures')) d.createObjectStore('lectures', {keyPath:'id'});
       if (!d.objectStoreNames.contains('photos'))   d.createObjectStore('photos',   {keyPath:'id'});
+      /* 'inprog' holds a recording while it is still running: one meta row and
+         one row per audio chunk. It is deliberately NOT the lectures store —
+         a half-written recording must never show up in the saved list, in a
+         summary or in an export as though it were finished. */
+      if (!d.objectStoreNames.contains('inprog'))   d.createObjectStore('inprog',   {keyPath:'k'});
     };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -2088,6 +2147,186 @@ const dbPut = r  => dbTx('readwrite', s => s.put(r));
 const dbAll = () => dbTx('readonly',  s => s.getAll());
 const dbGet = id => dbTx('readonly',  s => s.get(id));
 const dbDel = id => dbTx('readwrite', s => s.delete(id));
+
+/* ---- in-progress recording store ----
+   Audio is written as it arrives instead of only at Stop, so a crash, a
+   phone reboot or an accidental close costs the last few seconds and not
+   the whole lecture. Keys sort in order: "<id>|meta" then "<id>|c000001". */
+async function ipTx(mode, fn){
+  const d = await idb();
+  return new Promise((res, rej) => {
+    const t = d.transaction('inprog', mode);
+    const out = fn(t.objectStore('inprog'));
+    t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
+    t.onerror = () => rej(t.error);
+    t.onabort = () => rej(t.error);
+  });
+}
+const ipAll  = () => ipTx('readonly',  s => s.getAll());
+const ipPut  = r  => ipTx('readwrite', s => s.put(r));
+/* Keys only. Opening the app must not pull a 70 MB backlog of audio into
+   memory just to notice a recording was interrupted. */
+const ipKeys = () => ipTx('readonly',  s => s.getAllKeys());
+const ipGet  = k  => ipTx('readonly',  s => s.get(k));
+function ipKey(id, n){ return id + '|c' + String(n).padStart(6, '0'); }
+
+/* Meta carries everything typed during the lecture. Notes are rewritten on
+   every meta write, so a recovered recording keeps its timestamped notes. */
+function ipMeta(){
+  return {
+    k: LEC.live + '|meta', kind:'meta', id: LEC.live,
+    key: LEC.target, startedAt: LEC.t0, seconds: Math.floor(recElapsed()),
+    mime: (LEC.rec && LEC.rec.mimeType) || '', noAudio: LEC.noAudio,
+    notes: LEC.notes.slice(), transcript: LEC.transcript.trim(), segs: LEC.segs.slice(),
+    chunks: LEC.seq, bytes: LEC.bytes,
+    /* how far the AUDIO actually reaches. The wall clock keeps running while
+       iOS has the tab suspended but MediaRecorder hands over nothing, so the
+       two must never be conflated. */
+    audioTo: LEC.lastChunk || 0
+  };
+}
+/* Seconds of audio we can honestly claim, as opposed to elapsed wall clock. */
+function audioSeconds(){
+  if (LEC.noAudio || !LEC.lastChunk) return 0;
+  return Math.max(0, Math.round((LEC.lastChunk - LEC.t0) / 1000));
+}
+/* A gap this size means the recorder was stopped or starved, not just jitter. */
+function audioGap(){
+  return LEC.noAudio ? 0 : Math.max(0, Math.floor(recElapsed()) - audioSeconds());
+}
+async function ipWriteMeta(){
+  if (!LEC.live) return;
+  try { await ipPut(ipMeta()); } catch (e){ ipTrouble(e); }
+}
+/* One transaction per arriving chunk: the chunk and the refreshed meta. */
+async function ipWriteChunk(blob){
+  if (!LEC.live) return;
+  const n = ++LEC.seq;
+  const prevBytes = LEC.bytes, prevLast = LEC.lastChunk;
+  LEC.bytes += blob.size;
+  LEC.lastChunk = Date.now();
+  const meta = ipMeta();
+  try {
+    await ipTx('readwrite', s => { s.put({k: ipKey(LEC.live, n), kind:'chunk', id: LEC.live, n, blob}); s.put(meta); });
+    if (LEC.writeFail){ LEC.writeFail = 0; ipTrouble(null); }
+    quotaWatch();
+  } catch (e){
+    /* the chunk is NOT on disk, so nothing may claim it is */
+    LEC.seq = n - 1; LEC.bytes = prevBytes; LEC.lastChunk = prevLast;
+    ipTrouble(e);
+  }
+}
+/* Room to finish? Opus here runs about 16 KB/s, so a 75 minute lecture wants
+   roughly 70 MB. Checked before the first word and again as it fills, because
+   finding out at minute 70 is finding out too late. */
+const BYTES_PER_SEC = 16000;
+async function quotaCheck(){
+  if (!navigator.storage || !navigator.storage.estimate) return null;
+  try {
+    const e = await navigator.storage.estimate();
+    if (!e || !e.quota) return null;
+    return Math.max(0, e.quota - (e.usage || 0));
+  } catch (err){ return null; }
+}
+async function quotaWatch(){
+  if (LEC.quotaWarned || LEC.seq % 12) return;          /* about once a minute */
+  const free = await quotaCheck();
+  if (free === null) return;
+  const minsLeft = free / BYTES_PER_SEC / 60;
+  if (minsLeft < 10){
+    LEC.quotaWarned = true;
+    const w = $('#recWarn');
+    w.dataset.src = 'ip';
+    w.innerHTML = 'Storage is nearly full: about ' + Math.floor(minsLeft) + ' more minutes will fit. ' +
+      'Everything recorded so far is already saved to disk. Delete an old lecture soon, or stop and save before the room runs out.';
+    w.style.display = 'block';
+  }
+}
+/* The recorder can be killed out from under the page by a phone call or by
+   iOS reclaiming the mic. The page must say so, not keep a running timer
+   over a recording that stopped collecting audio minutes ago. */
+function watchAudioLoss(){
+  const gap = audioGap();
+  if (gap > 20 && !LEC.lost){
+    LEC.lost = true;
+    const w = $('#recWarn');
+    w.dataset.src = 'ip';
+    w.innerHTML = 'No audio has reached storage for ' + gap + ' seconds — the microphone was probably taken by a call or by another app. ' +
+      'Everything up to that point is saved. Stop and save, then start a fresh recording.';
+    w.style.display = 'block';
+  } else if (gap <= 20 && LEC.lost){
+    LEC.lost = false;
+    if ($('#recWarn').dataset.src === 'ip'){ $('#recWarn').style.display = 'none'; $('#recWarn').dataset.src = ''; }
+  }
+  /* The timer tells the truth about audio, not just about elapsed time. */
+  const t = $('#recTime');
+  if (t && !LEC.noAudio && gap > 20) t.title = 'audio ends ' + gap + 's back';
+}
+
+/* Say it out loud rather than losing audio quietly. */
+function ipTrouble(e){
+  const w = $('#recWarn');
+  if (!e){ if (w.dataset.src === 'ip'){ w.style.display = 'none'; w.dataset.src = ''; } return; }
+  LEC.writeFail++;
+  const full = e && (e.name === 'QuotaExceededError' || /quota/i.test(String(e && e.message)));
+  w.dataset.src = 'ip';
+  w.innerHTML = full
+    ? 'Storage is full, so the last few seconds could not be written to disk. Recording is still running and the audio so far is still in memory, but stop and save soon, and delete an old lecture to free room.'
+    : 'The crash-safe copy could not be written (' + esc((e && e.name) || 'unknown') + '). Recording continues, but if the app closes before you stop, some audio may be lost.';
+  w.style.display = 'block';
+}
+async function ipClear(id){
+  if (!id) return;
+  try {
+    const keys = (await ipKeys()).filter(k => String(k).indexOf(id + '|') === 0);
+    await ipTx('readwrite', s => { keys.forEach(k => s.delete(k)); });
+  } catch (e){ /* nothing else to do; a stale row is offered again, never auto-used */ }
+}
+
+/* ---- screen wake lock ----
+   iOS drops the lock whenever the tab is backgrounded, so it is re-requested
+   on every return to visible. The API is missing or rejects in plenty of
+   contexts; when that happens the UI says the screen may sleep instead of
+   pretending the lock is held. */
+/* force: coming back from the background. iOS drops the lock while hidden and
+   does not always say so, so a returning page never trusts the sentinel it is
+   still holding — it throws it away and asks again. */
+async function wakeAcquire(force){
+  if (!LEC.wlWanted) return;
+  if (!navigator.wakeLock || !navigator.wakeLock.request){ wakeSay(false, 'this browser has no screen lock'); return; }
+  if (force && LEC.wl){ const old = LEC.wl; LEC.wl = null; try { await old.release(); } catch (e){} }
+  if (LEC.wl && !LEC.wl.released) return;
+  try {
+    const s = await navigator.wakeLock.request('screen');
+    LEC.wl = s;
+    s.addEventListener('release', () => { if (LEC.wl === s) LEC.wl = null; });
+    console.log('[wakelock] held', s.type, s);
+    wakeSay(true);
+  } catch (e){
+    LEC.wl = null;
+    console.log('[wakelock] rejected', (e && e.name) || e, e && e.message);
+    wakeSay(false, ((e && e.name) || 'refused'));
+  }
+}
+async function wakeRelease(){
+  LEC.wlWanted = false;
+  const s = LEC.wl; LEC.wl = null;
+  if (s){ try { await s.release(); console.log('[wakelock] released'); } catch (e){} }
+  wakeSay(null);
+}
+function wakeSay(held, why){
+  const el = $('#recWake');
+  if (!el) return;
+  if (held === null){ el.style.display = 'none'; el.textContent = ''; return; }
+  el.style.display = '';
+  el.textContent = held
+    ? 'Screen is being kept awake while this records.'
+    : 'This browser will not keep the screen awake (' + why + '). Set your screen timeout to Never, or the phone may sleep and cut the recording. Everything recorded so far is saved as it goes.';
+  el.style.color = held ? 'var(--dim)' : 'var(--signal)';
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && LEC.wlWanted) wakeAcquire(true);
+});
 
 /* ---- helpers ---- */
 function mmss(sec){
@@ -2127,6 +2366,8 @@ function recElapsed(){ return (Date.now() - LEC.t0) / 1000; }
 async function startRec(withAudio){
   LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.segs = []; LEC.noAudio = !withAudio;
   LEC.target = $('#recCourse').value;
+  LEC.live = null; LEC.seq = 0; LEC.writeFail = 0;
+  LEC.bytes = 0; LEC.lastChunk = 0; LEC.lost = false; LEC.quotaWarned = false;
 
   if (withAudio){
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined'){
@@ -2143,16 +2384,52 @@ async function startRec(withAudio){
     try {
       LEC.rec = mime ? new MediaRecorder(LEC.stream, {mimeType:mime}) : new MediaRecorder(LEC.stream);
     } catch (e){ return recBlocked('Recording is not supported here.'); }
-    LEC.rec.ondataavailable = e => { if (e.data && e.data.size) LEC.chunks.push(e.data); };
-    LEC.rec.start(1000);
+    LEC.rec.ondataavailable = e => {
+      if (!e.data || !e.data.size) return;
+      LEC.chunks.push(e.data);
+      ipWriteChunk(e.data);
+    };
+    /* 5s slices: one IndexedDB write every 5 seconds is cheap on a phone
+       (about 900 writes across a 75 minute lecture) and the worst a crash
+       can cost is the 5 seconds not yet handed over. One-second slices
+       quintupled the write load for four seconds of extra safety. */
+    LEC.rec.onerror = () => {
+      const w = $('#recWarn');
+      w.dataset.src = 'ip';
+      w.innerHTML = 'The recorder stopped unexpectedly. Everything already written to disk is safe — stop and save now, then start again.';
+      w.style.display = 'block';
+    };
+    /* mic handed to a phone call, or the device revoked it */
+    LEC.stream.getAudioTracks().forEach(tr => { tr.onended = () => LEC.rec && LEC.rec.onerror(); });
+    LEC.rec.start(5000);
     startMeter();
     startSpeech();
+
+    /* pre-flight: is there room for a full lecture at all? */
+    const free = await quotaCheck();
+    if (free !== null && free / BYTES_PER_SEC / 60 < 80){
+      const w = $('#recWarn');
+      w.dataset.src = 'ip';
+      w.innerHTML = 'Storage has room for roughly ' + Math.floor(free / BYTES_PER_SEC / 60) + ' more minutes of audio. ' +
+        'A full lecture needs about 75. Recording has started and is being saved as it goes, but delete an old lecture if this class runs long.';
+      w.style.display = 'block';
+    }
   }
 
   LEC.t0 = Date.now();
-  LEC.timer = setInterval(() => { $('#recTime').textContent = mmss(recElapsed()); }, 500);
+  LEC.live = newId('lec_');
+  await ipWriteMeta();
+  let tick = 0;
+  LEC.timer = setInterval(() => {
+    $('#recTime').textContent = mmss(recElapsed());
+    /* keeps the recovered length honest when there is no audio to piggyback on */
+    watchAudioLoss();
+    if (LEC.noAudio && ++tick % 20 === 0) ipWriteMeta();
+  }, 500);
   $('#recTime').textContent = '0:00';
   setRecUI(true);
+  LEC.wlWanted = true;
+  wakeAcquire();
 }
 
 function recBlocked(msg){
@@ -2202,7 +2479,8 @@ function startMeter(){
    every so often, so restart it until the user stops the recording. */
 function startSpeech(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR || !$('#recTranscribe').checked) return;
+  const cb = $('#recTranscribe');
+  if (!SR || !cb || !cb.checked) return;
   try {
     const r = new SR();
     r.continuous = true; r.interimResults = false; r.lang = 'en-US';
@@ -2230,6 +2508,7 @@ function addLiveNote(){
   inp.value = '';
   $('#liveNotes').innerHTML = LEC.notes.slice().reverse().map(n =>
     '<div class="ln"><span class="lt">' + mmss(n.t) + '</span><span>' + esc(n.text) + '</span></div>').join('');
+  ipWriteMeta();   /* a note is safe the moment it is typed, not at Stop */
 }
 
 async function stopRec(){
@@ -2238,22 +2517,40 @@ async function stopRec(){
   if (LEC.ac){ try { LEC.ac.close(); } catch(e){} LEC.ac = null; }
   if (LEC.sr){ try { LEC.sr.onend = null; LEC.sr.stop(); } catch(e){} LEC.sr = null; }
 
-  const seconds = Math.floor(recElapsed());
+  /* If the mic died or the tab was suspended, wall clock kept counting while
+     the audio did not. Save the length the audio actually covers, and mark
+     it, rather than filing a 75 minute record over 40 minutes of sound. */
+  const gapAtStop = audioGap();
+  const cutShort = gapAtStop > 20;
+  const seconds = cutShort ? audioSeconds() : Math.floor(recElapsed());
   let blob = null, mime = '';
+
+  wakeRelease();
+  const liveId = LEC.live;
 
   if (LEC.rec && LEC.rec.state !== 'inactive'){
     mime = LEC.rec.mimeType || '';
     await new Promise(res => { LEC.rec.onstop = res; LEC.rec.stop(); });
-    blob = new Blob(LEC.chunks, {type: mime || 'audio/webm'});
+    /* Prefer the copy already on disk: it is what a crash would have left,
+       so assembling from it proves the recovery path and the normal path
+       produce the same audio. Fall back to memory if writes were failing. */
+    let parts = null;
+    try {
+      const rows = (await ipAll()).filter(r => r.id === liveId && r.kind === 'chunk')
+                                  .sort((a,b) => a.n - b.n).map(r => r.blob);
+      if (rows.length >= LEC.chunks.length) parts = rows;
+    } catch (e){}
+    blob = new Blob(parts || LEC.chunks, {type: mime || 'audio/webm'});
   }
   if (LEC.stream){ LEC.stream.getTracks().forEach(t => t.stop()); LEC.stream = null; }
   LEC.rec = null;
+  LEC.live = null;
 
-  if (!seconds && !LEC.notes.length){ setRecUI(false); return; }
+  if (!seconds && !LEC.notes.length){ await ipClear(liveId); setRecUI(false); return; }
 
   const N = campusNow();
   const rec = {
-    id: newId('lec_'),
+    id: liveId || newId('lec_'),
     key: LEC.target,
     dateISO: N.iso,
     stamp: Date.now(),
@@ -2262,7 +2559,8 @@ async function stopRec(){
     transcript: LEC.transcript.trim(),
     segs: LEC.segs.slice(),
     cards: [],
-    audio: blob, mime
+    audio: blob, mime,
+    partial: cutShort || undefined
   };
   try { await dbPut(rec); }
   catch (e){
@@ -2279,9 +2577,94 @@ async function stopRec(){
     setRecUI(false, true);
     return;
   }
-  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.segs = [];
+  /* Saved for real, so the in-progress copy is dropped. Doing this only
+     after a successful dbPut means a failed save still leaves the crash
+     copy on disk to be offered back next time. */
+  await ipClear(liveId);
+  LEC.notes = []; LEC.chunks = []; LEC.transcript = ''; LEC.segs = []; LEC.seq = 0;
   setRecUI(false);
   renderLectures();
+}
+
+/* ---- crash recovery ----
+   Anything left in 'inprog' when the app opens is a recording that was never
+   finished. It is offered back, with its real length and start time, and it
+   is never saved or thrown away without a tap. */
+async function checkRecovery(){
+  const box = $('#recRecover');
+  if (!box) return;
+  if (LEC.live){ box.style.display = 'none'; return; }   /* a live recording is not a crash */
+  /* keys first, then only the small meta rows: no audio is read to draw this */
+  let keys = [];
+  try { keys = (await ipKeys()).map(String); } catch (e){ return; }
+  const metaKeys = keys.filter(k => k.slice(-5) === '|meta');
+  if (!metaKeys.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  let metas = [];
+  try { metas = (await Promise.all(metaKeys.map(k => ipGet(k)))).filter(Boolean); } catch (e){ return; }
+  metas.sort((a,b) => b.startedAt - a.startedAt);
+
+  box.innerHTML = metas.map(m => {
+    const nChunks = keys.filter(k => k.indexOf(m.id + '|c') === 0).length;
+    const parts = {length: nChunks};
+    const bytes = m.bytes || 0;
+    const c = courseByKey(m.key);
+    const when = new Date(m.startedAt);
+    const audio = m.noAudio
+      ? 'Notes only, no audio was being recorded.'
+      : (parts.length
+          ? parts.length + ' audio piece' + (parts.length === 1 ? '' : 's') + ' saved (' + (bytes/1048576).toFixed(1) + ' MB). The last few seconds before the app closed are not in it.'
+          : 'No audio reached storage, so only the notes below can be recovered.');
+    return '<div class="card" style="border:1px solid var(--signal);margin-bottom:12px">' +
+      '<div style="font-weight:700;color:var(--tx);margin-bottom:4px">A recording was interrupted</div>' +
+      '<div style="color:var(--dim);font-size:14px;line-height:1.5">' +
+        esc((c && c.short) || m.key || 'Lecture') + ' &middot; started ' +
+        esc(when.toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})) +
+        '<br>' + mmss(m.seconds || 0) + ' recorded &middot; ' + esc(m.notes ? m.notes.length : 0) + ' note' + ((m.notes && m.notes.length === 1) ? '' : 's') +
+        '<br>' + esc(audio) +
+      '</div>' +
+      '<div class="minibtns" style="margin-top:10px">' +
+        '<button class="minibtn primary" data-recsave="' + esc(m.id) + '">Save it as a lecture</button>' +
+        '<button class="minibtn" data-recdrop="' + esc(m.id) + '">Discard it</button>' +
+      '</div></div>';
+  }).join('');
+  box.style.display = '';
+}
+
+async function recoverSave(id){
+  let rows = [];
+  try { rows = await ipAll(); } catch (e){ alert('Could not read the interrupted recording.'); return; }
+  const m = rows.find(r => r.kind === 'meta' && r.id === id);
+  if (!m){ checkRecovery(); return; }
+  const parts = rows.filter(r => r.kind === 'chunk' && r.id === id).sort((a,b) => a.n - b.n).map(r => r.blob);
+  const blob = parts.length ? new Blob(parts, {type: m.mime || 'audio/webm'}) : null;
+  const rec = {
+    id: m.id,
+    key: m.key,
+    dateISO: (d => d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()))(new Date(m.startedAt)),
+    stamp: m.startedAt,
+    /* how far the audio reaches, which is what a listener will hear; the wall
+       clock at the moment of the crash can be longer and would be a lie */
+    seconds: (!m.noAudio && m.audioTo)
+      ? Math.max(0, Math.round((m.audioTo - m.startedAt) / 1000))
+      : (m.seconds || 0),
+    notes: (m.notes || []).slice(),
+    transcript: (m.transcript || '').trim(),
+    segs: (m.segs || []).slice(),
+    cards: [],
+    audio: blob, mime: m.mime || '',
+    partial: true            /* recovered: audio ends where the app died */
+  };
+  try { await dbPut(rec); }
+  catch (e){ alert('Could not save it. Storage may be full — delete an old lecture and try again. The interrupted recording is still here.'); return; }
+  await ipClear(id);
+  await checkRecovery();
+  renderLectures();
+}
+
+async function recoverDrop(id){
+  if (!confirm('Throw away the interrupted recording, its audio and its notes? This cannot be undone.')) return;
+  await ipClear(id);
+  await checkRecovery();
 }
 
 /* ---- lecture list ---- */
@@ -2303,6 +2686,7 @@ async function renderLectures(){
     bits.push(r.notes.length + ' note' + (r.notes.length===1?'':'s'));
     if (r.cards && r.cards.length) bits.push(r.cards.length + ' card' + (r.cards.length===1?'':'s'));
     if (!r.audio) bits.push('notes only');
+    if (r.partial) bits.push('cut short');
     return '<details class="lec" data-id="' + r.id + '"><summary>' +
       '<div class="swatch" style="--sc:' + (c ? c.color : 'var(--dim2)') + '"></div>' +
       '<div class="lecmain"><div class="n">' + esc(c ? c.short : 'Lecture') + '</div>' +
@@ -2324,6 +2708,11 @@ async function renderLecBody(id){
   const c = courseByKey(r.key || r.code);
   let html = '';
 
+  if (r.partial){
+    html += '<div class="recnote" style="color:var(--signal)">This recording was interrupted — the app closed, or the ' +
+            'microphone was taken away, before it finished. The length above is how far the audio actually reaches, ' +
+            'so treat it as incomplete.</div>';
+  }
   if (r.audio){
     const url = URL.createObjectURL(r.audio);
     html += '<audio id="au_' + id + '" controls preload="metadata" src="' + url + '"></audio>';
@@ -3067,13 +3456,37 @@ function studyBoot(){
   const sug = suggestCourse();
   if (sug) $('#recCourse').value = sug;
 
-  const SRok = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-  if (!SRok) $('#transcribeRow').style.display = 'none';
+  /* iOS Safari (and every browser on iOS, which is all WebKit) exposes
+     webkitSpeechRecognition but it does not deliver a usable live transcript
+     while a MediaRecorder holds the mic. Presenting the option there was a
+     promise the device cannot keep, so it is turned off and said plainly. */
+  const iOSWebKit = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const SRok = !!(window.SpeechRecognition || window.webkitSpeechRecognition) && !iOSWebKit;
+  if (!SRok){
+    const cb = $('#recTranscribe');
+    if (cb) cb.checked = false;
+    if (iOSWebKit){
+      $('#transcribeRow').innerHTML =
+        '<span>No live transcript on iPhone or iPad — Safari cannot listen while it records. ' +
+        'The audio and your timestamped notes are saved, and the summary is built from the notes.</span>';
+      $('#transcribeRow').style.color = 'var(--dim)';
+    } else {
+      $('#transcribeRow').style.display = 'none';
+    }
+  }
 
   $('#recBtn').onclick = () => {
     if (LEC.rec || LEC.timer) stopRec(); else startRec(true);
   };
   $('#recNotesOnly').onclick = () => { $('#recWarn').style.display='none'; startRec(false); };
+
+  $('#recRecover').addEventListener('click', e => {
+    const b = e.target.closest('[data-recsave],[data-recdrop]');
+    if (!b) return;
+    if (b.dataset.recsave) recoverSave(b.dataset.recsave);
+    else recoverDrop(b.dataset.recdrop);
+  });
   $('#noteAdd').onclick = addLiveNote;
   $('#noteInput').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); addLiveNote(); } });
 
@@ -3136,6 +3549,7 @@ function studyBoot(){
   });
 
   renderLectures();
+  checkRecovery();
 }
 
 
@@ -3811,7 +4225,8 @@ function photoWalkBoot(){
 
 /* =========================================================================
    ASSIGNMENTS AND GRADES
-   Both live in localStorage per schedule. Nothing leaves the device.
+   Both live in localStorage per schedule, and leave the device only if the
+   person has turned on sync (sync.js), which copies them to their own devices.
    ========================================================================= */
 
 const WORK_KEY  = 'schedhub.work.'  + SCHEDULE.id;
@@ -4394,6 +4809,8 @@ function renderPlan(){
     if (g.len < 15) return;
     openPlanSheet(null, { start:m2t(s), end:m2t(Math.min(s + 60, g.until)), days:L });
   };
+
+  try { renderStudyLoad(); } catch (e){ console.error('study load', e); }
 }
 
 function openPlanSheet(block, pre){
@@ -4459,7 +4876,12 @@ function planBoot(){
       const b = planBlocks.find(x => x.id === planEditing);
       if (b) Object.assign(b, {title, start, end, days, color});
     } else {
-      const id = planBlocks.reduce((m, b) => Math.max(m, b.id), 0) + 1;
+      // Skip ids that are not finite numbers. Math.max(n, undefined) is NaN, and
+    // one such block poisoned every id minted afterwards -- they all became NaN,
+    // so blocks collided, editing one hit another, and sync could not address
+    // them. A stray block never blocks a good id again.
+    const id = planBlocks.reduce(
+      (m, b) => (Number.isFinite(Number(b.id)) ? Math.max(m, Number(b.id)) : m), 0) + 1;
       planBlocks.push({id, title, start, end, days, color});
     }
     planSave();
@@ -4468,6 +4890,305 @@ function planBoot(){
   };
   quickBoot();
   notifyBoot();
+  sloadBoot();
+}
+
+/* ---------------- study load: hours per class, then placed for real ----------------
+   Two halves. The first is arithmetic on the real timetable: how long each
+   class actually meets for each week. The second hands that number to the
+   same solver the quick-add box uses, so "study 5 hours for Micro" turns into
+   blocks that exist on days that are genuinely open.
+
+   The honesty line matters here. Contact time is measured. The multiplier is
+   a general guideline and is labelled as one, and it is editable per class,
+   because a fixed number pretending to be personal is worse than an editable
+   one that admits what it is. Credit hours are never guessed: this app has no
+   credit-hour data, so it does not pretend to. */
+const SLOAD_KEY   = 'schedhub.studyratio.' + SCHEDULE.id;
+const SLOAD_OPEN  = 'schedhub.studyopen.'  + SCHEDULE.id;
+const SLOAD_RATIO = 2;                 /* the common "two hours out for one in" guideline */
+const SLOAD_MAXSESS = 90, SLOAD_MINSESS = 30;
+let sloadRatios = loadJSON(SLOAD_KEY, {});
+let sloadMsg = null;
+
+const sloadRatioOf = c => {
+  const v = +sloadRatios[c.key];
+  return (isFinite(v) && v > 0 && v <= 6) ? v : SLOAD_RATIO;
+};
+
+/* MEASURED, from COURSES only. A class with no meeting pattern gets null and
+   is reported as unscheduled rather than given an invented figure. */
+function sloadContact(c){
+  const days = String(c.days || '').replace(/[^UMTWRFS]/g, '');
+  if (!days || !c.start || !c.end) return null;
+  const per = mins(c.end) - mins(c.start);
+  if (!(per > 0)) return null;
+  return { days, meets:days.length, per, week:days.length * per };
+}
+const sloadTarget = c => {
+  const ct = sloadContact(c);
+  return ct ? Math.round(ct.week * sloadRatioOf(c) / 15) * 15 : 0;
+};
+const sloadHrs = m => (Math.round(m / 3) / 20).toFixed(1) + 'h';
+
+/* split a weekly total into sittings of 30-90 minutes */
+function sloadSessions(target){
+  if (target < SLOAD_MINSESS) return target > 0 ? [target] : [];
+  const n = Math.ceil(target / SLOAD_MAXSESS);
+  const out = [];
+  let left = target;
+  for (let i = 0; i < n; i++){
+    let want = Math.round(left / (n - i) / 15) * 15;
+    want = Math.max(SLOAD_MINSESS, Math.min(SLOAD_MAXSESS, want));
+    if (want > left) want = left;
+    out.push(want);
+    left -= want;
+  }
+  if (left > 0) out[out.length - 1] += left;
+  return out.filter(x => x >= 15);
+}
+
+/* blocks this feature made, recognised by the tag it writes on them. They are
+   ordinary blocks otherwise: same key, same shape, same grid, same solver. */
+const sloadBlocksOf = c => planBlocks.filter(b => b.study === c.key);
+const sloadPlaced = c => sloadBlocksOf(c)
+  .reduce((t, b) => t + (mins(b.end) - mins(b.start)) * (b.days || '').length, 0);
+
+/* the day order to try: the days the class actually meets come first, so a
+   session lands next to the lecture, then the rest of the week */
+function sloadDayOrder(c){
+  const ct = sloadContact(c);
+  const meet = ct ? [...ct.days].filter(L => 'MTWRF'.includes(L)) : [];
+  return meet.concat([...'MTWRF'].filter(L => !meet.includes(L)));
+}
+/* when that class lets out on day L, so a review sits after the lecture */
+function sloadAfterClass(c, L){
+  const m = meetingsFor(L).find(x => x.c === c);
+  return m ? m.e : 9 * 60;
+}
+
+/* Biggest remaining opening and what bounds it, composed from the existing
+   busy/gap helpers so the refusal names real things. */
+function sloadBestGap(days){
+  let best = null;
+  [...days].forEach(L => {
+    const busy = planBusyFor(L);
+    [PLAN_DAY_LO].concat(busy.map(b => b.e)).forEach(t => {
+      if (t < PLAN_DAY_LO || t >= PLAN_DAY_HI) return;
+      const g = freeAfter(L, t);
+      if (g.len <= 0) return;
+      if (!best || g.len > best.len){
+        const prev = busy.filter(b => b.e <= t).sort((a, b) => b.e - a.e)[0] || null;
+        best = { L, len:g.len, from:t, until:g.until, next:g.next, prev };
+      }
+    });
+  });
+  return best;
+}
+
+/* Place one class's weekly study time into real gaps. Keeps whatever fits and
+   says plainly what stopped the rest. */
+function sloadPlace(c){
+  const target = sloadTarget(c) - sloadPlaced(c);
+  const name = cName(c);
+  if (target < 15) return { ok:true, text:'"' + name + '" already has its ' + sloadHrs(sloadTarget(c)) + ' on the grid.' };
+  const order = sloadDayOrder(c);
+  const want = sloadSessions(target);
+  const used = [];
+  let done = 0, i = 0, stuck = null, trimmed = false;
+
+  for (const full of want){
+    let put = null;
+    /* days this class has no study on yet come first, so the week spreads */
+    const tries = order.slice(i % order.length).concat(order.slice(0, i % order.length));
+    /* a shorter sitting in a real gap beats a perfect one that does not exist,
+       so shrink toward the 30-minute floor before giving up on this session */
+    /* Preference order, loosened one notch at a time so the reason a slot was
+       skipped is always weaker than the reason the next one is taken:
+       a day with no study yet, then any day, then earlier than the lecture. */
+    const passes = [{ fresh:true, dawn:false }, { fresh:false, dawn:false }, { fresh:false, dawn:true }];
+    for (let need = full; need >= SLOAD_MINSESS && !put; need -= 15){
+      for (const pass of passes){
+        for (const L of tries){
+          if (pass.fresh && used.includes(L)) continue;
+          const t = earliestFit(L, pass.dawn ? PLAN_DAY_LO : sloadAfterClass(c, L), need);
+          if (t !== null){ put = { L, t, need }; break; }
+        }
+        if (put) break;
+      }
+    }
+    if (!put){ stuck = full; break; }
+    if (put.need < full) trimmed = true;
+    // Skip ids that are not finite numbers. Math.max(n, undefined) is NaN, and
+    // one such block poisoned every id minted afterwards -- they all became NaN,
+    // so blocks collided, editing one hit another, and sync could not address
+    // them. A stray block never blocks a good id again.
+    const id = planBlocks.reduce(
+      (m, b) => (Number.isFinite(Number(b.id)) ? Math.max(m, Number(b.id)) : m), 0) + 1;
+    planBlocks.push({ id, title:'Study · ' + name, start:m2t(put.t), end:m2t(put.t + put.need),
+                      days:put.L, color:c.color, study:c.key });
+    used.push(put.L);
+    done += put.need;
+    i++;
+  }
+  if (done) planSave();
+
+  if (!stuck) return { ok:true, text:'Placed ' + sloadHrs(done) + ' for ' + name + ' on ' +
+    dayList([...new Set(used)].sort((a, b) => 'MTWRF'.indexOf(a) - 'MTWRF'.indexOf(b)).join('')) + '.' +
+    (trimmed ? ' Some sittings were shortened to fit the gaps that were actually free' +
+      (done < target ? ', so it comes to ' + sloadHrs(done) + ' rather than ' + sloadHrs(target) : '') + '.' : '') };
+
+  const g = sloadBestGap('MTWRF');
+  const bound = g
+    ? (g.prev ? 'after ' + g.prev.label : 'from the start of the day') +
+      (g.next ? ' and before ' + g.next.label : '')
+    : '';
+  return { ok:false, text:(done
+      ? 'Placed ' + sloadHrs(done) + ' for ' + name + ', but the last ' + dur(stuck * 60000) +
+        ' had nowhere to go — not even a ' + dur(SLOAD_MINSESS * 60000) + ' piece of it. '
+      : 'No room for ' + name + ' at all: nothing as long as ' + dur(SLOAD_MINSESS * 60000) + ' is free on any weekday. ') +
+      (g ? 'The biggest opening left on a weekday is ' + dur(g.len * 60000) + ' on ' + PLAN_DAYLAB[g.L] +
+           ', ' + hm(g.from) + ' to ' + hm(g.until) + ' — ' + bound + '.'
+         : 'Every weekday between ' + hm(PLAN_DAY_LO) + ' and ' + hm(PLAN_DAY_HI) + ' is already full.') +
+      ' Free something up, or lower this class’s multiplier.' };
+}
+
+/* Real exams only, from the Canvas data already loaded, matched to the course
+   by its code or its short name. Nothing here is written down in advance. */
+function sloadExam(c){
+  const N = campusNow();
+  const list = dueItems()
+    .filter(it => it.kind === 'exam' && it.due >= N.iso)
+    .filter(it => (c.code && it.course === c.code) ||
+                  (it.short && cName(c) && it.short.toLowerCase() === cName(c).toLowerCase()))
+    .map(it => ({ title:it.title, due:it.due }));
+  /* the registrar's final, when the schedule data has one, is just as real */
+  if (c.final && c.final.date && c.final.date >= N.iso)
+    list.push({ title:'The final', due:c.final.date });
+  return list.sort((a, b) => a.due.localeCompare(b.due))[0] || null;
+}
+const sloadDaysTo = iso => Math.round(
+  (Date.parse(iso + 'T12:00:00Z') - Date.parse(campusNow().iso + 'T12:00:00Z')) / 86400000);
+
+/* What the hours buy, in this class, against this class's real dates. */
+function sloadWhy(c, target){
+  const ex = sloadExam(c);
+  const per = sloadSessions(target).length;
+  const bits = [];
+  if (ex){
+    const d = sloadDaysTo(ex.due);
+    const head = ex.title + ' is ' + niceDate(ex.due) + ', ' + d + ' day' + (d === 1 ? '' : 's') + ' out.';
+    /* the "sittings before it" count only means anything while the date is
+       close enough to plan around; further out it is a made-up-sounding number */
+    bits.push(d <= 42
+      ? head + ' At ' + per + ' sitting' + (per === 1 ? '' : 's') + ' a week that is about ' +
+        Math.max(1, Math.round(per * d / 7)) + ' spaced sessions before it, instead of one long night.'
+      : head + ' Far enough out that the weekly time is what keeps it from becoming a cram later.');
+  } else {
+    bits.push('No exam posted for this class yet, so this time goes on the work that is already due.');
+  }
+  const ct = sloadContact(c);
+  if (ct) bits.push('Placed after the lecture on ' + dayList(ct.days) + ' where the week allows, so the review happens while it is still fresh.');
+  return bits.join(' ');
+}
+const niceDate = iso => MONTHS[+iso.slice(5, 7) - 1].slice(0, 3) + ' ' + (+iso.slice(8, 10));
+
+function renderStudyLoad(){
+  const list = $('#sloadList');
+  if (!list) return;
+  let totT = 0, totP = 0, unsched = [];
+
+  list.innerHTML = '<p class="slnote">Contact time is measured from your real schedule. ' +
+    'The study hours are that contact time multiplied by <b>2</b> — the common ' +
+    '&ldquo;two hours out of class for every hour in it&rdquo; college guideline, not a number any ' +
+    'of your professors set for you. Change the multiplier on any class if that is not what it actually takes.</p>' +
+    COURSES.map(c => {
+      const ct = sloadContact(c);
+      const name = cName(c);
+      if (!ct){
+        unsched.push(name);
+        return '<div class="slrow"><div class="slhead">' +
+          '<span class="sldot" style="background:' + c.color + '"></span>' +
+          '<span class="slname">' + esc(name) + '</span><span class="slhrs">—</span></div>' +
+          '<div class="slmeta">No meeting time in the schedule data, so there is nothing to measure and no hours are suggested for it.</div></div>';
+      }
+      const target = sloadTarget(c), placed = sloadPlaced(c);
+      totT += target; totP += placed;
+      const left = target - placed;
+      return '<div class="slrow"><div class="slhead">' +
+        '<span class="sldot" style="background:' + c.color + '"></span>' +
+        '<span class="slname">' + esc(name) + '</span>' +
+        '<span class="slhrs">' + sloadHrs(target) + '<span style="font-weight:600;color:var(--dim2)">/wk</span></span></div>' +
+        '<div class="slmeta">' + ct.meets + '&times; ' + dur(ct.per * 60000) + ' a week = ' +
+          sloadHrs(ct.week) + ' in class on ' + dayList(ct.days) + ' &middot; &times;' + sloadRatioOf(c) +
+          ' guideline &middot; ' + (placed ? sloadHrs(placed) + ' on the grid' : 'nothing placed yet') + '</div>' +
+        '<div class="slwhy">' + esc(sloadWhy(c, target)) + '</div>' +
+        '<div class="slact">' +
+          '<button class="minibtn primary" data-place="' + c.key + '"' + (left < 15 ? ' disabled style="opacity:.5"' : '') + '>' +
+            (left < 15 ? 'All placed' : 'Place ' + sloadHrs(left)) + '</button>' +
+          (placed ? '<button class="minibtn danger" data-drop="' + c.key + '">Remove</button>' : '') +
+          '<label class="slratio">&times;<input type="number" min="0.25" max="6" step="0.25" ' +
+            'value="' + sloadRatioOf(c) + '" data-ratio="' + c.key + '" aria-label="Study multiplier for ' + esc(name) + '"></label>' +
+        '</div></div>';
+    }).join('');
+
+  $('#sloadSum').textContent = sloadHrs(totT) + '/wk suggested · ' + sloadHrs(totP) + ' placed' +
+    (unsched.length ? ' · ' + unsched.length + ' unscheduled' : '');
+
+  const say = $('#sloadSay');
+  say.innerHTML = sloadMsg ? '<div class="slsay ' + (sloadMsg.ok ? 'ok' : 'no') + '">' + esc(sloadMsg.text) + '</div>' : '';
+
+  const byKey = k => COURSES.find(c => c.key === k);
+  list.querySelectorAll('[data-place]').forEach(b => {
+    b.onclick = () => { sloadMsg = sloadPlace(byKey(b.dataset.place)); renderPlan(); };
+  });
+  list.querySelectorAll('[data-drop]').forEach(b => {
+    b.onclick = () => {
+      const c = byKey(b.dataset.drop);
+      planBlocks = planBlocks.filter(x => x.study !== c.key);
+      planSave();
+      sloadMsg = { ok:true, text:'Removed the study blocks for ' + cName(c) + '.' };
+      renderPlan();
+    };
+  });
+  list.querySelectorAll('[data-ratio]').forEach(inp => {
+    inp.onchange = () => {
+      const v = +inp.value;
+      if (!(v > 0 && v <= 6)){ inp.value = sloadRatioOf(byKey(inp.dataset.ratio)); return; }
+      sloadRatios[inp.dataset.ratio] = v;
+      saveJSON(SLOAD_KEY, sloadRatios);
+      sloadMsg = null;
+      renderPlan();
+    };
+  });
+}
+
+function sloadBoot(){
+  const wrap = $('#sload'), tog = $('#sloadTog');
+  if (!wrap || !tog) return;
+  const open = loadJSON(SLOAD_OPEN, false);
+  wrap.classList.toggle('on', !!open);
+  tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+  tog.onclick = () => {
+    const on = !wrap.classList.contains('on');
+    wrap.classList.toggle('on', on);
+    tog.setAttribute('aria-expanded', on ? 'true' : 'false');
+    saveJSON(SLOAD_OPEN, on);
+  };
+  $('#sloadAll').onclick = () => {
+    const res = COURSES.filter(sloadContact).map(c => sloadPlace(c));
+    const bad = res.filter(r => !r.ok);
+    sloadMsg = bad.length ? { ok:false, text:bad.map(r => r.text).join(' ') }
+                          : { ok:true, text:'Every class has its study time on the grid.' };
+    renderPlan();
+  };
+  $('#sloadClear').onclick = () => {
+    planBlocks = planBlocks.filter(b => !b.study);
+    planSave();
+    sloadMsg = { ok:true, text:'Removed every study block.' };
+    renderPlan();
+  };
+  renderStudyLoad();
 }
 
 /* ---------------- quick add: one spoken or typed line ----------------
@@ -4571,6 +5292,64 @@ function pickCourse(str){
     if (hits.length) return { hits, phrase, used:n, words };
   }
   return { hits:[], phrase:words.slice(0, 2).join(' ') || str.trim(), used:0, words };
+}
+
+/* ----- dictation clean-up, before anything else -----
+   Voice-to-text writes run-on speech: "okay so put a run in after my math
+   class", "P.M." with periods and capitals, "two" where "to" was said, "add"
+   where "at" was said. Fix the SPEECH first so the rest of the parser only
+   ever sees the tidy sentence it was written for. */
+const QUICK_NUMWORD = 'zero|oh|one|two|three|four|five|six|seven|eight|nine|ten|' +
+  'eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|' +
+  'twenty|thirty|forty|fourty|fifty|noon|midnight';
+const QUICK_LEADIN = new RegExp('^\\s*(?:' + [
+  'okay','ok','alright','all right','so','um+','uh+','erm','hey','yeah','yes','please',
+  'just','actually','basically','like','claude','hi',
+  'can you','could you','would you','will you','go ahead and','help me',
+  "i want to","i wanna","i need to","i would like to","i'd like to","id like to",
+  "i'm going to","im going to","i'm gonna","im gonna","i'll","ill",
+  "let's","lets","let us",
+  'put in an','put in a','put an','put a','put',
+  'add an','add a','create an','create a','make an','make a','set an','set a',
+  'schedule an','schedule a','book an','book a','block off','block out',
+  'pencil in an','pencil in a','pencil in','throw in an','throw in a',
+  'give me an','give me a','drop in an','drop in a','stick in an','stick in a',
+  'new'
+].join('|') + ')\\b[\\s,]*', 'i');
+
+function quickClean(text){
+  let t = ' ' + String(text || '').toLowerCase() + ' ';
+  /* "P.M." / "a. m." / "P M" -> pm / am, BEFORE punctuation is thrown away */
+  t = t.replace(/\b([ap])\s*\.\s*m\s*\.?/g, ' $1m ');
+  t = t.replace(/\b([ap])\s+m\b(?!\w)/g, ' $1m ');
+  t = t.replace(/\b(a|p)\s*\.\s*(?=\s|$)/g, ' $1m ');
+  /* dictation gives no punctuation, or the wrong punctuation. Drop it, but
+     keep the colon (7:30) and the hyphen (3-4pm, twenty-five). */
+  t = t.replace(/[.,!?;]/g, ' ');
+  /* filler words anywhere */
+  t = t.replace(/\b(um+|uh+|erm|uhh+|hmm+)\b/g, ' ');
+  /* run-on lead-ins, peeled one at a time until the real sentence starts */
+  for (let i = 0; i < 6; i++){
+    const n = t.replace(QUICK_LEADIN, ' ');
+    if (n === t) break;
+    t = ' ' + n.trim() + ' ';
+  }
+  /* "put a run IN after my math class" — the stranded preposition */
+  t = t.replace(/\b(?:in|on)\s+(after|before|between)\b/g, ' $1 ');
+  /* "eleven two one pm" — "two"/"too" heard for "to", but only when it sits
+     between two numbers, so a real "at two" is never touched */
+  const NW = '(?:\\d{1,2}(?::\\d{2})?|' + QUICK_NUMWORD + ')';
+  const TENS = /^(twenty|thirty|forty|fourty|fifty)$/;
+  t = t.replace(new RegExp('\\b(' + NW + ')\\s+(?:two|too)\\s+(?=' + NW + '\\b)', 'g'),
+    (m, a) => TENS.test(a) ? m : ' ' + a + ' to ');
+  /* "add three thirty" — "at" heard as "add" */
+  t = t.replace(new RegExp('\\badd\\s+(?=' + NW + '\\b)', 'g'), ' at ');
+  /* "till"/"til"/"until" already understood downstream; normalise stragglers */
+  t = t.replace(/\bthru\b|\bthrough\b/g, ' to ');
+  t = t.replace(/\bin\s+the\s+(morning)\b/g, ' am ');
+  t = t.replace(/\bin\s+the\s+(afternoon|evening)\b/g, ' pm ');
+  t = t.replace(/\bat\s+night\b/g, ' pm ');
+  return ' ' + t.replace(/\s+/g, ' ').trim() + ' ';
 }
 
 /* ----- voice-to-text says words, not digits -----
@@ -4678,7 +5457,7 @@ function resolveRange(a, b, days){
 }
 
 function parseQuick(text){
-  let t = quickWords(text.toLowerCase().replace(/[.,!?]/g, ' '));
+  let t = quickWords(quickClean(text));
   const out = { days:'', start:null, end:null, dur:null };
 
   /* days, including today / tomorrow / weekdays / every day */
@@ -4860,7 +5639,7 @@ function parseQuick(text){
   }
 
   /* whatever is left, minus connective scraps, is the name */
-  out.title = t.replace(/\b(on|and|the|a|an|at|from|to|til|till|until|thru|through|for|me|my|am|pm|add|schedule|put|block)\b/g, ' ')
+  out.title = t.replace(/\b(on|and|the|a|an|at|from|to|til|till|until|thru|through|for|me|my|am|pm|add|schedule|put|block|ok|okay|so|new|create|make|set|book|please|i|it)\b/g, ' ')
                .replace(/\s+/g, ' ').trim();
   if (out.title) out.title = out.title[0].toUpperCase() + out.title.slice(1);
   return out;
@@ -4916,8 +5695,16 @@ function quickPreview(q){
   }
 
   if (!q.start && !q.days){
-    h.className = 'qhint';
-    h.textContent = 'Could not read that. Try "gym at 3pm on tuesday" or "run after my math class for 30 min".';
+    h.className = 'qprev warn';
+    h.innerHTML = '<h4>I could not read that</h4>' +
+      '<div class="qline">' + (q.heard
+        ? 'I heard "' + esc(q.heard) + '" but found no time and no day in it.'
+        : 'There was nothing to read.') + '</div>' +
+      '<div class="qsub">Say it with a time in it. Any of these work:</div>' +
+      '<div class="qsub qassume">gym at 3pm for an hour on tuesday</div>' +
+      '<div class="qsub qassume">study from eleven to one pm</div>' +
+      '<div class="qsub qassume">run after my math class for thirty minutes</div>' +
+      '<div class="qsub">Nothing was filled in, so nothing went to the wrong place.</div>';
     return;
   }
 
@@ -4985,11 +5772,21 @@ function quickPreview(q){
   if (go) go.onclick = () => $('#planSave').click();
 }
 
+/* EVERY input gets a visible answer. Silence is the bug being fixed here. */
 function applyQuick(text){
-  const q = parseQuick(text);
-  if (!q.ask && !q.problem) quickFill(q);
+  const raw = String(text || '').trim();
+  let q;
+  try { q = parseQuick(raw); }
+  catch (e){ q = { title:'', days:'', start:null, end:null }; }
+  q.heard = raw;
+  const unread = !q.start && !q.days;
+  if (!q.ask && !q.problem && !unread) quickFill(q);
   quickPreview(q);
 }
+
+/* The dictation key on the phone keyboard is the path that always works,
+   so every mic failure ends by pointing at it instead of dead-ending. */
+const QUICK_DICTATE = 'Tap the box and use the mic key on your keyboard instead — that always works, and I read what it types.';
 
 function quickBoot(){
   const inp = $('#planQuick');
@@ -4998,34 +5795,94 @@ function quickBoot(){
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const mic = $('#planMic');
+  const hint = $('#planQuickHint');
+  const say = (txt, warn) => { hint.className = warn ? 'qhint warn' : 'qhint'; hint.textContent = txt; };
+
   if (!SR){
-    mic.onclick = () => {
-      $('#planQuickHint').textContent = 'This browser cannot listen. Type it instead.';
-      $('#planQuickHint').className = 'qhint';
-    };
+    mic.onclick = () => say('This browser cannot listen on its own. ' + QUICK_DICTATE, true);
     return;
   }
-  let rec = null;
+
+  let rec = null, live = false, got = false, watch = null;
+  /* one place that ends a session, so the button can never keep pulsing and
+     the hint can never sit on "Listening..." after listening has stopped */
+  const finish = (msg, warn) => {
+    if (watch){ clearTimeout(watch); watch = null; }
+    mic.classList.remove('live');
+    live = false;
+    if (rec){ try { rec.onresult = rec.onerror = rec.onend = rec.onstart = null; rec.abort ? rec.abort() : rec.stop(); } catch (e){} }
+    rec = null;
+    if (msg) say(msg, warn !== false);
+  };
+
   mic.onclick = () => {
-    if (rec){ rec.stop(); return; }
-    rec = new SR();
+    if (rec){ finish('Stopped listening. Nothing was heard.', true); return; }
+    /* only one thing on the device can hold the mic. If a lecture recording
+       owns it, say so rather than starting something that cannot work. */
+    if (typeof LEC === 'object' && LEC && (LEC.sr || LEC.rec)){
+      say('A lecture recording is using the microphone right now. Stop it first, or ' +
+        QUICK_DICTATE.charAt(0).toLowerCase() + QUICK_DICTATE.slice(1), true);
+      return;
+    }
+    got = false;
+    try { rec = new SR(); } catch (e){ rec = null; }
+    if (!rec){ say('The microphone would not start. ' + QUICK_DICTATE, true); return; }
     rec.lang = 'en-US';
-    rec.interimResults = false;
-    mic.classList.add('live');
-    $('#planQuickHint').textContent = 'Listening...';
-    $('#planQuickHint').className = 'qhint';
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.maxAlternatives = 1;
+
+    /* NOTHING claims to be listening until the browser says it started */
+    say('Starting the microphone...');
+    rec.onstart = () => { live = true; mic.classList.add('live'); say('Listening — say it now.'); };
+
     rec.onresult = e => {
-      const said = e.results[0][0].transcript;
+      let said = '', final = false;
+      for (let i = 0; i < e.results.length; i++){
+        said += e.results[i][0].transcript;
+        if (e.results[i].isFinal) final = true;
+      }
+      said = said.trim();
+      if (!said) return;
+      got = true;
       inp.value = said;
-      applyQuick(said);
+      inp.dispatchEvent(new Event('input', { bubbles:true }));
+      if (final){ finish(null); applyQuick(said); }
+      else say('Heard: ' + said);
     };
+
     rec.onerror = e => {
-      $('#planQuickHint').textContent = e.error === 'not-allowed'
-        ? 'Microphone blocked. Allow it in the browser, or type it.'
-        : 'Did not catch that. Try again or type it.';
+      const err = (e && e.error) || 'unknown';
+      const msg =
+        err === 'not-allowed' || err === 'service-not-allowed'
+          ? 'The microphone is blocked for this app. Allow it in Settings, or ' +
+            QUICK_DICTATE.charAt(0).toLowerCase() + QUICK_DICTATE.slice(1)
+        : err === 'no-speech'    ? 'I did not hear anything. Try again, or ' +
+            QUICK_DICTATE.charAt(0).toLowerCase() + QUICK_DICTATE.slice(1)
+        : err === 'audio-capture' ? 'No microphone was available. ' + QUICK_DICTATE
+        : err === 'network'      ? 'Speech needs a connection and it could not reach the service. ' + QUICK_DICTATE
+        : err === 'aborted'      ? 'Listening was cut off. ' + QUICK_DICTATE
+        : 'Speech failed (' + err + '). ' + QUICK_DICTATE;
+      finish(msg, true);
     };
-    rec.onend = () => { mic.classList.remove('live'); rec = null; };
-    try { rec.start(); } catch (e){ mic.classList.remove('live'); rec = null; }
+
+    /* the silent case Jack actually hits: it listens, then ends with nothing */
+    rec.onend = () => {
+      if (got) { finish(null); return; }
+      finish('The mic ran but gave me no words back. ' + QUICK_DICTATE, true);
+    };
+
+    try {
+      rec.start();
+    } catch (e){
+      finish('The microphone would not start (' + ((e && e.name) || 'error') + '). ' + QUICK_DICTATE, true);
+      return;
+    }
+    /* if onstart never fires, the mic never really opened — never leave the
+       screen sitting on a promise the device did not keep */
+    watch = setTimeout(() => {
+      if (!live) finish('The microphone never opened. ' + QUICK_DICTATE, true);
+    }, 2500);
   };
 }
 
@@ -5184,5 +6041,10 @@ function boot(){
 }
 boot();
 </script>
+<!-- Device sync. Opt-in and off until a sync code is set, at which point the
+     app stops being device-only; see the README. Loaded last and kept in its
+     own file so it can watch saves and re-render without this file changing:
+     nothing above this line knows sync exists. -->
+<script src="sync.js"></script>
 </body>
 </html>

@@ -177,6 +177,49 @@ def kind(name, points):
     return 'work'
 
 
+def is_done(sub):
+    """Has Canvas actually finished with this assignment?
+
+    `submitted_at` alone is wrong. It is set only when Canvas ITSELF receives an
+    upload, so anything done on paper, in class, or through an external tool
+    reads as unsubmitted forever -- even after the instructor has graded it.
+    That is the MATH 1643 "IBA" bug: workflow_state 'graded', graded_at set,
+    a score entered, and submitted_at still null.
+
+    Three ways an item is genuinely dealt with:
+      * submitted_at   -- uploaded through Canvas, the original signal.
+      * excused        -- the instructor took it off the table.
+      * graded         -- workflow_state 'graded' AND graded_at set. The score
+                          is READ to be nowhere near the output; only this
+                          boolean leaves the function.
+
+    The graded branch deliberately does NOT trust "graded" on its own, because
+    Canvas also reports an auto-zero for a blown deadline as graded. Calling
+    that done would hide a real problem, which is the same failure as the old
+    "Nothing due" bug. Canvas flags those separately -- `missing`, or
+    late_policy_status 'missing' when the missing-submission policy applied it
+    -- so both are excluded and such an item keeps showing as not done. Both
+    flags are confirmed live on this account (two stale B AD 1001 items carry
+    missing=true), so this is a real discriminator, not a guess.
+
+    A zero that is genuinely earned on work Jack turned in is therefore counted
+    done, and a zero from never doing it is not. If Canvas ever grades a truly
+    missed item without setting either flag, this errs toward marking it done;
+    the score is not used to second-guess that, because a legitimately-earned
+    zero is indistinguishable from it by score alone and showing a false alarm
+    beats hiding a real one only when we can actually tell them apart.
+    """
+    s = sub or {}
+    if s.get('submitted_at') or s.get('excused'):
+        return True
+    return bool(
+        s.get('workflow_state') == 'graded'
+        and s.get('graded_at')
+        and not s.get('missing')
+        and s.get('late_policy_status') != 'missing'
+    )
+
+
 def pull():
     courses = get('courses', enrollment_state='active')
     out = []
@@ -195,9 +238,7 @@ def pull():
         for a in get(
             f'courses/{cid}/assignments', per_page=100, **{'include[]': 'submission'}
         ):
-            # Submitted is a yes or no. Scores and grades stay out on purpose:
-            # this file ends up on a public GitHub Pages site.
-            done = bool((a.get('submission') or {}).get('submitted_at'))
+            done = is_done(a.get('submission'))
             item = {
                 'course': code,
                 'short': short,
@@ -453,6 +494,16 @@ def push(items):
         return
     except urllib.error.URLError as e:
         print(f'push: FAILED, {e.reason}', file=sys.stderr)
+        return
+    except Exception as e:  # noqa: BLE001
+        # Deliberately broad. HTTPError and URLError do NOT cover a socket that
+        # is accepted and then dropped mid-read -- a Vercel cold start can do
+        # exactly that, and it surfaces as a bare ConnectionResetError or a
+        # socket timeout. Left unhandled it killed the whole run AFTER
+        # canvas.js had already been written, so the workflow's commit step
+        # never ran and a good refresh was thrown away with no alert. The
+        # notification is the expendable part here; the coursework is not.
+        print(f'push: FAILED, {e.__class__.__name__}: {e}', file=sys.stderr)
         return
 
     print(f'push: POSTed {len(fresh)} item(s), HTTP {status}')

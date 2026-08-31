@@ -41,7 +41,57 @@ no framework and no server. Open the file and it runs.
   Safari tabs cannot show notifications at all.
 
 Everything a person enters (notes, audio, grades, photos, favourites) stays in
-that browser. Nothing is uploaded and there is no account.
+that browser, and there is still no account. **Until you set a sync code the app
+uploads nothing at all** — it is the same device-only app it has always been.
+Setting one is a deliberate choice to change that; see [Sync](#sync) for exactly
+what then leaves the device and what never does.
+
+## Sync
+
+Two devices, one code, same schedule. It is **off until you turn it on**: with no
+code set, no network call is ever made and the header just reads *Sync off · this
+device only*.
+
+Tap that strip, **Generate a code**, and type the same code on the other device.
+That code is the only credential — 26 characters, about 130 bits, generated in
+the browser. There is no login, no email and no account, exactly like the Canvas
+feed and the summary endpoint.
+
+**What syncs:** schedule blocks, hand-added assignments, done ticks, grades,
+building pins, food favourites and hour overrides, the imported Canvas calendar,
+and every lecture's notes, transcript, flashcards and deep summary.
+
+**What does not:**
+
+- **Lecture audio.** A recording is tens of megabytes and stays in the browser
+  that made it. Its notes and summary appear everywhere; everywhere else says so
+  in words and shows no player, rather than a play button that cannot play.
+- The deep-summary endpoint secret, and the notification switch — both are
+  properties of one device, not of the schedule.
+
+**Conflicts** are settled last-edit-wins **per item**. Every block, tick, grade
+row and lecture carries its own timestamp, so editing one block on the phone
+cannot roll back a different block added on the laptop. Deleting propagates: a
+deleted block stays deleted rather than coming back from the other device.
+
+**Offline** the app is completely unaffected. Edits are written locally first, as
+they always were, and go out when the network returns. The header strip says what
+is actually true — *Synced 3 minutes ago*, *Syncing…*, or *Not synced — no
+connection · 2 changes waiting*. It never shows a tick for a sync that did not
+happen.
+
+**What syncing costs you, honestly.** Synced text is stored in a Supabase table
+owned by whoever runs the app. The table itself is unreadable to the public key
+in `sync.js`: row-level security is on with no policies at all and every
+privilege revoked, and the only way in is two `SECURITY DEFINER` functions that
+take the sync code and hash it server-side, so the code is never stored in the
+clear and there is nothing to enumerate without it. But it is **not** end-to-end
+encrypted — the project's owner can read what is in that table — and the code is
+a bearer secret: anyone holding it can read and change everything synced under
+it, and there is no per-device revocation. Rotating means generating a new code
+and typing it in everywhere. The full threat model, including what it does not
+protect against, is in `docs/sync_schema.sql`, which is also the migration to run
+against a fresh project.
 
 ## Putting it online
 
@@ -121,7 +171,9 @@ Canvas**, and follow the four steps it shows:
 4. Back in the app, load that file.
 
 It is parsed in the browser and kept in that browser under a key naming the
-schedule, `schedhub.canvas.b` and so on. No token, no login, nothing uploaded.
+schedule, `schedhub.canvas.b` and so on. No token and no login. Nothing is
+uploaded unless a sync code is set, in which case the parsed calendar is one of
+the things that syncs — see [Sync](#sync).
 One person's coursework cannot surface in another person's app, and the three
 apps stay isolated even though they share an origin. **Disconnect** wipes it.
 
