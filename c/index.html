@@ -218,6 +218,15 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
   background:rgba(var(--shadow),.025)}
 .pfree span{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:10.5px;
   font-weight:700;color:var(--dim2);letter-spacing:.02em}
+/* suggested study, drawn as a ghost: dashed, unfilled, never a commitment.
+   Nothing here is saved, and the solver and notifications never see it. */
+.pghost{position:absolute;border-radius:10px;border:1.5px dashed var(--accent);background:transparent;
+  padding:3px 8px;text-align:left;overflow:hidden;font:inherit;color:var(--accent);z-index:2}
+.pghost .gn{display:block;font-size:11.5px;font-weight:700;line-height:1.2;color:var(--accent);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pghost .gt{display:block;font-size:10px;font-weight:700;color:var(--dim2);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pghost:active{background:var(--card2)}
 /* quick-add preview: what it understood, before anything is committed */
 .qprev{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--bg2)}
 .qprev.warn{border-color:var(--signal)}
@@ -627,6 +636,26 @@ audio{width:100%;margin-bottom:12px}
 .sldisc .slbody{display:none}
 .sldisc.on .slbody{display:block}
 .slnote{font-size:12px;color:var(--dim2);line-height:1.55;margin:0 0 12px}
+/* the week at a glance: one row per weekday, every suggested sitting on it */
+.slweek{display:block}
+.slday{display:flex;gap:9px;padding:9px 0;border-top:1px solid var(--line)}
+.slday:first-child{border-top:0}
+.slday .sldl{flex:0 0 34px;font-size:12px;font-weight:800;color:var(--dim2);padding-top:9px;
+  letter-spacing:.02em}
+.slday.today .sldl{color:var(--accent)}
+.slday .slsess{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px}
+.slsess .slchip{flex:1 1 calc(50% - 3px);min-width:0;max-width:100%;display:block;padding:6px 9px;
+  border-radius:10px;border:1.5px dashed var(--line);background:var(--bg2);font:inherit;text-align:left}
+.slsess .slchip .sldot{display:inline-block;vertical-align:middle;width:7px;height:7px;border-radius:2px;
+  margin-right:5px}
+.slsess .slchip .sct{display:block;font-size:11.5px;font-weight:800;color:var(--tx);
+  font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.slsess .slchip .scn{display:block;font-size:11px;font-weight:600;color:var(--dim);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.slsess .slchip.kept{border-style:solid;border-color:var(--good-line);background:var(--good-bg)}
+.slsess .slchip.kept .scn{color:var(--good)}
+.slsess .slnone{font-size:12px;color:var(--dim2);font-weight:600;padding-top:11px}
+.slhint{font-size:11.5px;color:var(--dim2);line-height:1.5;margin:10px 0 0}
 .slrow{padding:12px 0;border-top:1px solid var(--line)}
 .slrow:first-child{border-top:0}
 .slhead{display:flex;align-items:baseline;gap:8px}
@@ -743,19 +772,25 @@ audio{width:100%;margin-bottom:12px}
       <button class="minibtn" id="planNotify">Notify me</button>
     </div>
 
-    <!-- STUDY LOAD -->
-    <div class="sldisc" id="sload">
-      <button class="sltog" id="sloadTog" aria-expanded="false" aria-controls="sloadBody">
-        <span class="slcar">&#9654;</span><span>Study time</span>
-        <span class="slsum" id="sloadSum"></span>
-      </button>
-      <div class="slbody" id="sloadBody">
-        <div class="card"><div id="sloadList"></div></div>
-        <div class="minibtns">
-          <button class="minibtn primary" id="sloadAll">Place every class</button>
-          <button class="minibtn danger" id="sloadClear">Remove study blocks</button>
+    <!-- STUDY LOAD: a view of where study time could go, not a thing that fills
+         the calendar. Nothing below writes anything until a single sitting is
+         kept on purpose. -->
+    <div id="sload">
+      <div class="sechead"><h2>Study time</h2><span class="aux" id="sloadSum"></span></div>
+      <div class="card tight"><div id="sloadWeek"></div></div>
+      <div id="sloadSay"></div>
+
+      <div class="sldisc" id="sloadDetail">
+        <button class="sltog" id="sloadTog" aria-expanded="false" aria-controls="sloadBody">
+          <span class="slcar">&#9654;</span><span>Per class, and why</span>
+          <span class="slsum" id="sloadSum2"></span>
+        </button>
+        <div class="slbody" id="sloadBody">
+          <div class="card"><div id="sloadList"></div></div>
+          <div class="minibtns" id="sloadTools" style="display:none">
+            <button class="minibtn danger" id="sloadClear">Remove kept study blocks</button>
+          </div>
         </div>
-        <div id="sloadSay"></div>
       </div>
     </div>
 
@@ -4788,8 +4823,16 @@ function renderPlan(){
     sub:fmt(x.b.start) + ' – ' + fmt(x.b.end), color:x.b.color, id:x.b.id }));
   const items = planLanes(classes.concat(own).sort((a,b) => a.s - b.s || a.e - b.e));
 
-  const lo = Math.min(8 * 60, ...items.map(i => i.s - (i.s % 60)));
-  const hi = Math.max(21 * 60, ...items.map(i => i.e + (60 - i.e % 60) % 60));
+  /* Suggested study, worked out fresh on every render against a throwaway copy
+     of the block list. It is never saved, never in `items`, and so never seen
+     by lanes, clash detection or notifications. */
+  try { sloadCache = sloadSuggest(); } catch (e){ sloadCache = null; console.error('study suggest', e); }
+  const ghosts = ('MTWRF'.includes(L) ? sloadGhostsFor(L) : []);
+
+  /* ghosts count toward the window too, so a suggestion never lands off-grid */
+  const span = items.concat(ghosts);
+  const lo = Math.min(8 * 60, ...span.map(i => i.s - (i.s % 60)));
+  const hi = Math.max(21 * 60, ...span.map(i => i.e + (60 - i.e % 60) % 60));
   const PXM = 1.15;
   const grid = $('#planGrid');
   grid.style.height = (hi - lo) * PXM + 'px';
@@ -4821,6 +4864,17 @@ function renderPlan(){
       ((e - s) * PXM >= 26 ? '<span>' + dur((e - s) * 60000) + ' open</span>' : '') + '</div>';
   });
 
+  /* ghosts sit inside the open stretches, drawn under the real blocks so a
+     commitment always wins the pixel it shares */
+  ghosts.forEach((g, n) => {
+    const h = Math.max(20, (g.e - g.s) * PXM - 3);
+    html += '<button class="pghost" data-ghost="' + n + '" style="top:' + (g.s - lo) * PXM +
+      'px;height:' + h + 'px;left:9%;width:calc(91% - 4px)">' +
+      '<span class="gn">' + esc(g.name) + ' · suggested</span>' +
+      (h >= 34 ? '<span class="gt">' + hm(g.s) + ' – ' + hm(g.e) + ' · tap to keep this one</span>' : '') +
+      '</button>';
+  });
+
   items.forEach(it => {
     const laneW = (100 - 9) / it.lanes;   // 9% left gutter for hour labels
     const left = 9 + it.lane * laneW;
@@ -4841,12 +4895,20 @@ function renderPlan(){
   grid.querySelectorAll('.pblk.mine').forEach(el => {
     el.onclick = () => openPlanSheet(planBlocks.find(b => String(b.id) === el.dataset.id));
   });
+  grid.querySelectorAll('.pghost').forEach(el => {
+    el.onclick = e => {
+      e.stopPropagation();
+      const g = ghosts[+el.dataset.ghost];
+      if (g && confirm('Keep ' + hm(g.s) + ' to ' + hm(g.e) + ' on ' + PLAN_DAYLAB[g.L] +
+        ' for ' + g.name + '?\n\nIt becomes a normal block you can edit or delete.')) sloadKeep(g);
+    };
+  });
 
   /* Tap an open stretch to start a block right there. Snaps out of anything
      it lands inside rather than proposing a slot that does not exist. */
   grid.onclick = e => {
     if (e.target !== grid && !e.target.classList.contains('pfree') && e.target.parentNode !== grid) return;
-    if (e.target.closest && e.target.closest('.pblk')) return;
+    if (e.target.closest && e.target.closest('.pblk, .pghost')) return;
     const r = grid.getBoundingClientRect();
     let s = Math.round((lo + (e.clientY - r.top) / PXM) / 15) * 15;
     const cov = planBusyFor(L).find(b => b.s <= s && b.e > s);
@@ -5033,15 +5095,18 @@ function sloadBestGap(days){
   return best;
 }
 
-/* Place one class's weekly study time into real gaps. Keeps whatever fits and
-   says plainly what stopped the rest. */
+/* Work out where one class's remaining weekly study time COULD go, using the
+   same gap helpers the quick-add solver uses. It appends to whatever array
+   `planBlocks` currently points at — the suggestion pass points it at a
+   throwaway copy, so nothing is written — and it never saves. Only
+   sloadKeep() below ever commits, and only one sitting at a time. */
 function sloadPlace(c){
   const target = sloadTarget(c) - sloadPlaced(c);
   const name = cName(c);
   if (target < 15) return { ok:true, text:'"' + name + '" already has its ' + sloadHrs(sloadTarget(c)) + ' on the grid.' };
   const order = sloadDayOrder(c);
   const want = sloadSessions(target);
-  const used = [];
+  const used = [], made = [];
   let done = 0, i = 0, stuck = null, trimmed = false;
 
   for (const full of want){
@@ -5072,15 +5137,16 @@ function sloadPlace(c){
     // them. A stray block never blocks a good id again.
     const id = planBlocks.reduce(
       (m, b) => (Number.isFinite(Number(b.id)) ? Math.max(m, Number(b.id)) : m), 0) + 1;
-    planBlocks.push({ id, title:'Study · ' + name, start:m2t(put.t), end:m2t(put.t + put.need),
-                      days:put.L, color:c.color, study:c.key });
+    const blk = { id, title:'Study · ' + name, start:m2t(put.t), end:m2t(put.t + put.need),
+                  days:put.L, color:c.color, study:c.key };
+    planBlocks.push(blk);
+    made.push(blk);
     used.push(put.L);
     done += put.need;
     i++;
   }
-  if (done) planSave();
 
-  if (!stuck) return { ok:true, text:'Placed ' + sloadHrs(done) + ' for ' + name + ' on ' +
+  if (!stuck) return { ok:true, made, text:'Room for ' + sloadHrs(done) + ' for ' + name + ' on ' +
     dayList([...new Set(used)].sort((a, b) => 'MTWRF'.indexOf(a) - 'MTWRF'.indexOf(b)).join('')) + '.' +
     (trimmed ? ' Some sittings were shortened to fit the gaps that were actually free' +
       (done < target ? ', so it comes to ' + sloadHrs(done) + ' rather than ' + sloadHrs(target) : '') + '.' : '') };
@@ -5090,14 +5156,63 @@ function sloadPlace(c){
     ? (g.prev ? 'after ' + g.prev.label : 'from the start of the day') +
       (g.next ? ' and before ' + g.next.label : '')
     : '';
-  return { ok:false, text:(done
-      ? 'Placed ' + sloadHrs(done) + ' for ' + name + ', but the last ' + dur(stuck * 60000) +
+  return { ok:false, made, text:(done
+      ? 'Found room for ' + sloadHrs(done) + ' for ' + name + ', but the last ' + dur(stuck * 60000) +
         ' had nowhere to go — not even a ' + dur(SLOAD_MINSESS * 60000) + ' piece of it. '
       : 'No room for ' + name + ' at all: nothing as long as ' + dur(SLOAD_MINSESS * 60000) + ' is free on any weekday. ') +
       (g ? 'The biggest opening left on a weekday is ' + dur(g.len * 60000) + ' on ' + PLAN_DAYLAB[g.L] +
            ', ' + hm(g.from) + ' to ' + hm(g.until) + ' — ' + bound + '.'
          : 'Every weekday between ' + hm(PLAN_DAY_LO) + ' and ' + hm(PLAN_DAY_HI) + ' is already full.') +
       ' Free something up, or lower this class’s multiplier.' };
+}
+
+/* ---- the suggestion pass: a view, not a write ----
+   planBlocks is pointed at a throwaway copy for the duration, so the real
+   array is untouched and planSave() is never reached. Whatever comes back is
+   drawn as ghosts and listed by day; it is not on his calendar and does not
+   exist to the solver, to clash detection, or to notifications. */
+let sloadCache = null;
+
+function sloadSuggest(){
+  const real = planBlocks;
+  const notes = [];
+  const out = [];
+  try {
+    planBlocks = real.slice();          // scratch: same blocks, separate array
+    COURSES.filter(sloadContact).forEach(c => {
+      const r = sloadPlace(c);
+      (r.made || []).forEach(b => out.push({
+        key:c.key, name:cName(c), color:c.color,
+        L:b.days, s:mins(b.start), e:mins(b.end), start:b.start, end:b.end
+      }));
+      if (!r.ok) notes.push({ key:c.key, text:r.text });
+    });
+  } finally { planBlocks = real; }      // always handed back, even on a throw
+  return { sessions:out, notes };
+}
+
+const sloadGhostsFor = L => (sloadCache ? sloadCache.sessions : []).filter(g => g.L === L);
+
+/* The one committing action, one sitting at a time. It writes an ordinary
+   block — same shape as any hand-added one — and re-checks the room first,
+   because the suggestion may be minutes old. */
+function sloadKeep(g){
+  const c = COURSES.find(x => x.key === g.key);
+  if (!c) return;
+  if (planClash(g.L, g.s, g.e, null)){
+    sloadMsg = { ok:false, text:'That window is not free any more — something already sits across ' +
+      hm(g.s) + ' to ' + hm(g.e) + ' on ' + PLAN_DAYLAB[g.L] + '.' };
+    renderPlan();
+    return;
+  }
+  const id = planBlocks.reduce(
+    (m, b) => (Number.isFinite(Number(b.id)) ? Math.max(m, Number(b.id)) : m), 0) + 1;
+  planBlocks.push({ id, title:'Study · ' + cName(c), start:g.start, end:g.end,
+                    days:g.L, color:c.color, study:c.key });
+  planSave();
+  sloadMsg = { ok:true, text:'Kept ' + hm(g.s) + '–' + hm(g.e) + ' on ' + PLAN_DAYLAB[g.L] +
+    ' for ' + cName(c) + '. It is a normal block now — tap it on the grid to change or delete it.' };
+  renderPlan();
 }
 
 /* Real exams only, from the Canvas data already loaded, matched to the course
@@ -5135,12 +5250,79 @@ function sloadWhy(c, target){
     bits.push('No exam posted for this class yet, so this time goes on the work that is already due.');
   }
   const ct = sloadContact(c);
-  if (ct) bits.push('Placed after the lecture on ' + dayList(ct.days) + ' where the week allows, so the review happens while it is still fresh.');
+  if (ct) bits.push('Suggested after the lecture on ' + dayList(ct.days) + ' where the week allows, so the review happens while it is still fresh.');
   return bits.join(' ');
 }
 const niceDate = iso => MONTHS[+iso.slice(5, 7) - 1].slice(0, 3) + ' ' + (+iso.slice(8, 10));
 
+/* THE VIEW. The whole week's suggested study, laid out by day, with the real
+   time of day on it. Nothing here is on his calendar: it is a picture of where
+   the time could go. One sitting can be kept at a time, and only on purpose. */
+/* 11:50a, not 11:50 am — the week grid has to fit two of these side by side */
+const sloadClock = m => ((m / 60 | 0) % 12 || 12) + ':' +
+  String(m % 60).padStart(2, '0') + (m >= 720 ? 'p' : 'a');
+
+function renderWeekStudy(){
+  const wrap = $('#sloadWeek');
+  if (!wrap) return;
+  const sug = sloadCache || { sessions:[], notes:[] };
+  const N = campusNow();
+  const kept = planBlocks.filter(b => b.study);
+
+  let sugMin = 0;
+  const rows = [...'MTWRF'].map(L => {
+    const day = sug.sessions.filter(g => g.L === L).slice().sort((a, b) => a.s - b.s);
+    const mine = kept.filter(b => (b.days || '').includes(L))
+      .map(b => ({ L, s:mins(b.start), e:mins(b.end), name:b.title.replace(/^Study · /, ''),
+                   color:b.color, kept:true }));
+    const all = mine.concat(day).sort((a, b) => a.s - b.s);
+    day.forEach(g => { sugMin += g.e - g.s; });
+    return '<div class="slday' + (L === N.letter ? ' today' : '') + '">' +
+      '<div class="sldl">' + PLAN_DAYLAB[L] + '</div>' +
+      (all.length
+        ? '<div class="slsess">' + all.map(g =>
+            (g.kept
+              ? '<span class="slchip kept">'
+              : '<button class="slchip" data-keep="' + g.L + '|' + g.s + '|' + g.e + '|' + g.key + '">') +
+            '<span class="sct">' + sloadClock(g.s) + '–' + sloadClock(g.e) + '</span>' +
+            '<span class="scn"><span class="sldot" style="background:' + g.color + '"></span>' +
+            esc(g.name) + (g.kept ? ' · kept' : '') + '</span>' +
+            (g.kept ? '</span>' : '</button>')).join('') + '</div>'
+        : '<div class="slnone">No weekday opening long enough.</div>') +
+      '</div>';
+  }).join('');
+
+  wrap.innerHTML = '<div class="slweek">' + rows + '</div>' +
+    '<p class="slhint">Dashed = a suggestion only. None of it is on your calendar, and nothing is ' +
+    'saved unless you tap one to keep it. The same suggestions show as dashed outlines on the grid above.</p>' +
+    (sug.notes.length
+      ? '<p class="slhint">' + sug.notes.map(n => esc(n.text)).join(' ') + '</p>'
+      : '');
+
+  const keptMin = kept.reduce((t, b) => t + (mins(b.end) - mins(b.start)) * (b.days || '').length, 0);
+  $('#sloadSum').textContent = sloadHrs(sugMin + keptMin) + ' across the week' +
+    (keptMin ? ' · ' + sloadHrs(keptMin) + ' kept' : ' · nothing kept');
+
+  wrap.querySelectorAll('[data-keep]').forEach(b => {
+    b.onclick = () => {
+      const [L, s, e, key] = b.dataset.keep.split('|');
+      const g = (sloadCache ? sloadCache.sessions : []).find(x =>
+        x.L === L && x.s === +s && x.e === +e && x.key === key);
+      if (!g) return;
+      if (confirm('Keep ' + hm(g.s) + ' to ' + hm(g.e) + ' on ' + PLAN_DAYLAB[g.L] +
+        ' for ' + g.name + '?\n\nIt becomes a normal block you can edit or delete.')) sloadKeep(g);
+    };
+  });
+
+  const say = $('#sloadSay');
+  if (say) say.innerHTML = sloadMsg
+    ? '<div class="slsay ' + (sloadMsg.ok ? 'ok' : 'no') + '">' + esc(sloadMsg.text) + '</div>' : '';
+  const tools = $('#sloadTools');
+  if (tools) tools.style.display = kept.length ? '' : 'none';
+}
+
 function renderStudyLoad(){
+  renderWeekStudy();
   const list = $('#sloadList');
   if (!list) return;
   let totT = 0, totP = 0, unsched = [];
@@ -5168,27 +5350,21 @@ function renderStudyLoad(){
         '<span class="slhrs">' + sloadHrs(target) + '<span style="font-weight:600;color:var(--dim2)">/wk</span></span></div>' +
         '<div class="slmeta">' + ct.meets + '&times; ' + dur(ct.per * 60000) + ' a week = ' +
           sloadHrs(ct.week) + ' in class on ' + dayList(ct.days) + ' &middot; &times;' + sloadRatioOf(c) +
-          ' guideline &middot; ' + (placed ? sloadHrs(placed) + ' on the grid' : 'nothing placed yet') + '</div>' +
+          ' guideline &middot; ' + (placed ? sloadHrs(placed) + ' kept on the grid' +
+            (left >= 15 ? ', ' + sloadHrs(left) + ' still only suggested' : '') : 'nothing kept — all of it is suggestion') + '</div>' +
         '<div class="slwhy">' + esc(sloadWhy(c, target)) + '</div>' +
         '<div class="slact">' +
-          '<button class="minibtn primary" data-place="' + c.key + '"' + (left < 15 ? ' disabled style="opacity:.5"' : '') + '>' +
-            (left < 15 ? 'All placed' : 'Place ' + sloadHrs(left)) + '</button>' +
-          (placed ? '<button class="minibtn danger" data-drop="' + c.key + '">Remove</button>' : '') +
+          (placed ? '<button class="minibtn danger" data-drop="' + c.key + '">Remove kept</button>' : '') +
           '<label class="slratio">&times;<input type="number" min="0.25" max="6" step="0.25" ' +
             'value="' + sloadRatioOf(c) + '" data-ratio="' + c.key + '" aria-label="Study multiplier for ' + esc(name) + '"></label>' +
         '</div></div>';
     }).join('');
 
-  $('#sloadSum').textContent = sloadHrs(totT) + '/wk suggested · ' + sloadHrs(totP) + ' placed' +
+  const s2 = $('#sloadSum2');
+  if (s2) s2.textContent = sloadHrs(totT) + '/wk guideline' +
     (unsched.length ? ' · ' + unsched.length + ' unscheduled' : '');
 
-  const say = $('#sloadSay');
-  say.innerHTML = sloadMsg ? '<div class="slsay ' + (sloadMsg.ok ? 'ok' : 'no') + '">' + esc(sloadMsg.text) + '</div>' : '';
-
   const byKey = k => COURSES.find(c => c.key === k);
-  list.querySelectorAll('[data-place]').forEach(b => {
-    b.onclick = () => { sloadMsg = sloadPlace(byKey(b.dataset.place)); renderPlan(); };
-  });
   list.querySelectorAll('[data-drop]').forEach(b => {
     b.onclick = () => {
       const c = byKey(b.dataset.drop);
@@ -5211,7 +5387,7 @@ function renderStudyLoad(){
 }
 
 function sloadBoot(){
-  const wrap = $('#sload'), tog = $('#sloadTog');
+  const wrap = $('#sloadDetail'), tog = $('#sloadTog');
   if (!wrap || !tog) return;
   const open = loadJSON(SLOAD_OPEN, false);
   wrap.classList.toggle('on', !!open);
@@ -5222,20 +5398,13 @@ function sloadBoot(){
     tog.setAttribute('aria-expanded', on ? 'true' : 'false');
     saveJSON(SLOAD_OPEN, on);
   };
-  $('#sloadAll').onclick = () => {
-    const res = COURSES.filter(sloadContact).map(c => sloadPlace(c));
-    const bad = res.filter(r => !r.ok);
-    sloadMsg = bad.length ? { ok:false, text:bad.map(r => r.text).join(' ') }
-                          : { ok:true, text:'Every class has its study time on the grid.' };
-    renderPlan();
-  };
   $('#sloadClear').onclick = () => {
+    if (!confirm('Remove every study block you have kept?')) return;
     planBlocks = planBlocks.filter(b => !b.study);
     planSave();
-    sloadMsg = { ok:true, text:'Removed every study block.' };
+    sloadMsg = { ok:true, text:'Removed every kept study block. The suggestions are still here to look at.' };
     renderPlan();
   };
-  renderStudyLoad();
 }
 
 /* ---------------- quick add: one spoken or typed line ----------------
