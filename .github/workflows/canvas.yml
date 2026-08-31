@@ -1,0 +1,69 @@
+name: Canvas refresh
+
+# Twice a day. GitHub cron is UTC and does NOT observe daylight saving, so
+# these times are pinned to CDT (UTC-5), which is what Central time is from
+# mid-March to early November. During CST (UTC-6) they land an hour earlier:
+# 5am and 5pm Central. That drift is accepted rather than papered over.
+#   11:00 UTC = 6am CDT / 5am CST
+#   23:00 UTC = 6pm CDT / 5pm CST
+on:
+  schedule:
+    - cron: '0 11 * * *'
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: canvas-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Pull Canvas
+        env:
+          CANVAS_TOKEN: ${{ secrets.CANVAS_TOKEN }}
+          CANVAS_BASE_URL: ${{ secrets.CANVAS_BASE_URL }}
+          SCHEDULE_PUSH_URL: ${{ secrets.SCHEDULE_PUSH_URL }}
+          SCHEDULE_PUSH_SECRET: ${{ secrets.SCHEDULE_PUSH_SECRET }}
+        run: python tools/canvas_pull.py
+
+      # NO build.py STEP HERE. Do not add one back. Three reasons:
+      #   1. It would not do anything. b/index.html and c/index.html load the
+      #      coursework with <script src="data/canvas.js">, at page load in the
+      #      browser. Nothing is inlined at build time, so refreshing canvas.js
+      #      already updates both pages. Running build.py changes nothing.
+      #   2. It fails good runs. build.py exits non-zero on template drift, so
+      #      an unrelated edit to index.html would turn a perfectly healthy
+      #      Canvas refresh red.
+      #   3. It rewrites index.html in place, leaving the tree dirty going into
+      #      `git pull --rebase --autostash` below.
+      - name: Commit if changed
+        run: |
+          git config user.name  'canvas-bot'
+          git config user.email 'canvas-bot@users.noreply.github.com'
+          # push-state.json MUST be committed. The runner is ephemeral, so if
+          # this state does not go back to the repo the 6pm run starts blank
+          # and re-alerts every 23:59 deadline the 6am run already sent.
+          git add data/canvas.js
+          # Guarded: on the very first run, before any push has happened, the
+          # state file does not exist yet and a bare `git add` on it errors.
+          # `|| true` because the runner shell is `bash -e`: a bare failing
+          # test would abort the whole step.
+          [ -f data/push-state.json ] && git add data/push-state.json || true
+          if git diff --cached --quiet; then
+            echo 'no Canvas changes to commit'
+            exit 0
+          fi
+          git commit -m 'chore(canvas): automated coursework refresh'
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main

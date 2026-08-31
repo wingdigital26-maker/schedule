@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Fall 2026 Schedule Hub</title>
-<meta name="theme-color" content="#841617">
+<meta name="theme-color" content="#e4e9f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c2026" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Schedule">
@@ -14,17 +15,90 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ==================================================================
+   PALETTE. Cool slate in light, near-black in dark, following the
+   phone's own setting. Every colour in this file resolves through a
+   token here; the media block below redefines ONLY what changes, so
+   no colour's single definition lives inside a media query.
+
+   Measured (WCAG, computed in-page):
+     light on --bg #eef1f5 : tx 13.8  dim 5.2  dim2 4.8  accent 5.0  signal 5.0  good 4.8
+     dark  on --bg #111315 : tx 15.5  dim 7.1  dim2 5.7  accent 5.8  signal 6.6  good 9.8
+   ================================================================== */
 :root{
-  /* OU: Crimson Pantone 201 #841617 is primary, neutrals carry the rest.
-     Cream Pantone 468 is print-only in OU's own system, so it appears here
-     only as an accent on crimson, never as a page ground. */
-  --crimson:#841617; --crimson-d:#66100f; --crimson-l:#a03436; --cream:#fdf9d8;
-  --bg:#f3f0ef; --bg2:#e9e3e1; --card:#ffffff; --card2:#faf7f6;
-  --line:#e0d7d5; --tx:#1b1514; --dim:#61514f; --dim2:#93827f;
-  --accent:var(--crimson); --onAccent:#ffffff;
-  --good:#0f7b4f; --warn:#a15a00; --live:var(--crimson);
-  --r:18px; --pad:16px;
+  /* grounds */
+  --bg:#eef1f5;      /* page: cool blue-grey                  */
+  --bg2:#e4e9f0;     /* sunk wells, tracks, quiet buttons      */
+  --card:#ffffff;    /* raised surface                         */
+  --card2:#f5f7fa;   /* tinted surface                         */
+  --line:#d8dee7;    /* rules and hairlines                    */
+
+  /* type */
+  --tx:#1c2430;      /* body copy                              */
+  --dim:#5a6675;     /* secondary copy                         */
+  --dim2:#5f6a79;    /* labels, captions                       */
+
+  /* accent: now / next / links. --accent is the text-and-fill safe
+     value; --accent-l is the brighter tint, non-text use only. */
+  --accent:#1f5fd8;
+  --accent-l:#2f6fed;
+  --accent-d:#17469f;
+  --onAccent:#ffffff;
+
+  /* signal: reserved strictly for urgency — due today, due soon,
+     late, exams, live recording. Never decorative. */
+  --signal:#c5262b;
+  --signal-l:#e5484d;              /* dots and pulse rings only */
+  --signal-bg:#fdecec;
+  --signal-line:#f7d0d0;
+  --signal-ring:229,72,77;
+
+  --good:#18794e; --good-bg:#e4f2ea; --good-line:#c2e0d0;
+  --amber:#8a5300;
+  --warn:var(--amber); --warn-bg:#f7eedb; --warn-line:#e8d6ae;
+  --live:var(--signal);
+
+  /* band: the header strip */
+  --band:#e4e9f0; --band2:#d7dee8;
+  --onBand:var(--tx); --onBandDim:#4e5967;
+
+  /* translucent chrome that has to track the scheme */
+  --navbg:rgba(255,255,255,.92);
+  --scrim:rgba(28,38,52,.45);
+  /* wash() blends course colours toward this, so blocks never glow */
+  --washTarget:255,255,255;
+
+  --shadow:28,38,52;
+  --r:18px; --pad:16px; --colw:640px;
   --safeT:env(safe-area-inset-top,0px); --safeB:env(safe-area-inset-bottom,0px);
+  --safeL:env(safe-area-inset-left,0px); --safeR:env(safe-area-inset-right,0px);
+}
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#111315; --bg2:#0b0d0f; --card:#1a1d21; --card2:#22262b; --line:#2a2f35;
+
+    --tx:#e8eaed; --dim:#9aa1aa; --dim2:#8a9098;
+
+    --accent:#4c8dff; --accent-l:#7faeff; --accent-d:#2f6fed;
+    --onAccent:#0b0f14;              /* white on #4c8dff is only 3.2:1 */
+
+    --signal:#ff6b4a; --signal-l:#ff8a6d;
+    --signal-bg:#2e1712;             /* dark tint of the hue, not a wash */
+    --signal-line:#5a2a20;
+    --signal-ring:255,107,74;
+
+    --good:#3dd68c; --good-bg:#0f2a1e; --good-line:#1e4a36;
+    --amber:#f5a524; --warn-bg:#2c2008; --warn-line:#54401a;
+
+    --band:#1c2026; --band2:#15181c; --onBandDim:#9aa1aa;
+
+    --navbg:rgba(26,29,33,.92);
+    --scrim:rgba(0,0,0,.6);
+    --washTarget:26,29,33;
+
+    --shadow:0,0,0;
+  }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -33,34 +107,38 @@ body{
   color:var(--tx); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.45;
   padding-bottom:calc(76px + var(--safeB));
+  /* viewport-fit=cover puts the page under the notch; pull it back out.
+     Without this the whole column sits off-centre in landscape on a phone. */
+  padding-left:var(--safeL); padding-right:var(--safeR);
+  overflow-x:hidden;
 }
-.wrap{max-width:620px;margin:0 auto;padding:0 var(--pad)}
+.wrap{max-width:var(--colw);margin-left:auto;margin-right:auto;padding:0 var(--pad)}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* header */
 header{position:relative;margin:0 calc(var(--pad) * -1) 4px;padding:calc(var(--safeT) + 18px) var(--pad) 17px;
-  background:var(--crimson);color:#fff;border-radius:0 0 20px 20px;
-  box-shadow:0 2px 14px rgba(102,16,15,.22)}
+  background:linear-gradient(180deg,var(--band),var(--band2));color:var(--onBand);border-radius:0 0 20px 20px;
+  box-shadow:0 2px 14px rgba(var(--shadow),.10)}
 header:after{content:"";position:absolute;left:var(--pad);right:var(--pad);bottom:0;height:3px;
-  background:var(--cream);opacity:.5;border-radius:3px}
-.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--cream);font-weight:800}
-h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spacing:-.02em;color:#fff}
-.sub{color:rgba(255,255,255,.82);font-size:14px}
-.nowclock{display:inline-flex;align-items:center;gap:7px;margin-top:9px;background:rgba(0,0,0,.22);
-  border:1px solid rgba(253,249,216,.28);border-radius:99px;padding:5px 12px 5px 10px;font-size:12.5px;
-  font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
-.nowclock:before{content:"";width:7px;height:7px;border-radius:99px;background:var(--cream);
+  background:var(--accent);opacity:.35;border-radius:3px}
+.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent-d);font-weight:800}
+h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spacing:-.02em;color:var(--onBand)}
+.sub{color:var(--onBandDim);font-size:14px}
+.nowclock{display:inline-flex;align-items:center;gap:7px;margin-top:9px;background:var(--card);
+  border:1px solid var(--line);border-radius:99px;padding:5px 12px 5px 10px;font-size:12.5px;
+  font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.nowclock:before{content:"";width:7px;height:7px;border-radius:99px;background:var(--accent);
   animation:p 2.4s ease-in-out infinite}
 .semwrap{margin-top:12px}
-.sembar{height:6px;border-radius:99px;background:rgba(0,0,0,.26);overflow:hidden}
-.semfill{height:100%;background:var(--cream);border-radius:99px}
-.semmeta{display:flex;justify-content:space-between;font-size:11.5px;color:rgba(255,255,255,.72);
+.sembar{height:6px;border-radius:99px;background:rgba(var(--shadow),.16);overflow:hidden}
+.semfill{height:100%;background:var(--accent);border-radius:99px}
+.semmeta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--onBandDim);
   margin-top:6px;font-weight:700}
 
 /* cards */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:14px 0;
-  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+  box-shadow:0 1px 2px rgba(var(--shadow),.05)}
 .card.tight{padding:14px}
 .sechead{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 8px}
 .sechead h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin:0;font-weight:700}
@@ -68,9 +146,9 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 
 /* hero */
 .hero{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;
-  box-shadow:0 2px 10px rgba(27,21,20,.07)}
+  box-shadow:0 2px 10px rgba(var(--shadow),.07)}
 .hero:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--hc,var(--accent))}
-.hero:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--cream);opacity:.9}
+.hero:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--band2);opacity:.9}
 .hstat{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--hc,var(--accent))}
 .dot{width:8px;height:8px;border-radius:99px;background:currentColor}
 .dot.pulse{animation:p 1.8s ease-in-out infinite}
@@ -104,7 +182,7 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .ev:before{content:"";position:absolute;left:-24px;top:17px;width:12px;height:12px;border-radius:99px;
   background:var(--card);border:2.5px solid var(--ec,var(--dim2))}
 .ev.done{opacity:.42}
-.ev.live:before{background:var(--live);border-color:var(--live);box-shadow:0 0 0 5px rgba(132,22,23,.15)}
+.ev.live:before{background:var(--live);border-color:var(--live);box-shadow:0 0 0 5px rgba(var(--signal-ring),.20)}
 .ev .t{font-size:12.5px;color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
 .ev .n{font-size:16px;font-weight:700;margin:1px 0 1px;letter-spacing:-.01em}
 .ev .w{font-size:13px;color:var(--dim)}
@@ -128,12 +206,33 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .phour span{position:absolute;top:2px;left:0;font-size:10px;color:var(--dim2);font-weight:700;
   font-variant-numeric:tabular-nums}
 .pblk{position:absolute;border-radius:10px;padding:4px 8px;overflow:hidden;text-align:left;
-  border:1px solid rgba(27,21,20,.1);box-shadow:0 1px 2px rgba(27,21,20,.06)}
+  border:1px solid rgba(var(--shadow),.1);box-shadow:0 1px 2px rgba(var(--shadow),.06)}
 .pblk .bn{font-size:12.5px;font-weight:800;letter-spacing:-.01em;line-height:1.2;color:var(--tx);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .pblk .bt{font-size:10.5px;color:var(--dim);font-weight:700;display:block;margin-top:1px}
 .pblk.mine{cursor:pointer}
 .pblk.mine:active{transform:scale(.985)}
+/* open stretches, so where a block CAN go is obvious at a glance */
+.plangrid{cursor:pointer}
+.pfree{position:absolute;border-radius:10px;border:1px dashed var(--line);pointer-events:none;
+  background:rgba(var(--shadow),.025)}
+.pfree span{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:10.5px;
+  font-weight:700;color:var(--dim2);letter-spacing:.02em}
+/* quick-add preview: what it understood, before anything is committed */
+.qprev{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--bg2)}
+.qprev.warn{border-color:var(--signal)}
+.qprev h4{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim2);
+  margin:0 0 6px;font-weight:700}
+.qprev.warn h4{color:var(--signal)}
+.qprev .qline{font-size:13.5px;color:var(--tx);font-weight:800;line-height:1.35}
+.qprev .qsub{font-size:12px;color:var(--dim);font-weight:600;margin-top:4px;line-height:1.45}
+.qprev .qassume{color:var(--tx);border-left:3px solid var(--signal);padding-left:8px;margin-top:6px}
+.qprev .qclash{color:var(--tx);border-left:3px solid var(--signal);padding-left:8px;margin-top:6px;font-weight:700}
+.qprev .qalt{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.qprev .qalt button{flex:1 1 46%;min-width:0;min-height:42px;border-radius:11px;border:1px solid var(--line);
+  background:var(--card);color:var(--tx);font:inherit;font-size:12.5px;font-weight:700;padding:8px 10px;
+  text-align:left;line-height:1.3}
+.qprev .qalt button.go{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
 .pnowline{position:absolute;left:40px;right:0;height:2px;background:var(--live);z-index:5;pointer-events:none}
 .pnowline:before{content:"";position:absolute;left:-6px;top:-3px;width:8px;height:8px;border-radius:99px;background:var(--live)}
 .pdays{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 2px}
@@ -141,7 +240,7 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
   border-radius:11px;font-size:13px;font-weight:700;color:var(--dim)}
 .pday.on{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
 .pcolors{display:flex;gap:10px;margin:4px 0 2px;flex-wrap:wrap}
-.pcol{width:36px;height:36px;border-radius:99px;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(27,21,20,.08)}
+.pcol{width:36px;height:36px;border-radius:99px;border:3px solid transparent;box-shadow:inset 0 0 0 1px rgba(var(--shadow),.08)}
 .pcol.on{border-color:var(--tx)}
 .plabel{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim2);font-weight:700;margin:12px 0 5px}
 .ptimes{display:flex;gap:9px;align-items:center}
@@ -155,7 +254,7 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
 .qmic{flex:0 0 auto;width:46px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);
   color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .qmic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
-.qmic.live{background:#a8412b;border-color:#a8412b;color:#fff;animation:qpulse 1.1s ease infinite}
+.qmic.live{background:var(--signal);border-color:var(--signal);color:var(--onAccent);animation:qpulse 1.1s ease infinite}
 @keyframes qpulse{50%{opacity:.55}}
 .qhint{font-size:12.5px;color:var(--dim);min-height:16px;margin-top:6px}
 .qhint.ok{color:var(--tx)}
@@ -180,10 +279,15 @@ details.row summary::-webkit-details-marker{display:none}
 .kv .v{font-weight:600;text-align:right}
 
 /* nav */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.93);
-  backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);
-  border-top:1px solid var(--line);padding-bottom:var(--safeB)}
-.navin{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--navbg);
+  backdrop-filter:saturate(140%) blur(18px);-webkit-backdrop-filter:saturate(140%) blur(18px);
+  border-top:1px solid var(--line);
+  padding:0 var(--safeR) var(--safeB) var(--safeL)}
+/* This used to be grid-template-columns:repeat(7,1fr) while only five tabs
+   exist, so the whole tab row sat in the left 5/7 of the bar and read as the
+   footer being shifted left. Flex divides by however many tabs are present. */
+.navin{max-width:var(--colw);margin:0 auto;display:flex;padding:0 var(--pad)}
+.navin > *{flex:1 1 0;min-width:0}
 .nb{padding:10px 0 11px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--dim2)}
 .nb svg{display:block;margin:0 auto 3px;width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round}
@@ -207,12 +311,12 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
   border:1px solid transparent}
 .cal .d.out{opacity:.3}
 .cal .d.has{background:var(--card2);border-color:var(--line)}
-.cal .d.today{border-color:var(--crimson);font-weight:800;color:var(--crimson)}
+.cal .d.today{border-color:var(--accent);font-weight:800;color:var(--accent)}
 .cal .d.sel{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
-.cal .d.sel .dot{background:rgba(255,255,255,.9)}
+.cal .d.sel .dot{background:var(--onAccent);opacity:.92}
 .dots{display:flex;gap:2.5px;height:5px;align-items:center}
 .dot{width:5px;height:5px;border-radius:99px;background:var(--dim2)}
-.dot.exam{background:var(--crimson)}
+.dot.exam{background:var(--signal)}
 .dot.quiz{background:var(--warn)}
 .duerow{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
 .duerow:first-child{border-top:0}
@@ -221,7 +325,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .duerow .what{flex:1 1 auto;min-width:0}
 .duerow .ti{font-size:14.5px;font-weight:650;line-height:1.3}
 .duerow .mt{font-size:12px;color:var(--dim2);margin-top:2px;font-weight:600}
-.duerow.isexam .ti{color:var(--crimson);font-weight:800}
+.duerow.isexam .ti{color:var(--signal);font-weight:800}
 .duechk{flex:0 0 22px;width:22px;height:22px;margin-top:1px;border-radius:50%;
   border:1.6px solid var(--dim2);background:transparent;padding:0;position:relative;
   display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -231,7 +335,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .duechk svg{width:13px;height:13px;fill:none;stroke:transparent;stroke-width:2.6;
   stroke-linecap:round;stroke-linejoin:round}
 .duechk.on{border-color:var(--accent);background:var(--accent)}
-.duechk.on svg{stroke:#fff}
+.duechk.on svg{stroke:var(--onAccent)}
 .duerow.isdone .ti{text-decoration:line-through;color:var(--dim2)}
 .duerow.isdone .mt,.duerow.isdone .when{opacity:.55}
 .daysep{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
@@ -239,10 +343,10 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .daysep:first-child{border-top:0;padding-top:2px}
 .examstrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .examstrip::-webkit-scrollbar{display:none}
-.examcard{flex:0 0 auto;min-width:132px;background:var(--crimson);color:#fff;border-radius:13px;padding:11px 13px}
-.examcard .k{font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--cream);text-transform:uppercase}
+.examcard{flex:0 0 auto;min-width:132px;background:var(--signal);color:var(--onAccent);border-radius:13px;padding:11px 13px}
+.examcard .k{font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--onAccent);opacity:.88;text-transform:uppercase}
 .examcard .n{font-size:14px;font-weight:800;margin-top:3px;line-height:1.2}
-.examcard .w{font-size:11.5px;color:rgba(255,255,255,.8);margin-top:3px;font-weight:600}
+.examcard .w{font-size:11.5px;color:var(--onAccent);opacity:.85;margin-top:3px;font-weight:600}
 .steps{margin:2px 0 4px}
 .step{font-size:13px;color:var(--dim);line-height:1.5;padding:5px 0 5px 26px;position:relative}
 .step b:first-child{position:absolute;left:0;top:5px;width:18px;height:18px;border-radius:99px;
@@ -250,13 +354,13 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
   display:inline-flex;align-items:center;justify-content:center}
 .icsmsg{font-size:13px;font-weight:600;margin-top:10px;min-height:18px}
 .icsmsg.ok{color:var(--good)}
-.icsmsg.bad{color:var(--crimson)}
+.icsmsg.bad{color:var(--signal)}
 
 /* summary: built to be read on screen and to print as a clean sheet */
 .sumin{max-height:92vh}
 #sumDoc{overflow-y:auto;flex:1;padding-right:2px}
-.sumhead{border-bottom:2px solid var(--crimson);padding-bottom:12px;margin-bottom:4px}
-.sumcourse{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--crimson)}
+.sumhead{border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:4px}
+.sumcourse{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--accent)}
 .sumtitle{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:3px 0 4px;line-height:1.15}
 .summeta{font-size:12.5px;color:var(--dim2);font-weight:600}
 .sumthemes{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
@@ -273,7 +377,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .sumlist.lead .pt{font-size:16px;font-weight:650;line-height:1.35}
 .sumlist.lead{counter-reset:kp}
 .sumlist.lead li:before{counter-increment:kp;content:counter(kp);flex:0 0 22px;height:22px;
-  border-radius:99px;background:var(--crimson);color:#fff;font-size:11px;font-weight:800;
+  border-radius:99px;background:var(--accent);color:var(--onAccent);font-size:11px;font-weight:800;
   display:inline-flex;align-items:center;justify-content:center;transform:translateY(2px)}
 .sumlist.todo .pt{font-size:14.5px;font-weight:600}
 .sumlist.todo li:before{content:"";flex:0 0 8px;height:8px;border-radius:2px;
@@ -291,6 +395,39 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .sumfoot{border-top:1px solid var(--line);padding-top:10px;margin-top:18px}
 .sumempty{font-size:14px;color:var(--dim);line-height:1.5}
 
+/* AI summary. Deliberately a different surface from the ranked local
+   summary above it, so it is never unclear which one is being read. */
+.aipane{border:1px solid var(--line);background:var(--card2);border-radius:16px;
+  padding:14px;margin:0 0 18px}
+.aitag{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.aitag:before{content:'';width:7px;height:7px;border-radius:99px;background:var(--accent)}
+.aihead{font-size:17px;font-weight:800;line-height:1.3;margin:7px 0 2px}
+.aiwhat{font-size:11.5px;color:var(--dim2);line-height:1.5;margin-top:4px}
+.aih3{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);
+  font-weight:800;margin:16px 0 6px}
+.ailist{margin:0;padding:0 0 0 18px}
+.ailist li{font-size:14px;line-height:1.5;padding:4px 0;color:var(--tx)}
+.aiq{margin:0;padding:0;list-style:none}
+.aiq li{font-size:14.5px;line-height:1.45;font-weight:600;padding:9px 0 9px 12px;
+  border-left:3px solid var(--accent);margin-bottom:7px}
+.aiwarn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+  border-radius:12px;padding:11px;font-size:13px;line-height:1.5;font-weight:600;margin-top:10px}
+.aibad{background:var(--signal-bg);border:1px solid var(--signal-line);color:var(--signal);
+  border-radius:12px;padding:11px;font-size:13px;line-height:1.5;font-weight:600}
+.aicost{font-size:11px;color:var(--dim2);font-weight:600;margin-top:12px;
+  border-top:1px solid var(--line);padding-top:9px;line-height:1.5}
+.aifield{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--dim2);margin-bottom:12px}
+.aifield input{display:block;width:100%;box-sizing:border-box;margin-top:6px;min-height:44px;
+  font:inherit;font-size:15px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;color:var(--tx);text-transform:none;letter-spacing:normal}
+.aibusy{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--dim);font-weight:600}
+.aispin{width:16px;height:16px;border-radius:99px;border:2px solid var(--line);
+  border-top-color:var(--accent);animation:aispin .8s linear infinite;flex:0 0 auto}
+@keyframes aispin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.aispin{animation:none}}
+
 @media print{
   body{background:#fff;padding:0}
   body *{visibility:hidden}
@@ -304,12 +441,16 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
   .sumh2{color:#000;break-after:avoid}
   .sumlist.rest .pt,.trow dd{color:#222}
   .sumthemes .th{border:1px solid #999;color:#222}
+  .aipane{border:1px solid #bbb;background:#fff;break-inside:avoid}
+  .aitag,.aiq li{color:#000;border-left-color:#000}
+  .aiwhat,.aicost{color:#222}
+  .aiwarn,.aibad{border:1px solid #000;color:#000;background:#fff}
 }
 .tba{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;background:var(--card2);
   color:var(--warn);border:1px solid var(--line);border-radius:6px;padding:2px 6px;vertical-align:2px}
 .toast{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--safeB));z-index:40;
   background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:14px;
-  box-shadow:0 12px 34px rgba(27,21,20,.2);display:none}
+  box-shadow:0 12px 34px rgba(var(--shadow),.2);display:none}
 .toast.on{display:block;animation:tu .2s ease}
 @keyframes tu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .toast .tl2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
@@ -322,7 +463,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 
 /* ---- study / recorder ---- */
 .recwrap{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:14px 0;
-  box-shadow:0 2px 10px rgba(27,21,20,.07)}
+  box-shadow:0 2px 10px rgba(var(--shadow),.07)}
 .rectarget{display:flex;gap:10px;align-items:center;margin-bottom:14px}
 .rectarget select{flex:1;min-width:0;font:inherit;font-size:14.5px;font-weight:600;color:var(--tx);
   background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;
@@ -346,7 +487,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,25
 .ln{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
 .ln .lt{flex:0 0 auto;color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums;font-size:12.5px;padding-top:2px}
 .recnote{font-size:12.5px;color:var(--dim2);margin-top:11px;line-height:1.5}
-.warnbox{background:#fdf3e7;border:1px solid #f0d5ae;color:#7a4a05;border-radius:13px;padding:12px;
+.warnbox{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:13px;padding:12px;
   font-size:13.5px;line-height:1.5;margin-top:12px}
 
 .lec{border-top:1px solid var(--line)}
@@ -372,21 +513,21 @@ audio{width:100%;margin-bottom:12px}
 .minibtn{flex:1 1 auto;min-width:110px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;
   background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:13.5px;font-weight:700}
 .minibtn.primary{background:var(--accent);color:var(--onAccent);border-color:var(--accent)}
-.minibtn.danger{color:#9b1c1c}
+.minibtn.danger{color:var(--signal)}
 
 .foodnote{font-size:11.5px;color:var(--dim2);line-height:1.5;background:var(--card);border:1px solid var(--line);
   border-radius:13px;padding:11px 12px;margin:0 0 12px}
 .venue{background:var(--card);border:1px solid var(--line);border-radius:17px;margin-bottom:11px;overflow:hidden;
-  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+  box-shadow:0 1px 2px rgba(var(--shadow),.05)}
 .venue > *:not(.vpic){margin-left:14px;margin-right:14px}
 .venue > .minibtns{margin-bottom:14px}
 .vpic{position:relative;line-height:0;background:var(--bg2)}
 .vart{width:100%;height:132px;object-fit:cover;display:block}
-.vcam{position:absolute;right:9px;bottom:9px;background:rgba(255,255,255,.94);border:1px solid var(--line);
+.vcam{position:absolute;right:9px;bottom:9px;background:var(--navbg);border:1px solid var(--line);
   border-radius:10px;padding:8px 11px;font-size:12px;font-weight:700;color:var(--tx);line-height:1;
   cursor:pointer;min-height:36px;display:inline-flex;align-items:center}
 .vcam input{display:none}
-.vcam.vdrop{right:auto;left:9px;color:#9b1c1c}
+.vcam.vdrop{right:auto;left:9px;color:var(--signal)}
 .photobar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .photobar > *{flex:1 1 auto;min-width:104px;min-height:44px;display:inline-flex;align-items:center;
   justify-content:center;border-radius:12px;padding:11px 12px;font-size:13.5px;font-weight:700;cursor:pointer}
@@ -401,12 +542,12 @@ audio{width:100%;margin-bottom:12px}
 .pwcell span{display:block;font-size:10.5px;font-weight:700;color:var(--dim);padding:5px 6px;line-height:1.25}
 .vhead{display:flex;align-items:center;gap:9px;padding-top:13px}
 .star{flex:0 0 auto;font-size:21px;line-height:1;color:var(--dim2);padding:2px;min-width:34px;min-height:40px}
-.star.on{color:#e0a410}
+.star.on{color:var(--accent-l)}
 .vname{flex:1;min-width:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em}
 .pill{flex:0 0 auto;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:4px 8px;border-radius:7px}
-.pill.open{background:#e3f5ec;color:#0f6b46;border:1px solid #bfe6d3}
+.pill.open{background:var(--good-bg);color:var(--good);border:1px solid var(--good-line)}
 .pill.shut{background:var(--bg2);color:var(--dim2);border:1px solid var(--line)}
-.pill.unk{background:#fdf3e7;color:#7a4a05;border:1px solid #f0d5ae}
+.pill.unk{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
 .vserves{font-size:13.5px;color:var(--dim);margin-top:6px;line-height:1.4}
 .vsub{font-size:13.5px;font-weight:700;margin-top:7px}
 .edrow{display:flex;align-items:center;gap:8px;padding:5px 0}
@@ -415,7 +556,7 @@ audio{width:100%;margin-bottom:12px}
   border:1px solid var(--line);border-radius:10px;padding:8px 9px}
 .edto{font-size:12px;color:var(--dim2);font-weight:600}
 .duewrap{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px 14px;margin:14px 0;
-  box-shadow:0 1px 2px rgba(27,21,20,.05)}
+  box-shadow:0 1px 2px rgba(var(--shadow),.05)}
 .duehead{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--dim2);font-weight:700;margin-bottom:4px}
 .duelink{font-size:11.5px;letter-spacing:.06em;color:var(--accent);font-weight:800;text-transform:uppercase;
@@ -432,8 +573,8 @@ audio{width:100%;margin-bottom:12px}
 .dc{font-size:12px;color:var(--dim2);font-weight:600;margin-top:1px;display:block}
 .dwhen{flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:7px;
   background:var(--bg2);color:var(--dim)}
-.dwhen.soon{background:#fdf3e7;color:#7a4a05}
-.dwhen.late{background:#fdeaea;color:#9b1c1c}
+.dwhen.soon{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn)}
+.dwhen.late{background:var(--signal-bg);border:1px solid var(--signal-line);color:var(--signal)}
 .wrow.done{opacity:.5}
 .wdel{flex:0 0 auto;font-size:22px;color:var(--dim2);min-width:34px;min-height:40px;line-height:1}
 .wsel{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--tx);background:var(--bg2);border:1px solid var(--line);
@@ -443,7 +584,7 @@ audio{width:100%;margin-bottom:12px}
 .freeday.today .fdname{color:var(--accent)}
 .fdname{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim2)}
 .fdslots{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
-.fdslot{background:#e3f5ec;border:1px solid #bfe6d3;color:#0f6b46;border-radius:10px;padding:6px 9px;
+.fdslot{background:var(--good-bg);border:1px solid var(--good-line);color:var(--good);border-radius:10px;padding:6px 9px;
   font-size:12.5px;font-weight:700;display:inline-flex;gap:7px;align-items:baseline}
 .fdslot b{font-weight:800;opacity:.7;font-size:11px}
 .fdnone{font-size:13px;color:var(--dim2);margin-top:5px}
@@ -457,7 +598,7 @@ audio{width:100%;margin-bottom:12px}
 .walkmsg{text-align:center;font-size:13.5px;color:var(--dim);padding:10px 4px;line-height:1.5}
 #walkMap{margin:6px 0 10px}
 .pinnote{font-size:11.5px;color:var(--dim2);line-height:1.5;margin-top:10px;text-align:center}
-.sheet{position:fixed;inset:0;z-index:60;background:rgba(27,21,20,.45);display:none;align-items:flex-end}
+.sheet{position:fixed;inset:0;z-index:60;background:var(--scrim);display:none;align-items:flex-end}
 .sheet.on{display:flex}
 .sheetin{width:100%;max-width:620px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;
   padding:18px 16px calc(18px + var(--safeB));max-height:88vh;display:flex;flex-direction:column}
@@ -473,6 +614,20 @@ audio{width:100%;margin-bottom:12px}
 .quizcard .hint{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);font-weight:700}
 .quizmeta{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim2);font-weight:600;margin-top:10px}
 .foot{color:var(--dim2);font-size:12px;text-align:center;padding:22px 10px 8px;line-height:1.6}
+/* the page footer sits in the same column as every card above it, edge for
+   edge, so nothing appears to slide left or right at the bottom */
+.pagefoot{display:block;margin:26px 0 0;padding:16px 0 10px;border-top:1px solid var(--line);text-align:center}
+
+/* desktop: this was built phone-first. Rather than let the column strand
+   itself in the middle of a big empty field, seat it on a raised panel. */
+@media (min-width:900px){
+  :root{--colw:720px}
+  body{background:var(--bg2);padding-bottom:calc(96px + var(--safeB))}
+  .wrap{background:var(--bg);border:1px solid var(--line);border-radius:0 0 24px 24px;
+    border-top:0;box-shadow:0 6px 40px rgba(var(--shadow),.10);padding-bottom:8px;min-height:100vh}
+  header{border-radius:0 0 24px 24px}
+  nav{background:var(--navbg)}
+}
 </style>
 </head>
 <body>
@@ -481,7 +636,7 @@ audio{width:100%;margin-bottom:12px}
   <div class="navin">
     <button class="nb on" data-v="now"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
     <button class="nb" data-v="due"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg>Due</button>
-    <button class="nb" data-v="plan"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><rect x="6" y="12" width="5" height="3" rx="1"/><rect x="13" y="12" width="5" height="6" rx="1"/></svg>Plan</button>
+    <button class="nb" data-v="plan"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><rect x="6" y="12" width="5" height="3" rx="1"/><rect x="13" y="12" width="5" height="6" rx="1"/></svg>Schedule</button>
     <button class="nb" data-v="study"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>Record</button>
     <button class="nb" data-v="finals"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M7 10.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-5.5"/></svg>Finals</button>
   </div>
@@ -549,7 +704,7 @@ audio{width:100%;margin-bottom:12px}
 
   <!-- PLAN -->
   <section class="view" id="v-plan">
-    <div class="sechead"><h2>Block calendar</h2><span class="aux" id="planAux"></span></div>
+    <div class="sechead"><h2>Schedule</h2><span class="aux" id="planAux"></span></div>
     <div class="chips" id="planChips"></div>
     <div class="card tight"><div class="plangrid" id="planGrid"></div></div>
     <div class="minibtns">
@@ -557,8 +712,8 @@ audio{width:100%;margin-bottom:12px}
       <button class="minibtn" id="planNotify">Notify me</button>
     </div>
     <div class="foot" style="text-align:left;padding:10px 2px 0">Classes are placed for you. Add your own blocks
-    for work, gym, study, meals, anything. Tap one of your blocks to change or delete it.
-    Blocks stay on this phone.</div>
+    for work, gym, study, meals, anything. Tap an open stretch of the grid to start a block there,
+    or tap one of your own blocks to change or delete it. Blocks stay on this phone.</div>
   </section>
 
   <!-- COURSES -->
@@ -661,6 +816,37 @@ audio{width:100%;margin-bottom:12px}
         <button class="minibtn primary" id="icsLoad" style="display:none">Load it</button>
         <button class="minibtn" id="canvasClose">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Deep summary settings. Same shape as Connect Canvas: nothing is baked
+       into the page, the person supplies it once and it stays on this device.
+       This app is served from a public site, so a key in the file would be a
+       key anyone could read and spend. -->
+  <div class="sheet" id="aiSheet">
+    <div class="sheetin">
+      <h3>Deep summary setup</h3>
+      <div class="sd">
+        The summary this page writes by itself only re-ranks lines you already
+        typed. Point it at your own summarizer endpoint and it can read the
+        lecture instead. Both boxes stay in this browser.
+      </div>
+      <label class="aifield">Endpoint URL
+        <input id="aiUrl" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
+          spellcheck="false" placeholder="https://your-app/api/lecture/summarize">
+      </label>
+      <label class="aifield">Secret
+        <input id="aiSecret" type="password" autocomplete="off" autocapitalize="off"
+          spellcheck="false" placeholder="LECTURE_API_SECRET">
+      </label>
+      <div id="aiMsg" class="icsmsg"></div>
+      <div class="minibtns">
+        <button class="minibtn primary" id="aiSave">Save on this device</button>
+        <button class="minibtn danger" id="aiForget">Forget</button>
+        <button class="minibtn" id="aiClose">Close</button>
+      </div>
+      <div class="recnote">The key is stored on this device only, in this browser, and is never
+      committed to the site or sent anywhere except the endpoint you typed above.</div>
     </div>
   </div>
 
@@ -790,10 +976,10 @@ audio{width:100%;margin-bottom:12px}
     </div>
   </div>
 
-  <div class="foot">
+  <footer class="foot pagefoot">
     Times shown in America/Chicago. Floor is read from the room number.<br>
     Tap any class for directions, floor and room.
-  </div>
+  </footer>
 </div>
 
 <!-- Canvas assignments, generated by canvas_export.py. Optional on purpose:
@@ -847,7 +1033,9 @@ const PEERS = {
 };
 /* ==PEERS:END== */
 
-const PALETTE = ['#2f6fed','#b45c09','#0f7b4f','#7b3fa0','#0e7490','#a8412b','#5b6b16'];
+/* cool mid-tone course swatches, legible on both the light and the dark
+   ground. No red in the set: urgency is carried by --signal alone. */
+const PALETTE = ['#3e63dd','#12a594','#8e4ec6','#0d9bc4','#d6409f','#46a758','#5e7a9e'];
 COURSES.forEach((c,i) => {
   c.color = PALETTE[i % PALETTE.length];
   // Stable internal id. Course codes are display only and may be absent.
@@ -878,8 +1066,13 @@ function roomShort(room){ return String(parseInt(room,10)); }
 /* Wash a course color toward white so grid blocks stay readable with dark text. */
 function wash(hex, amt){
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  const m = v => Math.round(v + (255 - v) * amt);
-  return 'rgb(' + m(r) + ',' + m(g) + ',' + m(b) + ')';
+  // blend toward whatever the current scheme's surface is, so course
+  // washes never glow white on a dark ground
+  const P = (getComputedStyle(document.documentElement)
+    .getPropertyValue('--washTarget') || '255,255,255')
+    .split(',').map(n => parseInt(n, 10) || 0);
+  const m = (v, i) => Math.round(v + (P[i] - v) * amt);
+  return 'rgb(' + m(r,0) + ',' + m(g,1) + ',' + m(b,2) + ')';
 }
 function dur(ms){
   const m = Math.max(0, Math.round(ms/60000));
@@ -1734,6 +1927,34 @@ function acceptICS(text){
 }
 $('#sumClose').onclick = () => $('#sumSheet').classList.remove('on');
 $('#sumPrint').onclick = () => window.print();
+
+/* deep summary: actions live inside the rendered pane, so delegate */
+$('#sumDoc').addEventListener('click', e => {
+  const t = e.target.closest('[data-ai],[data-aicfg]');
+  if (!t) return;
+  if (t.dataset.aicfg){ openAiSheet(); return; }
+  runDeepSummary(t.dataset.ai);
+});
+$('#aiClose').onclick = () => $('#aiSheet').classList.remove('on');
+$('#aiSheet').addEventListener('click', e => {
+  if (e.target === $('#aiSheet')) $('#aiSheet').classList.remove('on');
+});
+$('#aiSave').onclick = () => {
+  const url = $('#aiUrl').value.trim(), secret = $('#aiSecret').value.trim();
+  if (!url || !secret) return aiSay('Both the endpoint and the secret are needed.', true);
+  if (!/^https?:\/\//i.test(url)) return aiSay('The endpoint has to start with http:// or https://.', true);
+  try { localStorage.setItem(AI_KEY, JSON.stringify({url, secret})); }
+  catch (e){ return aiSay('This browser would not save it. Storage may be full.', true); }
+  aiSay('Saved on this device.');
+  if (SUM_FOR && $('#aiPane')) $('#aiPane').innerHTML = aiPaneHtml(SUM_FOR, null);
+  setTimeout(() => $('#aiSheet').classList.remove('on'), 700);
+};
+$('#aiForget').onclick = () => {
+  try { localStorage.removeItem(AI_KEY); } catch (e){}
+  $('#aiUrl').value = ''; $('#aiSecret').value = '';
+  aiSay('Removed from this device. Saved summaries stay.');
+  if (SUM_FOR && $('#aiPane')) $('#aiPane').innerHTML = aiPaneHtml(SUM_FOR, null);
+};
 $('#canvasClose').onclick = () => $('#canvasSheet').classList.remove('on');
 $('#dueRefresh').onclick = openCanvasSheet;
 wireDoneClicks($('#soonList'));
@@ -2594,10 +2815,235 @@ function sumDocHtml(r, s){
   return h;
 }
 
+/* =========================================================================
+   DEEP SUMMARY (optional, over the network)
+
+   The ranked summary above is the floor and never goes away: it works with
+   no network, no endpoint and no key. This adds a second, clearly separate
+   summary written by a model reading the notes, through an endpoint the
+   person configures themselves.
+
+   Nothing is baked in. This page is served from a public site, so a bearer
+   token in the file would be a token anyone could read and spend. The URL
+   and the secret are typed once and kept in localStorage on the device.
+
+   Every failure is shown as itself. There is no invented summary, no empty
+   card dressed up as a result, and the ranked summary stays on screen
+   underneath in every case.
+   ========================================================================= */
+
+const AI_KEY = 'schedhub.ai.' + SCHEDULE.id;
+
+function aiCfg(){
+  try {
+    const o = JSON.parse(localStorage.getItem(AI_KEY) || 'null');
+    if (o && typeof o.url === 'string' && o.url && typeof o.secret === 'string' && o.secret) return o;
+  } catch (e){}
+  return null;
+}
+function aiSay(msg, bad){
+  const el = $('#aiMsg');
+  el.textContent = msg;
+  el.className = 'icsmsg ' + (bad ? 'bad' : 'ok');
+}
+function openAiSheet(){
+  const c = aiCfg();
+  $('#aiUrl').value = c ? c.url : '';
+  $('#aiSecret').value = c ? c.secret : '';
+  aiSay(c ? 'Saved on this device.' : '');
+  $('#aiSheet').classList.add('on');
+}
+
+/* What actually gets sent: the lines typed in class, and the machine
+   transcript if this device produced one. Nothing else leaves the phone. */
+function aiPayload(r){
+  const c = courseByKey(r.key || r.code);
+  return {
+    course: c ? (c.title || c.short || '') : '',
+    date: r.dateISO || '',
+    notes: (r.notes || []).map(n => mmss(n.t) + '  ' + (n.text || '').trim())
+             .filter(l => l.trim()).join('\n'),
+    transcript: (r.transcript || '').trim()
+  };
+}
+
+const aiMoney = n => (typeof n === 'number' && isFinite(n) && n >= 0)
+  ? (n < 0.01 ? 'under a cent' : '$' + n.toFixed(2)) : null;
+
+/* The saved result, or a reason there is none. Never a blank confident card. */
+function aiPaneHtml(r, state){
+  const cfg = aiCfg();
+  const saved = r.ai && r.ai.summary ? r.ai : null;
+
+  if (state && state.busy){
+    return '<div class="aipane"><div class="aitag">Deep summary</div>' +
+      '<div class="aibusy" style="margin-top:10px"><span class="aispin"></span>' +
+      esc(state.busy) + '</div></div>';
+  }
+
+  let h = '<div class="aipane"><div class="aitag">Deep summary</div>';
+
+  if (state && state.err){
+    h += '<div class="aibad" style="margin-top:10px">' + esc(state.err) + '</div>' +
+         '<div class="aiwhat">Nothing was written in place of it. The ranked summary from your own ' +
+         'notes is below and is unaffected.</div>' +
+         '<div class="minibtns"><button class="minibtn primary" data-ai="' + r.id + '">Try again</button>' +
+         '<button class="minibtn" data-aicfg="1">Settings</button></div></div>';
+    return h;
+  }
+
+  if (saved){
+    const s = saved.summary;
+    h += '<div class="aihead">' + esc(s.headline || '(no headline returned)') + '</div>';
+    h += '<div class="aiwhat">Written by a model (' + esc(saved.model || 'unknown model') +
+         ') from your own notes' + (saved.hadTranscript ? ' and this phone\'s transcript' : '') +
+         ', not from your notes ranked. It can only use what you captured.</div>';
+    if (s.confidence === 'low'){
+      h += '<div class="aiwarn">Low confidence. The model said the notes it was given were thin, ' +
+           'fragmentary or only part of the session, so treat this as a partial record of the ' +
+           'lecture rather than a summary of it.</div>';
+    }
+    const kp = Array.isArray(s.keyPoints) ? s.keyPoints.filter(Boolean) : [];
+    if (kp.length) h += '<div class="aih3">Key points</div><ul class="ailist">' +
+      kp.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>';
+    const tm = Array.isArray(s.terms) ? s.terms.filter(t => t && t.term) : [];
+    if (tm.length) h += '<div class="aih3">Terms</div><dl class="sumterms">' +
+      tm.map(t => '<div class="trow"><dt>' + esc(t.term) + '</dt><dd>' +
+        esc(t.definition || '') + '</dd></div>').join('') + '</dl>';
+    const td = Array.isArray(s.todos) ? s.todos.filter(t => t && t.text) : [];
+    if (td.length) h += '<div class="aih3">To do</div><ul class="ailist">' +
+      td.map(t => '<li>' + esc(t.text) + (t.due ? ' <b>(' + esc(t.due) + ')</b>' : '') + '</li>').join('') + '</ul>';
+    const qs = Array.isArray(s.questions) ? s.questions.filter(Boolean) : [];
+    if (qs.length) h += '<div class="aih3">Ask the professor</div><ul class="aiq">' +
+      qs.map(q => '<li>' + esc(q) + '</li>').join('') + '</ul>';
+    if (!kp.length && !tm.length && !td.length && !qs.length){
+      h += '<div class="aiwarn">The model returned no points, terms, to-dos or questions. ' +
+           'That means it found nothing in these notes it could stand behind, not that the ' +
+           'lecture was empty.</div>';
+    }
+    const money = aiMoney(saved.cost);
+    h += '<div class="aicost">Saved on this phone ' +
+      (saved.at ? esc(new Date(saved.at).toLocaleString('en-US',
+        {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})) : '') +
+      (money ? ' &middot; cost ' + esc(money) : '') +
+      '. Re-opening this lecture reads the saved copy and spends nothing.</div>';
+    h += '<div class="minibtns"><button class="minibtn" data-ai="' + r.id + '">Run it again</button>' +
+         '<button class="minibtn" data-aicfg="1">Settings</button></div></div>';
+    return h;
+  }
+
+  if (!cfg){
+    h += '<div class="aiwhat">Not set up. Everything below is the ranked summary, which works ' +
+         'offline and always will. Add your own summarizer endpoint and key to have a model ' +
+         'read the lecture as well. Nothing is shipped with this app.</div>' +
+         '<div class="minibtns"><button class="minibtn" data-aicfg="1">Set it up</button></div></div>';
+    return h;
+  }
+
+  h += '<div class="aiwhat">Sends this lecture\'s notes' +
+       ((r.transcript || '').trim() ? ' and transcript' : '') +
+       ' to your endpoint and comes back with the points, terms, to-dos and the questions ' +
+       'worth asking. Costs a little each run, so it only runs when you tap it.</div>' +
+       '<div class="minibtns"><button class="minibtn primary" data-ai="' + r.id + '">Deep summary</button>' +
+       '<button class="minibtn" data-aicfg="1">Settings</button></div></div>';
+  return h;
+}
+
+/* Honest text for whatever went wrong. Never collapses two causes into one. */
+function aiErrText(status, body){
+  const detail = body && typeof body.error === 'string' ? body.error : '';
+  if (status === 401) return 'The endpoint rejected the key (401). Check the secret in Settings; ' +
+    'it has to match LECTURE_API_SECRET on the server.';
+  if (status === 400) return 'The endpoint had nothing to summarize (400). ' +
+    (detail || 'This lecture has no typed notes and no transcript.');
+  if (status === 413) return 'This lecture is too long to summarize in one request (413). ' +
+    (body && body.chars ? body.chars.toLocaleString() + ' characters against a limit of ' +
+      (body.limit || 60000).toLocaleString() + '. ' : '') +
+    'It was not truncated, because a partial summary would look complete. Split the lecture.';
+  if (status === 502) return 'The endpoint could not reach the model (502). ' + (detail || '') ;
+  return 'The endpoint returned ' + status + '. ' + (detail || '');
+}
+
+let AI_RUNNING = false;
+async function runDeepSummary(id){
+  if (AI_RUNNING) return;
+  const cfg = aiCfg();
+  const r = await dbGet(id);
+  if (!r) return;
+  if (!cfg){ openAiSheet(); return; }
+
+  AI_RUNNING = true;
+  const paint = st => { const p = $('#aiPane'); if (p) p.innerHTML = aiPaneHtml(r, st); };
+  paint({busy:'Reading the lecture. This takes a few seconds.'});
+
+  const fail = msg => { AI_RUNNING = false; paint({err: msg}); };
+
+  const payload = aiPayload(r);
+  if (!payload.notes && !payload.transcript){
+    return fail('There are no typed notes and no transcript on this lecture, so there is nothing ' +
+      'to send. Nothing was requested and nothing was spent.');
+  }
+
+  let res;
+  try {
+    res = await fetch(cfg.url, {
+      method:'POST',
+      headers:{'content-type':'application/json', 'authorization':'Bearer ' + cfg.secret},
+      body: JSON.stringify(payload)
+    });
+  } catch (e){
+    return fail('Could not reach ' + cfg.url + '. ' +
+      (navigator.onLine === false
+        ? 'This phone is offline.'
+        : 'The server did not answer, or it refused the request from this page (' +
+          ((e && e.message) || 'network error') + ').'));
+  }
+
+  let body = null;
+  try { body = await res.json(); } catch (e){ body = null; }
+
+  if (!res.ok) return fail(aiErrText(res.status, body));
+  if (!body) return fail('The endpoint answered ' + res.status + ' but the body was not readable JSON.');
+  if (body.configured === false){
+    return fail('The endpoint is running but has no model key configured, so it produced no summary. ' +
+      (body.note ? String(body.note) : 'Set ANTHROPIC_API_KEY on the server.'));
+  }
+  if (!body.summary || typeof body.summary !== 'object'){
+    return fail('The endpoint answered but returned no summary. Nothing has been saved.');
+  }
+
+  r.ai = {
+    summary: body.summary,
+    model: body.model || '',
+    cost: typeof body.cost === 'number' ? body.cost : null,
+    hadTranscript: !!body.hadTranscript,
+    at: Date.now()
+  };
+  try { await dbPut(r); }
+  catch (e){
+    AI_RUNNING = false;
+    const p = $('#aiPane');
+    if (p){
+      p.innerHTML = aiPaneHtml(r, null);
+      p.insertAdjacentHTML('beforeend',
+        '<div class="aiwarn">This summary could not be saved to this phone, so re-opening the ' +
+        'lecture will not bring it back and would cost again. Save it as a PDF now.</div>');
+    }
+    return;
+  }
+  AI_RUNNING = false;
+  if (SUM_FOR && SUM_FOR.id === r.id) SUM_FOR = r;
+  paint(null);
+}
+
 let SUM_FOR = null;
 function openSummary(r){
   SUM_FOR = r;
-  $('#sumDoc').innerHTML = sumDocHtml(r, summarize(r));
+  /* The AI pane sits inside #sumDoc so it prints with the rest of the page,
+     and above the ranked summary because when it exists it is the better
+     read. The ranked summary is always there underneath either way. */
+  $('#sumDoc').innerHTML = '<div id="aiPane">' + aiPaneHtml(r, null) + '</div>' +
+                           sumDocHtml(r, summarize(r));
   $('#sumSheet').classList.add('on');
   $('#sumDoc').scrollTop = 0;
 }
@@ -2862,13 +3308,13 @@ function miniMap(focus){
   }
   pts.forEach(p => {
     if (p.n === '__me'){
-      svg += '<circle cx="' + X(p.lng) + '" cy="' + Y(p.lat) + '" r="7" fill="#1d6ef5" stroke="#fff" stroke-width="2.5"/>';
-      svg += '<text x="' + X(p.lng) + '" y="' + (Y(p.lat)-13) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#1d6ef5">You</text>';
+      svg += '<circle cx="' + X(p.lng) + '" cy="' + Y(p.lat) + '" r="7" fill="var(--accent)" stroke="var(--card)" stroke-width="2.5"/>';
+      svg += '<text x="' + X(p.lng) + '" y="' + (Y(p.lat)-13) + '" text-anchor="middle" font-size="10" font-weight="700" fill="var(--accent)">You</text>';
       return;
     }
     const on = p.n === focus;
     svg += '<circle cx="' + X(p.lng) + '" cy="' + Y(p.lat) + '" r="' + (on?8:5) + '" fill="' +
-           (on ? 'var(--accent)' : 'var(--dim2)') + '" stroke="#fff" stroke-width="2"/>';
+           (on ? 'var(--accent)' : 'var(--dim2)') + '" stroke="var(--card)" stroke-width="2"/>';
     svg += '<text x="' + X(p.lng) + '" y="' + (Y(p.lat)+ (on?21:18)) + '" text-anchor="middle" font-size="9.5" font-weight="' +
            (on?'800':'600') + '" fill="' + (on?'var(--accent)':'var(--dim)') + '">' +
            esc(p.n.replace(' Hall','').replace('Physical Science Ctr','Phys Sci')) + '</text>';
@@ -3396,27 +3842,90 @@ function dueLabel(iso, N){
 }
 function openWork(){ return WORK.filter(w => !w.done).sort((a,b) => a.due.localeCompare(b.due)); }
 
-/* card on the Now tab */
+/* Canvas work that is still outstanding, in the same shape the Due tab uses.
+   dueItems() prefers an imported .ics over the shipped data/canvas.js, and
+   doneSet() carries the local ticks; it.done === true is Canvas itself saying
+   the thing was submitted, which always wins. Anything older than a week is
+   left out so one forgotten item from August cannot bury this week's work, and
+   so is anything more than a week out, which the Due tab is for. */
+function openCanvasWork(N){
+  const items = (typeof dueItems === 'function') ? dueItems() : [];
+  if (!items.length) return [];
+  const done = doneSet();
+  return items
+    .filter(it => it.done !== true && !done.has(doneKeyOf(it)) &&
+                  daysUntil(it.due, N) >= -7 && daysUntil(it.due, N) <= 7)
+    .sort((a,b) => (a.due + a.time).localeCompare(b.due + b.time));
+}
+
+/* Same title, same day, from both sources = the same assignment typed twice.
+   Anything less certain than that is left alone and shown twice, because
+   guessing wrong here hides real coursework. */
+const workFingerprint = (title, due) =>
+  due + '|' + String(title || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+/* card on the Now tab: hand-added work AND Canvas, one list, one count */
 function renderDue(N){
   const host = $('#dueCard');
-  const list = openWork();
-  if (!list.length){
-    host.innerHTML = '<div class="duewrap"><div class="duehead"><span>Coming up</span>' +
-      '<button class="duelink" id="openWorkA">Add</button></div>' +
-      '<div class="dueempty">Nothing due. Add an assignment when one lands.</div></div>';
+  const canvasLoaded = (typeof dueItems === 'function') && dueItems().length > 0;
+  const canvasRows = canvasLoaded ? openCanvasWork(N) : [];
+  const seen = new Set(canvasRows.map(it => workFingerprint(it.title, it.due)));
+
+  const rows = canvasRows.map(it => ({
+    src: 'canvas', due: it.due, sort: it.due + (it.time || '23:59'),
+    title: it.title, sub: it.short || it.course || 'Canvas',
+    exam: it.kind === 'exam',
+    url: (it.url && /^https?:\/\//i.test(it.url)) ? it.url : null
+  }));
+  for (const w of openWork()){
+    if (seen.has(workFingerprint(w.title, w.due))) continue;
+    const c = courseByKey(w.key);
+    rows.push({ src:'manual', id:w.id, due:w.due, sort:w.due + '00:00',
+                title:w.title, sub:(c ? c.short : 'General'), exam:false, url:null });
+  }
+  rows.sort((a,b) => a.sort.localeCompare(b.sort));
+
+  const stamp = (typeof dueSource === 'function') ? dueSource() : '';
+  const note = canvasLoaded
+    ? '<div class="dc" style="margin:-2px 0 4px">Canvas ' + esc(stamp || 'loaded') +
+      ' &middot; next 7 days, plus anything late</div>'
+    : '<div class="dueempty">Canvas data unavailable &mdash; this list is hand-added work only. ' +
+      'Open the Due tab to connect Canvas.</div>';
+
+  /* Two links, because the count covers Canvas too and the work sheet only
+     manages hand-added items: the count opens the Due tab, Add opens the sheet. */
+  const head = '<div class="duehead"><span>Coming up</span><span>' +
+    (rows.length ? '<button class="duelink" id="dueJumpA">' + rows.length + ' open</button> ' : '') +
+    '<button class="duelink" id="openWorkA">Add</button></span></div>';
+
+  if (!rows.length){
+    host.innerHTML = '<div class="duewrap">' + head + note +
+      (canvasLoaded
+        ? '<div class="dueempty">Nothing outstanding &mdash; Canvas and your own list are both clear.</div>'
+        : '') + '</div>';
     return;
   }
-  const show = list.slice(0, 3);
-  host.innerHTML = '<div class="duewrap"><div class="duehead"><span>Coming up</span>' +
-    '<button class="duelink" id="openWorkA">' + list.length + ' open</button></div>' +
-    show.map(w => {
-      const c = courseByKey(w.key), dl = dueLabel(w.due, N);
-      return '<button class="duerow" data-toggle="' + w.id + '">' +
-        '<span class="dbox"></span>' +
-        '<span class="dmain"><span class="dt">' + esc(w.title) + '</span>' +
-          '<span class="dc">' + esc(c ? c.short : 'General') + '</span></span>' +
-        '<span class="dwhen ' + dl.tone + '">' + dl.txt + '</span></button>';
+
+  host.innerHTML = '<div class="duewrap">' + head + note +
+    rows.slice(0, 6).map(r => {
+      const dl = dueLabel(r.due, N);
+      const inner =
+        (r.src === 'manual'
+          ? '<span class="dbox"></span>'
+          : '<span class="dbox" style="border-style:dotted"></span>') +
+        '<span class="dmain"><span class="dt"' + (r.exam ? ' style="color:var(--signal)"' : '') + '>' +
+          esc(r.title) + '</span>' +
+        '<span class="dc">' + esc(r.sub) + (r.src === 'canvas' ? ' &middot; Canvas' : '') + '</span></span>' +
+        '<span class="dwhen ' + dl.tone + '">' + dl.txt + '</span>';
+      if (r.src === 'manual')
+        return '<button class="duerow" data-toggle="' + r.id + '">' + inner + '</button>';
+      return r.url
+        ? '<a class="duerow" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + inner + '</a>'
+        : '<div class="duerow">' + inner + '</div>';
     }).join('') + '</div>';
+
+  const jump = $('#dueJumpA');
+  if (jump) jump.onclick = () => { const nb = document.querySelector('.nb[data-v="due"]'); if (nb) nb.click(); };
 }
 
 function renderWorkSheet(N){
@@ -3835,6 +4344,27 @@ function renderPlan(){
     html += '<div class="phour" style="top:' + (m - lo) * PXM + 'px"><span>' +
       h12 + (m / 60 >= 12 ? 'pm' : 'am') + '</span></div>';
   }
+  /* open stretches, drawn behind the blocks so a free hour reads as free */
+  const merged = [];
+  items.slice().sort((a,b) => a.s - b.s).forEach(it => {
+    const last = merged[merged.length - 1];
+    if (last && it.s <= last[1]) last[1] = Math.max(last[1], it.e);
+    else merged.push([it.s, it.e]);
+  });
+  const gLo = Math.max(lo, 8 * 60), gHi = Math.min(hi, 21 * 60);
+  let cur = gLo;
+  const gaps = [];
+  merged.forEach(([s, e]) => {
+    if (s - cur >= 30) gaps.push([cur, Math.min(s, gHi)]);
+    cur = Math.max(cur, e);
+  });
+  if (gHi - cur >= 30) gaps.push([cur, gHi]);
+  gaps.filter(([s,e]) => e - s >= 30).forEach(([s,e]) => {
+    html += '<div class="pfree" style="top:' + (s - lo) * PXM + 'px;height:' +
+      ((e - s) * PXM - 3) + 'px;left:9%;width:calc(91% - 4px)">' +
+      ((e - s) * PXM >= 26 ? '<span>' + dur((e - s) * 60000) + ' open</span>' : '') + '</div>';
+  });
+
   items.forEach(it => {
     const laneW = (100 - 9) / it.lanes;   // 9% left gutter for hour labels
     const left = 9 + it.lane * laneW;
@@ -3855,19 +4385,35 @@ function renderPlan(){
   grid.querySelectorAll('.pblk.mine').forEach(el => {
     el.onclick = () => openPlanSheet(planBlocks.find(b => String(b.id) === el.dataset.id));
   });
+
+  /* Tap an open stretch to start a block right there. Snaps out of anything
+     it lands inside rather than proposing a slot that does not exist. */
+  grid.onclick = e => {
+    if (e.target !== grid && !e.target.classList.contains('pfree') && e.target.parentNode !== grid) return;
+    if (e.target.closest && e.target.closest('.pblk')) return;
+    const r = grid.getBoundingClientRect();
+    let s = Math.round((lo + (e.clientY - r.top) / PXM) / 15) * 15;
+    const cov = planBusyFor(L).find(b => b.s <= s && b.e > s);
+    if (cov) s = cov.e;
+    s = Math.max(s, PLAN_DAY_LO);
+    const g = freeAfter(L, s);
+    if (g.len < 15) return;
+    openPlanSheet(null, { start:m2t(s), end:m2t(Math.min(s + 60, g.until)), days:L });
+  };
 }
 
-function openPlanSheet(block){
+function openPlanSheet(block, pre){
   planEditing = block ? block.id : null;
   $('#planSheetTitle').textContent = block ? 'Edit block' : 'New block';
   $('#planQuick').value = '';
-  $('#planQuickHint').textContent = '';
+  $('#planQuickHint').innerHTML = '';
   $('#planQuickHint').className = 'qhint';
+  quickAlts = [];
   $('#planDelete').style.display = block ? '' : 'none';
   $('#planTitle').value = block ? block.title : '';
-  $('#planStart').value = block ? block.start : '17:00';
-  $('#planEnd').value = block ? block.end : '18:00';
-  const days = block ? block.days : (planDay || campusNow().letter);
+  $('#planStart').value = block ? block.start : (pre && pre.start) || '17:00';
+  $('#planEnd').value = block ? block.end : (pre && pre.end) || '18:00';
+  const days = block ? block.days : (pre && pre.days) || (planDay || campusNow().letter);
   $('#planDays').innerHTML = PLAN_DAYS.map(L =>
     '<button class="pday' + (days.includes(L) ? ' on' : '') + '" data-day="' + L + '">' +
     PLAN_DAYLAB[L][0] + '</button>').join('');
@@ -3885,7 +4431,7 @@ function openPlanSheet(block){
   $('#planSheet').classList.add('on');
 }
 /* solid marks readable as the block's left edge; the fill is washed at render */
-const PLAN_COLORS_SOLID = ['#2f6fed','#0f7b4f','#b45c09','#7b3fa0','#0e7490','#a8412b','#841617'];
+const PLAN_COLORS_SOLID = ['#3e63dd','#12a594','#8e4ec6','#0d9bc4','#d6409f','#46a758','#5e7a9e'];
 
 function planBoot(){
   $('#planAdd').onclick = () => openPlanSheet(null);
@@ -3905,6 +4451,16 @@ function planBoot(){
     const color = colEl ? colEl.dataset.c : PLAN_COLORS_SOLID[0];
     if (!start || !end || mins(end) <= mins(start)){ alert('The end time has to come after the start.'); return; }
     if (!days){ alert('Pick at least one day.'); return; }
+    /* Never let a block land on top of a class or another block without
+       saying so out loud first. */
+    const hits = [...days]
+      .map(L => ({ L, c:planClash(L, mins(start), mins(end), planEditing) }))
+      .filter(x => x.c);
+    if (hits.length){
+      const h = hits[0];
+      if (!confirm('That overlaps ' + h.c.label + ' on ' + PLAN_DAYLAB[h.L] +
+        ' (' + hm(h.c.s) + ' to ' + hm(h.c.e) + ').\n\nSave it anyway?')) return;
+    }
     if (planEditing !== null){
       const b = planBlocks.find(x => x.id === planEditing);
       if (b) Object.assign(b, {title, start, end, days, color});
@@ -3940,8 +4496,195 @@ function quickTime(h, m, mer){
   return pad2(h) + ':' + pad2(m);
 }
 
+/* ----- what is actually busy, so the parser can solve real gaps -----
+   Everything here works off COURSES and the saved blocks. No guessing, no
+   network, no model: the same answer offline every time. */
+const PLAN_DAY_LO = 7 * 60, PLAN_DAY_HI = 22 * 60;
+const m2t = m => pad2(Math.floor(m / 60)) + ':' + pad2(m % 60);
+const hm = m => fmt(m2t(m));
+const dayList = d => [...d].map(L => PLAN_DAYLAB[L]).join('/');
+const cName = c => c.short || c.title;
+
+function planBusyFor(L, excludeId){
+  const N = campusNow();
+  const cls = (!pastClasses(N) && 'MTWRF'.includes(L))
+    ? meetingsFor(L).map(m => ({ s:m.s, e:m.e, label:cName(m.c), cls:true }))
+    : [];
+  const own = planBlocks
+    .filter(b => (b.days || '').includes(L) && b.id !== excludeId)
+    .map(b => ({ s:mins(b.start), e:mins(b.end), label:b.title || 'a block', cls:false }));
+  return cls.concat(own).sort((a,b) => a.s - b.s);
+}
+function planClash(L, s, e, excludeId){
+  return planBusyFor(L, excludeId).find(b => b.s < e && b.e > s) || null;
+}
+/* the free stretch that starts at `from`, and what ends it */
+function freeAfter(L, from, excludeId){
+  const busy = planBusyFor(L, excludeId);
+  const over = busy.find(b => b.s <= from && b.e > from);
+  if (over) return { len:0, until:from, next:over, inside:over };
+  let until = PLAN_DAY_HI, next = null;
+  busy.forEach(b => { if (b.s >= from && b.s < until){ until = b.s; next = b; } });
+  return { len:until - from, until, next, inside:null };
+}
+/* the free stretch that ends at `to`, and what starts it */
+function freeBefore(L, to, excludeId){
+  const busy = planBusyFor(L, excludeId);
+  const over = busy.find(b => b.s < to && b.e > to);
+  if (over) return { len:0, since:to, prev:over, inside:over };
+  let since = PLAN_DAY_LO, prev = null;
+  busy.forEach(b => { if (b.e <= to && b.e > since){ since = b.e; prev = b; } });
+  return { len:to - since, since, prev, inside:null };
+}
+/* earliest start at or after `from` where `need` minutes are free on EVERY
+   given day. Candidates are real boundaries, so the answer is a real slot. */
+function earliestFit(days, from, need, excludeId){
+  const cands = new Set([from]);
+  [...days].forEach(L => planBusyFor(L, excludeId).forEach(b => { if (b.e >= from) cands.add(b.e); }));
+  const list = [...cands].filter(t => t >= from && t + need <= PLAN_DAY_HI).sort((a,b) => a - b);
+  for (const t of list) if ([...days].every(L => !planClash(L, t, t + need, excludeId))) return t;
+  return null;
+}
+/* latest start where `need` minutes are free on every day and the block still
+   ends by `by` — the honest answer to "before my class" when the gap is short */
+function latestFit(days, by, need, excludeId){
+  const cands = new Set([by - need]);
+  [...days].forEach(L => planBusyFor(L, excludeId).forEach(b => {
+    if (b.s - need >= PLAN_DAY_LO) cands.add(b.s - need);
+  }));
+  const list = [...cands].filter(t => t >= PLAN_DAY_LO && t + need <= by).sort((a,b) => b - a);
+  for (const t of list) if ([...days].every(L => !planClash(L, t, t + need, excludeId))) return t;
+  return null;
+}
+/* fuzzy course lookup across BOTH short and title (and the code when there
+   is one). Returns every hit — two hits means ask, never pick one. */
+function courseMatches(phrase){
+  const p = phrase.trim().toLowerCase();
+  if (p.length < 3) return [];
+  return COURSES.filter(c =>
+    (c.short || '').toLowerCase().includes(p) ||
+    (c.title || '').toLowerCase().includes(p) ||
+    (c.code  || '').toLowerCase().includes(p));
+}
+/* longest phrase that names a class, from the front of the words given */
+function pickCourse(str){
+  const words = str.trim().split(/\s+/)
+    .filter(w => !/^(class|classes|lecture|lecutre|lab|course)$/.test(w));
+  for (let n = Math.min(4, words.length); n > 0; n--){
+    const phrase = words.slice(0, n).join(' ');
+    if (phrase.length < 3) continue;
+    const hits = courseMatches(phrase);
+    if (hits.length) return { hits, phrase, used:n, words };
+  }
+  return { hits:[], phrase:words.slice(0, 2).join(' ') || str.trim(), used:0, words };
+}
+
+/* ----- voice-to-text says words, not digits -----
+   The phone writes "seven thirty to nine", "half past eight", "quarter to
+   five", "noon". Turn all of that into digits BEFORE any time regex runs,
+   so the rest of the parser only ever deals with numbers. */
+const QUICK_NUM = {
+  zero:0, oh:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8,
+  nine:9, ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15,
+  sixteen:16, seventeen:17, eighteen:18, nineteen:19, twenty:20, thirty:30,
+  forty:40, fourty:40, fifty:50
+};
+function quickWords(s){
+  let t = ' ' + s + ' ';
+  t = t.replace(/\bo'?\s?clock\b/g, ' ');
+  t = t.replace(/\bnoon\b|\bmidday\b/g, ' 12:00 pm ');
+  t = t.replace(/\bmidnight\b/g, ' 12:00 am ');
+  /* "twenty five" -> 25, before the single words are converted */
+  t = t.replace(/\b(twenty|thirty|forty|fourty|fifty)[\s-]+(one|two|three|four|five|six|seven|eight|nine)\b/g,
+    (m, a, b) => ' ' + (QUICK_NUM[a] + QUICK_NUM[b]) + ' ');
+  t = t.replace(/\b(zero|oh|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fourty|fifty)\b/g,
+    m => ' ' + QUICK_NUM[m] + ' ');
+  /* "half past 7" -> 7:30, "quarter past 7" -> 7:15, "quarter to 8" -> 7:45 */
+  t = t.replace(/\bhalf\s+(?:past|after)\s+(\d{1,2})\b/g, (m, h) => ' ' + h + ':30 ');
+  t = t.replace(/\b(?:a\s+)?quarter\s+(?:past|after)\s+(\d{1,2})\b/g, (m, h) => ' ' + h + ':15 ');
+  t = t.replace(/\b(?:a\s+)?quarter\s+(?:to|til|till|until|before|of)\s+(\d{1,2})\b/g,
+    (m, h) => ' ' + ((+h + 11 - 1) % 12 + 1) + ':45 ');
+  /* "7 30" -> "7:30", but never a duration ("for 30 minutes") and never a
+     number that is carrying its own unit */
+  const w = t.split(/\s+/);
+  const outw = [];
+  for (let i = 0; i < w.length; i++){
+    const a = w[i], b = w[i + 1], prev = outw[outw.length - 1], nxt = w[i + 2];
+    if (/^([1-9]|1[0-2])$/.test(a) && /^([0-5]?\d)$/.test(b || '') &&
+        !/^(for|about|around)$/.test(prev || '') &&
+        !/^(minutes?|mins?|hours?|hrs?|am|pm|a\.m\.|p\.m\.)$/.test(nxt || '')){
+      outw.push(a + ':' + pad2(+b));
+      i++;
+      continue;
+    }
+    outw.push(a);
+  }
+  return ' ' + outw.join(' ').trim() + ' ';
+}
+
+/* Every clock time a spoken hour could mean. An explicit am/pm, a 24 hour
+   hour, or a 0 pins it to one reading; anything else is genuinely two. */
+function timeReadings(p){
+  const m = p.m || 0;
+  if (p.mer){ let h = p.h % 12; if (/p/.test(p.mer)) h += 12; return [h * 60 + m]; }
+  if (p.h === 0 || p.h > 12) return [(p.h % 24) * 60 + m];
+  const h = p.h % 12;
+  return [h * 60 + m, h * 60 + 720 + m];
+}
+
+/* A range where at most one side said am/pm. Propagate the stated one, but
+   only if it produces a forward range: "11 to 1 pm" is 11:00 to 1:00, not
+   23:00 to 13:00. Every forward reading is scored, and the winner is
+   reported so a wrong guess is visible before Save. */
+const QUICK_CORE_LO = 8 * 60, QUICK_CORE_HI = 21 * 60;
+function resolveRange(a, b, days){
+  const A = timeReadings(a), B = timeReadings(b);
+  const merTxt = a.mer || b.mer;
+  let prop = null;
+  if (merTxt){
+    const other = a.mer ? { h:b.h, m:b.m, mer:merTxt } : { h:a.h, m:a.m, mer:merTxt };
+    const o = timeReadings(other)[0];
+    prop = a.mer ? [A[0], o] : [o, B[0]];
+  }
+  const combos = [];
+  A.forEach(s => B.forEach(e => { if (e > s) combos.push([s, e]); }));
+  if (!combos.length) return null;
+  const wake = m => m >= PLAN_DAY_LO && m <= PLAN_DAY_HI;
+  const core = m => m >= QUICK_CORE_LO && m <= QUICK_CORE_HI;
+  const score = ([s, e]) => {
+    let sc = 0;
+    if (prop && s === prop[0] && e === prop[1]) sc += 100;
+    if (wake(s)) sc += 30;
+    if (wake(e)) sc += 30;
+    if (core(s)) sc += 12;
+    if (core(e)) sc += 12;
+    if (e - s <= 6 * 60) sc += 20;
+    if (e - s <= 4 * 60) sc += 5;
+    if (days && [...days].every(L => !planClash(L, s, e, planEditing))) sc += 10;
+    return sc - (e - s) / 600;
+  };
+  const best = combos.slice().sort((x, y) => score(y) - score(x))[0];
+  const r = { s:best[0], e:best[1] };
+  if (prop){
+    const word = /p/.test(merTxt) ? 'pm' : 'am';
+    if (best[0] === prop[0] && best[1] === prop[1]){
+      /* he said it once and it works on both ends: worth stating, not worth
+         a warning, because nothing was invented */
+      r.soft = true;
+      r.note = 'You said ' + word + ' once, so I used it for both ends.';
+    } else {
+      r.note = word + ' on both ends would run backwards, so I read it as ' +
+        hm(best[0]) + ' to ' + hm(best[1]) + '.';
+    }
+  } else if (combos.length > 1){
+    r.guess = true;
+    r.note = 'You did not say am or pm. I read it as ' + hm(best[0]) + ' to ' + hm(best[1]) + '.';
+  }
+  return r;
+}
+
 function parseQuick(text){
-  let t = ' ' + text.toLowerCase().replace(/[.,!?]/g, ' ') + ' ';
+  let t = quickWords(text.toLowerCase().replace(/[.,!?]/g, ' '));
   const out = { days:'', start:null, end:null, dur:null };
 
   /* days, including today / tomorrow / weekdays / every day */
@@ -3964,63 +4707,155 @@ function parseQuick(text){
     t = t.replace(dm[0], ' ');
   }
 
-  /* relative to a class: "after micro", "before astronomy", "when math
-     ends". The schedule is right here, so use it instead of guessing. */
-  const relWhole = t.match(/\b(after|before|when)\s+(?:my\s+)?([a-z][a-z0-9 ]+)/);
-  if (relWhole){
-    const dir = relWhole[1] === 'before' ? 'before' : 'after';
-    const words = relWhole[2].trim().split(/\s+/);
-    let course = null, used = 0;
-    for (let n = Math.min(4, words.length); n > 0 && !course; n--){
-      const phrase = words.slice(0, n).join(' ');
-      if (phrase.length < 3) break;
-      course = COURSES.find(c =>
-        (c.short || '').toLowerCase().includes(phrase) ||
-        (c.title || '').toLowerCase().includes(phrase));
-      if (course) used = n;
-    }
-    if (course){
-      /* pick the day: an explicit one wins, else today if it meets today,
-         else its next meeting day this week */
-      if (!out.days){
-        if ((course.days || '').includes(N.letter)) out.days = N.letter;
-        else {
-          for (let i = 1; i <= 7; i++){
-            const L = PLAN_DAYS[(N.dow + i) % 7];
-            if ((course.days || '').includes(L)){ out.days = L; break; }
+  /* anchored to a real class: "after my math class", "before micro",
+     "between astronomy and micro". The whole schedule is right here, so
+     solve the ACTUAL gap on the ACTUAL meeting days instead of guessing. */
+  const between = t.match(/\bbetween\s+(?:my\s+)?([a-z][a-z0-9 ]*?)\s+and\s+(?:my\s+)?([a-z][a-z0-9 ]+)/);
+  const relWhole = !between && t.match(/\b(after|before|when)\s+(?:my\s+)?([a-z][a-z0-9 ]+)/);
+  if (between || relWhole){
+    const A = pickCourse(between ? between[1] : relWhole[2]);
+    const B = between ? pickCourse(between[2]) : null;
+    const strip = (verb, p) => {
+      t = t.replace(new RegExp((verb ? '\\b' + verb + '\\s+' : '\\b') + '(?:my\\s+)?' +
+        p.words.slice(0, Math.max(1, p.used)).join('\\s+') +
+        '(?:\\s+(?:class(?:es)?|lecture|lab|course))?', 'g'), ' ');
+    };
+
+    const miss = !A.hits.length ? A : (B && !B.hits.length ? B : null);
+    const amb  = A.hits.length > 1 ? A : (B && B.hits.length > 1 ? B : null);
+
+    if (miss){
+      out.ask = 'No class in your schedule matches "' + miss.phrase +
+        '". Your classes are: ' + COURSES.map(cName).join(', ') +
+        '. Which one did you mean?';
+    } else if (amb){
+      out.ask = '"' + amb.phrase + '" matches ' + amb.hits.map(cName).join(' and ') +
+        '. Which one do you mean? Say the fuller name.';
+    } else {
+      const c1 = A.hits[0], c2 = B ? B.hits[0] : null;
+      let days = '', from = null, to = null, label = '', dirWord = 'after';
+
+      if (c2){
+        const early = mins(c1.end) <= mins(c2.start) ? c1 : c2;
+        const late  = early === c1 ? c2 : c1;
+        days = [...(early.days || '')].filter(L => (late.days || '').includes(L)).join('');
+        label = 'between ' + cName(early) + ' and ' + cName(late);
+        if (!days){
+          out.problem = cName(early) + ' and ' + cName(late) +
+            ' never meet on the same day, so there is no gap between them.';
+        } else {
+          from = mins(early.end); to = mins(late.start);
+          if (to <= from){
+            out.problem = cName(early) + ' and ' + cName(late) + ' run back to back on ' +
+              dayList(days) + ', so there is no gap between them.';
+          } else if (!out.dur){ out.dur = Math.min(to - from, 120); out.durAuto = true; }
+        }
+      } else {
+        dirWord = relWhole[1] === 'before' ? 'before' : 'after';
+        label = dirWord + ' ' + cName(c1);
+        days = out.days
+          ? [...out.days].filter(L => (c1.days || '').includes(L)).join('')
+          : (c1.days || '');
+        if (!days){
+          out.problem = cName(c1) + ' does not meet on ' + dayList(out.days) +
+            '. It meets ' + dayList(c1.days) + '.';
+        }
+        if (!out.dur){ out.dur = 60; out.durAuto = true; }
+        if (dirWord === 'after') from = mins(c1.end);
+        else { to = mins(c1.start); from = to - out.dur; }
+      }
+
+      if (!out.problem && days){
+        const need = out.dur;
+        const list = [...days];
+        const fails = list.filter(L => planClash(L, from, from + need));
+        if (!fails.length && (to === null || dirWord === 'before' || from + need <= to)){
+          out.days = days;
+          out.start = m2t(from);
+          out.end   = m2t(from + need);
+          out.anchor = label;
+          out.anchorDays = days;
+        } else {
+          /* say exactly what is in the way, on which days, and by how much */
+          const bad = fails.length ? fails : list;
+          const L0 = bad[0];
+          const g = dirWord === 'before' ? freeBefore(L0, to) : freeAfter(L0, from);
+          if (g.inside){
+            out.problem = 'There is no gap ' + label + ' on ' + dayList(bad) + ' — ' +
+              g.inside.label + ' runs ' + hm(g.inside.s) + ' to ' + hm(g.inside.e) + ' right there.';
+          } else if (dirWord === 'before'){
+            out.problem = 'Only ' + g.len + ' minutes are free before ' + cName(c1) + ' on ' +
+              dayList(bad) + ' — ' + (g.prev ? g.prev.label + ' ends at ' + hm(g.since) :
+              'the day starts at ' + hm(g.since)) + ', and you asked for ' + need + ' minutes.';
+          } else {
+            out.problem = 'No room ' + label + ' on ' + dayList(bad) + ' — only ' + g.len +
+              ' minutes are free' + (g.next ? ', ' + g.next.label + ' starts at ' + hm(g.until) : '') +
+              ', and you asked for ' + need + ' minutes.';
+          }
+          out.alts = [];
+          const ok = list.filter(L => !fails.includes(L));
+          if (ok.length && dirWord !== 'before'){
+            out.alts.push({ why:'Just on ' + dayList(ok.join('')) + ', ' + label,
+              days:ok.join(''), start:m2t(from), end:m2t(from + need) });
+          }
+          const room = Math.min(...list.map(L =>
+            dirWord === 'before' ? freeBefore(L, to).len : freeAfter(L, from).len));
+          if (room >= 20 && room < need){
+            const s2 = dirWord === 'before' ? to - room : from;
+            out.alts.push({ why:'Shorten to ' + room + ' min, ' + label + ' on ' + dayList(days),
+              days, start:m2t(s2), end:m2t(s2 + room) });
+          }
+          const earlier = dirWord === 'before' ? latestFit(days, mins(c1.start), need) : null;
+          if (earlier !== null && earlier !== from){
+            out.alts.push({ why:'Last real opening before ' + cName(c1) + ': ' + hm(earlier) +
+              ' on ' + dayList(days), days, start:m2t(earlier), end:m2t(earlier + need) });
+          }
+          const later = earliestFit(days, dirWord === 'before' ? mins(c1.end) : from, need);
+          if (later !== null && later !== from){
+            out.alts.push({ why:'Next real opening: ' + hm(later) + ' on ' + dayList(days),
+              days, start:m2t(later), end:m2t(later + need) });
           }
         }
       }
-      if (dir === 'after'){
-        out.start = course.end;
-      } else {
-        const s = mins(course.start) - (out.dur || 60);
-        out.start = pad2(Math.floor(s / 60)) + ':' + pad2(s % 60);
-        out.end = course.start;
-      }
-      out.rel = dir + ' ' + (course.short || course.title);
-      t = t.replace(relWhole[1] + ' ' + words.slice(0, used).join(' '), ' ')
-           .replace(/\b(ends|is over|gets out|lets out|my)\b/g, ' ');
+      out.anchorLabel = label;
     }
+
+    if (between){ strip('between', A); t = t.replace(/\band\b/, ' '); strip('', B); }
+    else strip(relWhole[1], A);
+    t = t.replace(/\b(ends|is over|gets out|lets out|my|class|classes)\b/g, ' ');
   }
 
   /* times: "at 3pm", "from 3 to 4:30pm", "3-4pm", "until 5" */
   const T = '(\\d{1,2})(?::(\\d{2}))?\\s*(a\\.?m\\.?|p\\.?m\\.?)?';
   if (out.start){
     /* a class anchored the start; only an "until 5" style end applies */
-    const till = t.match(new RegExp('\\b(?:to|until|till)\\s+' + T));
+    const till = t.match(new RegExp('\\b(?:through|thru|until|till|til|to)\\s+' + T));
     if (till){ out.end = quickTime(till[1], till[2], till[3]); t = t.replace(till[0], ' '); }
   } else {
-  const range = t.match(new RegExp('\\b(?:from\\s+|at\\s+)?' + T + '\\s*(?:to|until|till|-|through)\\s*' + T));
+  const range = t.match(new RegExp('\\b(?:from\\s+|at\\s+)?' + T +
+    '\\s*(?:through|thru|until|till|til|to|-|–|—)\\s*' + T));
   if (range){
-    /* "3 to 4pm": the first number borrows the second's am/pm */
-    out.start = quickTime(range[1], range[2], range[3] || range[6]);
-    out.end   = quickTime(range[4], range[5], range[6]);
-    t = t.replace(range[0], ' ');
+    /* one stated am/pm covers both ends, unless that runs the clock backwards */
+    const r = resolveRange(
+      { h:+range[1], m:range[2] ? +range[2] : 0, mer:range[3] },
+      { h:+range[4], m:range[5] ? +range[5] : 0, mer:range[6] },
+      out.days);
+    if (r){
+      out.start = m2t(r.s);
+      out.end   = m2t(r.e);
+      if (r.note) out.merNote = r.note;
+      if (r.soft) out.merSoft = true;
+      if (r.guess) out.merGuess = true;
+      t = t.replace(range[0], ' ');
+    }
   } else {
     const at = t.match(new RegExp('\\b(?:at|from)\\s+' + T)) || t.match(new RegExp('\\b' + T + '\\b'));
     if (at && !(at[1].length > 2)){
       out.start = quickTime(at[1], at[2], at[3]);
+      if (!at[3] && +at[1] >= 1 && +at[1] <= 12){
+        out.merGuess = true;
+        out.merNote = 'You did not say am or pm. I read ' + at[1].trim() + ' as ' + fmt(out.start) + '.';
+      }
       t = t.replace(at[0], ' ');
     }
   }
@@ -4031,14 +4866,17 @@ function parseQuick(text){
   }
 
   /* whatever is left, minus connective scraps, is the name */
-  out.title = t.replace(/\b(on|and|the|a|an|at|from|to|for|me|my|add|schedule|put|block)\b/g, ' ')
+  out.title = t.replace(/\b(on|and|the|a|an|at|from|to|til|till|until|thru|through|for|me|my|am|pm|add|schedule|put|block)\b/g, ' ')
                .replace(/\s+/g, ' ').trim();
   if (out.title) out.title = out.title[0].toUpperCase() + out.title.slice(1);
   return out;
 }
 
-function applyQuick(text){
-  const q = parseQuick(text);
+let quickAlts = [];
+
+/* Fill the form, then show EXACTLY what was understood. Nothing is committed
+   until Save, so a misparse is caught here rather than a week later. */
+function quickFill(q){
   if (q.title) $('#planTitle').value = q.title.slice(0, 40);
   if (q.start) $('#planStart').value = q.start;
   if (q.end)   $('#planEnd').value = q.end;
@@ -4046,14 +4884,117 @@ function applyQuick(text){
     $('#planDays').querySelectorAll('.pday').forEach(b =>
       b.classList.toggle('on', q.days.includes(b.dataset.day)));
   }
+}
+
+function quickPreview(q){
   const h = $('#planQuickHint');
-  const bits = [];
-  if (q.title) bits.push(q.title);
-  if (q.days)  bits.push([...q.days].map(L => PLAN_DAYLAB[L]).join(' '));
-  if (q.start) bits.push(fmt(q.start) + ' – ' + fmt(q.end) + (q.rel ? ' (' + q.rel + ')' : ''));
-  h.textContent = bits.length ? 'Got it: ' + bits.join(' · ') + '. Check it, then Save.'
-                              : 'Could not read that. Try "gym at 3pm on tuesday".';
-  h.className = 'qhint' + (bits.length ? ' ok' : '');
+  quickAlts = [];
+
+  /* unclear on purpose: ask rather than place something wrong */
+  if (q.ask){
+    h.className = 'qprev warn';
+    h.innerHTML = '<h4>I need one thing</h4><div class="qline">' + esc(q.ask) + '</div>' +
+      '<div class="qsub">Nothing was filled in, so nothing can go to the wrong place.</div>';
+    return;
+  }
+
+  /* it does not fit: say why, and offer only real alternatives */
+  if (q.problem){
+    quickAlts = q.alts || [];
+    h.className = 'qprev warn';
+    h.innerHTML = '<h4>That does not fit</h4>' +
+      '<div class="qline">' + esc(q.problem) + '</div>' +
+      (quickAlts.length
+        ? '<div class="qsub">Here is what actually fits:</div><div class="qalt">' +
+          quickAlts.map((a, i) => '<button data-i="' + i + '">' + esc(a.why) +
+            '<br>' + fmt(a.start) + ' – ' + fmt(a.end) + '</button>').join('') + '</div>'
+        : '<div class="qsub">There is no other opening on those days between ' +
+          hm(PLAN_DAY_LO) + ' and ' + hm(PLAN_DAY_HI) + '. Pick a different day or a shorter block.</div>');
+    h.querySelectorAll('.qalt button').forEach(b => {
+      b.onclick = () => {
+        const a = quickAlts[+b.dataset.i];
+        quickFill({ title:q.title, days:a.days, start:a.start, end:a.end });
+        quickPreview({ title:q.title, days:a.days, start:a.start, end:a.end,
+          anchor:q.anchorLabel, chosen:a.why });
+      };
+    });
+    return;
+  }
+
+  if (!q.start && !q.days){
+    h.className = 'qhint';
+    h.textContent = 'Could not read that. Try "gym at 3pm on tuesday" or "run after my math class for 30 min".';
+    return;
+  }
+
+  const len = (q.start && q.end) ? mins(q.end) - mins(q.start) : 0;
+  /* an explicit time can still land on top of something — say so */
+  const over = (q.start && q.days)
+    ? [...q.days].map(L => ({ L, c:planClash(L, mins(q.start), mins(q.end), planEditing) })).filter(x => x.c)
+    : [];
+  /* WHY it landed here: one plain sentence, never a debug dump */
+  let why = q.chosen ? q.chosen + '.'
+    : q.anchor ? 'Placed ' + q.anchor + ', in the real gap on your schedule.'
+    : 'Took the times exactly as you said them.';
+  if (q.merSoft && q.merNote) why += ' ' + q.merNote;
+  /* Anything I decided FOR him gets its own line, marked as a guess */
+  const assumed = [];
+  if (q.merNote && !q.merSoft) assumed.push(q.merNote);
+  if (q.durAuto && !q.chosen) assumed.push('You did not say how long, so I used ' + dur(len * 60000) + '.');
+  if (q.anchorDays && q.anchorDays.length > 1)
+    assumed.push('This repeats every ' + dayList(q.anchorDays) + ', because that is when the class meets.');
+  /* a guessed time or length is worth a warning colour; a defaulted day is
+     already visible in the day buttons right below, so it only gets a line */
+  const hardGuess = assumed.length > 0;
+  const need = [];
+  if (!q.days){
+    /* he never said a day, so say which one is actually ticked rather than
+       letting the form quietly decide for him */
+    const on = [...$('#planDays').querySelectorAll('.pday.on')].map(b => b.dataset.day).join('');
+    if (on) assumed.push('No day was said, so this is set to ' + dayList(on) + '. Change it below if that is wrong.');
+    else need.push('Pick a day below before you save.');
+  }
+  const clash = over.length
+    ? 'Runs into ' + over.map(x => x.c.label + ' on ' + PLAN_DAYLAB[x.L]).join(' and ') +
+      '. It is filled in the way you said it, so change it or save it on purpose.'
+    : '';
+  if (over.length){
+    const fit = earliestFit(q.days, mins(q.start), len, planEditing);
+    if (fit !== null && fit !== mins(q.start))
+      quickAlts.push({ why:'Clear instead: ' + hm(fit) + ' on ' + dayList(q.days),
+        days:q.days, start:m2t(fit), end:m2t(fit + len) });
+  }
+  const guessy = hardGuess;
+  h.className = 'qprev' + (over.length || guessy ? ' warn' : '');
+  h.innerHTML = '<h4>' + (over.length ? 'Read this before you save'
+      : guessy ? 'Check what I assumed' : 'Here is what I understood') + '</h4>' +
+    '<div class="qline">' + esc(q.title || 'Block') +
+      (q.days ? ' · ' + dayList(q.days) : '') + '</div>' +
+    (q.start ? '<div class="qline">' + fmt(q.start) + ' – ' + fmt(q.end) +
+      ' · ' + dur(len * 60000) + '</div>' : '') +
+    '<div class="qsub">' + esc(why) + '</div>' +
+    assumed.map(a => '<div class="qsub qassume">Assumed: ' + esc(a) + '</div>').join('') +
+    (clash ? '<div class="qsub qclash">' + esc(clash) + '</div>' : '') +
+    (need.length ? '<div class="qsub">' + esc(need.join(' ')) + '</div>' : '') +
+    '<div class="qalt">' +
+      quickAlts.map((a, i) => '<button data-i="' + i + '">' + esc(a.why) + '<br>' +
+        fmt(a.start) + ' – ' + fmt(a.end) + '</button>').join('') +
+      '<button class="go" id="qGo">Looks right — save it</button></div>';
+  h.querySelectorAll('.qalt button[data-i]').forEach(b => {
+    b.onclick = () => {
+      const a = quickAlts[+b.dataset.i];
+      const nx = { title:q.title, days:a.days, start:a.start, end:a.end, chosen:a.why };
+      quickFill(nx); quickPreview(nx);
+    };
+  });
+  const go = $('#qGo');
+  if (go) go.onclick = () => $('#planSave').click();
+}
+
+function applyQuick(text){
+  const q = parseQuick(text);
+  if (!q.ask && !q.problem) quickFill(q);
+  quickPreview(q);
 }
 
 function quickBoot(){
