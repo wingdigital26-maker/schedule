@@ -1755,8 +1755,11 @@ async function canvasRefresh(){
     CANVAS_FRESH = { stamp, items,
                      undated: grab('CANVAS_UNDATED') || [],
                      ann: grab('CANVAS_ANN') || [] };
-    if (typeof renderAll === 'function') renderAll();
-    else if (typeof tick === 'function') tick();
+    /* Repaint explicitly. tick() only calls renderDue when the minute rolls
+       over, so relying on it left the card showing the old pull for up to a
+       minute, and the Due tab never repainted at all. */
+    try { renderDue(campusNow()); } catch (e){}
+    try { renderCanvasTab(); } catch (e){}
   } catch (e) { /* offline or blocked: the shipped copy stands */ }
 }
 const isoOf = (y, mo, d) => y + '-' + pad2(mo) + '-' + pad2(d);
