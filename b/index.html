@@ -912,15 +912,20 @@ audio{width:100%;margin-bottom:12px}
     <div class="sheetin">
       <h3>Deep summary setup</h3>
       <div class="sd">
-        The summary this page writes by itself only re-ranks lines you already
-        typed. Point it at your own summarizer endpoint and it can read the
-        lecture instead. Both boxes stay in this browser.
+        The summary this page writes by itself only re-organises lines you already
+        typed. Give it a model to read the lecture with and it can do the reading
+        instead. Pick one of the two ways in, below.
       </div>
-      <label class="aifield">Endpoint URL
+      <div class="minibtns" id="aiModeRow">
+        <button class="minibtn primary" id="aiModeKey" data-mode="anthropic">Anthropic API key</button>
+        <button class="minibtn" id="aiModeUrl" data-mode="endpoint">My own endpoint</button>
+      </div>
+      <div class="sd" id="aiModeWhat"></div>
+      <label class="aifield" id="aiUrlField">Endpoint URL
         <input id="aiUrl" type="url" inputmode="url" autocomplete="off" autocapitalize="off"
           spellcheck="false" placeholder="https://your-app/api/lecture/summarize">
       </label>
-      <label class="aifield">Secret
+      <label class="aifield" id="aiSecretField">Secret
         <input id="aiSecret" type="password" autocomplete="off" autocapitalize="off"
           spellcheck="false" placeholder="LECTURE_API_SECRET">
       </label>
@@ -930,8 +935,12 @@ audio{width:100%;margin-bottom:12px}
         <button class="minibtn danger" id="aiForget">Forget</button>
         <button class="minibtn" id="aiClose">Close</button>
       </div>
-      <div class="recnote">The key is stored on this device only, in this browser, and is never
-      committed to the site or sent anywhere except the endpoint you typed above.</div>
+      <div class="recnote">Security: whatever you type here is stored in this browser only, on this
+      device. It is never committed to the site, never sent to Wing Digital, and never shared with
+      anyone else using this app. No key ships with this page. In Anthropic API key mode it is your
+      own key, billed to your own Anthropic account, and it is sent only to api.anthropic.com. In
+      endpoint mode the secret is sent only to the URL you typed above. Clear it any time with
+      Forget.</div>
     </div>
   </div>
 
@@ -2065,11 +2074,28 @@ $('#aiClose').onclick = () => $('#aiSheet').classList.remove('on');
 $('#aiSheet').addEventListener('click', e => {
   if (e.target === $('#aiSheet')) $('#aiSheet').classList.remove('on');
 });
+$('#aiModeRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]');
+  if (!b) return;
+  AI_MODE = b.dataset.mode;
+  aiPaintMode();
+  aiSay('');
+});
 $('#aiSave').onclick = () => {
   const url = $('#aiUrl').value.trim(), secret = $('#aiSecret').value.trim();
+  if (AI_MODE === 'anthropic'){
+    if (!secret) return aiSay('An Anthropic API key is needed.', true);
+    if (!/^sk-ant-/.test(secret)) return aiSay('That does not look like an Anthropic API key. They start with sk-ant-.', true);
+    try { localStorage.setItem(AI_KEY, JSON.stringify({mode:'anthropic', secret})); }
+    catch (e){ return aiSay('This browser would not save it. Storage may be full.', true); }
+    aiSay('Saved in this browser only.');
+    if (SUM_FOR && $('#aiPane')) $('#aiPane').innerHTML = aiPaneHtml(SUM_FOR, null);
+    setTimeout(() => $('#aiSheet').classList.remove('on'), 700);
+    return;
+  }
   if (!url || !secret) return aiSay('Both the endpoint and the secret are needed.', true);
   if (!/^https?:\/\//i.test(url)) return aiSay('The endpoint has to start with http:// or https://.', true);
-  try { localStorage.setItem(AI_KEY, JSON.stringify({url, secret})); }
+  try { localStorage.setItem(AI_KEY, JSON.stringify({mode:'endpoint', url, secret})); }
   catch (e){ return aiSay('This browser would not save it. Storage may be full.', true); }
   aiSay('Saved on this device.');
   if (SUM_FOR && $('#aiPane')) $('#aiPane').innerHTML = aiPaneHtml(SUM_FOR, null);
@@ -2078,6 +2104,7 @@ $('#aiSave').onclick = () => {
 $('#aiForget').onclick = () => {
   try { localStorage.removeItem(AI_KEY); } catch (e){}
   $('#aiUrl').value = ''; $('#aiSecret').value = '';
+  aiPaintMode();
   aiSay('Removed from this device. Saved summaries stay.');
   if (SUM_FOR && $('#aiPane')) $('#aiPane').innerHTML = aiPaneHtml(SUM_FOR, null);
 };
@@ -3173,39 +3200,66 @@ function sumHeardTerms(r, typed){
   return out;
 }
 
+/* Group the remaining lines by the theme word they actually contain, so the
+   page reads as topics instead of one long ranked list. A "topic" of one line
+   is not a topic, so singletons fall through to the ungrouped pile. This adds
+   no intelligence: every line still says exactly what Jack typed, it is only
+   filed next to the other lines about the same thing. */
+function sumGroups(items, themes){
+  const labels = themes.slice(0, 8).map(t => t[0]);
+  const buckets = new Map();
+  const loose = [];
+  for (const it of items){
+    const words = sumWords(it.text);
+    let best = null, hi = 0;
+    for (const L of labels){
+      const c = words.filter(w => w === L).length;
+      if (c > hi){ hi = c; best = L; }
+    }
+    if (best){
+      if (!buckets.has(best)) buckets.set(best, []);
+      buckets.get(best).push(it);
+    } else loose.push(it);
+  }
+  const groups = [];
+  buckets.forEach((arr, topic) => {
+    if (arr.length < 2){ loose.push(arr[0]); return; }
+    arr.sort((a,b) => a.t - b.t);
+    groups.push({ topic, items: arr });
+  });
+  groups.sort((a,b) => b.items.length - a.items.length || a.items[0].t - b.items[0].t);
+  loose.sort((a,b) => a.t - b.t);
+  return { groups, loose };
+}
+
 function summarize(r){
   const notes = (r.notes || []).filter(n => n.text && n.text.trim());
   const themes = sumThemes(notes.map(n => n.text).concat(r.transcript || ''));
   const themeSet = new Set(themes.map(t => t[0]));
 
-  const terms = [], todo = [], ranked = [];
+  /* Every typed line lands in exactly one of these four, in this order, so
+     nothing is shown twice and nothing is dropped. */
+  const terms = [], todo = [], flagged = [], body = [];
   for (const n of notes){
     const text = n.text.trim();
     /* a leading ! is the user flagging a key point; that beats the colon
        reading it as "term: definition" */
-    const m = !/^\s*!/.test(text) && text.match(/^\s*[*•]*\s*([^:]{2,48}):\s*(.+)$/);
+    const isFlag = /^\s*!/.test(text);
+    const m = !isFlag && text.match(/^\s*[*•]*\s*([^:]{2,48}):\s*(.+)$/);
     if (m && !/^https?$/i.test(m[1])){
       terms.push({ t: n.t, term: m[1].trim(), def: m[2].trim() });
       continue;
     }
-    if (SUM_TODO.test(text)) todo.push({ t: n.t, text });
-    ranked.push({ t: n.t, text, k: sumScore(text, themeSet) });
+    if (SUM_TODO.test(text)){ todo.push({ t: n.t, text }); continue; }
+    if (isFlag){ flagged.push({ t: n.t, text: text.replace(/^\s*!+\s*/, '') }); continue; }
+    body.push({ t: n.t, text, k: sumScore(text, themeSet) });
   }
-
-  /* An absolute bar, not one measured off the top note. Scoring relative to
-     the strongest line lets one heavily flagged note drag the bar up and
-     bury everything else, which is the opposite of the job. */
-  const sorted = ranked.slice().sort((a,b) => b.k - a.k || a.t - b.t);
-  const strong = sorted.filter(x => x.k >= 4);
-  const key = (strong.length >= 3 ? strong : sorted.filter(x => x.k > 0).slice(0, 3)).slice(0, 12);
-
-  /* A line already listed as a term or a to-do must not appear again below. */
-  const idOf = x => x.t + '|' + x.text;
-  const spoken = new Set(key.map(idOf).concat(todo.map(idOf)));
-  const rest = ranked.filter(x => !spoken.has(idOf(x)));
+  flagged.sort((a,b) => a.t - b.t);
+  todo.sort((a,b) => a.t - b.t);
+  const grouped = sumGroups(body, themes);
 
   return {
-    key, rest, terms, todo, themes,
+    flagged, groups: grouped.groups, loose: grouped.loose, terms, todo, themes,
     quotes: sumFromTranscript(r.transcript, themeSet),
     outline: sumOutline(r, themeSet),
     heardTerms: sumHeardTerms(r, terms),
@@ -3226,18 +3280,27 @@ function sumDocHtml(r, s){
   let h = '';
   h += '<div class="sumhead">' +
        '<div class="sumcourse">' + esc(title) + '</div>' +
-       '<h1 class="sumtitle">Lecture summary</h1>' +
+       '<h1 class="sumtitle">Your notes, organised</h1>' +
        '<div class="summeta">' + esc(when) + (r.seconds ? ' &middot; ' + mmss(r.seconds) + ' recorded' : '') +
        ' &middot; ' + s.counts.notes + ' notes</div>';
   if (s.themes.length){
     h += '<div class="sumthemes">' + s.themes.slice(0,7)
           .map(t => '<span class="th">' + esc(t[0]) + '</span>').join('') + '</div>';
   }
+  h += '<div class="sumfine">Not a summary. Nothing here was read or written by a model: these ' +
+       'are your own lines, sorted into the things you wrote about and kept word for word.</div>';
   h += '</div>';
 
-  if (s.key.length){
-    h += '<h2 class="sumh2">The points that matter</h2>' +
-         '<ol class="sumlist lead">' + li(s.key, 'k') + '</ol>';
+  if (s.flagged.length){
+    h += '<h2 class="sumh2">You flagged these</h2>' +
+         '<ol class="sumlist lead">' + li(s.flagged, 'k') + '</ol>' +
+         '<div class="sumfine">Lines you started with a ! while you were typing.</div>';
+  }
+  if (s.groups.length){
+    s.groups.forEach(g => {
+      h += '<h2 class="sumh2">On &ldquo;' + esc(g.topic) + '&rdquo;</h2>' +
+           '<ul class="sumlist grp">' + li(g.items, 'g') + '</ul>';
+    });
   }
   const outline = s.outline || [];
   if (outline.length){
@@ -3265,16 +3328,17 @@ function sumDocHtml(r, s){
          s.quotes.map(q => '<li>' + esc(q) + '</li>').join('') + '</ul>' +
          '<div class="sumfine">Chosen automatically from the live transcript, so read them as prompts rather than quotes.</div>';
   }
-  if (s.rest.length){
-    h += '<h2 class="sumh2">Everything else, in order</h2><ul class="sumlist rest">' +
-         li(s.rest.slice().sort((a,b) => a.t - b.t), 'r') + '</ul>';
+  if (s.loose.length){
+    h += '<h2 class="sumh2">' + (s.groups.length ? 'Everything else, in order' : 'Your notes, in order') +
+         '</h2><ul class="sumlist rest">' + li(s.loose, 'r') + '</ul>';
   }
-  if (!s.key.length && !s.terms.length && !s.rest.length && !s.todo.length && !s.quotes.length &&
-      !(s.outline && s.outline.length) && !(s.heardTerms && s.heardTerms.length)){
-    h += '<p class="sumempty">There were no notes on this recording, so there is nothing to rank. ' +
-         'Type notes while recording and this page writes itself.</p>';
+  if (!s.flagged.length && !s.groups.length && !s.terms.length && !s.loose.length && !s.todo.length &&
+      !s.quotes.length && !(s.outline && s.outline.length) && !(s.heardTerms && s.heardTerms.length)){
+    h += '<p class="sumempty">There were no notes on this recording, so there is nothing to ' +
+         'organise. Type notes while recording and this page writes itself.</p>';
   }
-  h += '<div class="sumfoot">Ranked from your own notes. Timestamps point back into the audio.</div>';
+  h += '<div class="sumfoot">Your own notes, grouped and ordered by this page, never rewritten. ' +
+       'Timestamps point back into the audio.</div>';
   return h;
 }
 
@@ -3297,10 +3361,21 @@ function sumDocHtml(r, s){
 
 const AI_KEY = 'schedhub.ai.' + SCHEDULE.id;
 
+/* Two ways in, one stored config.
+     mode 'anthropic' -- the browser calls the Anthropic Messages API itself with
+       Jack's own key. No server of ours in the middle, the same way sync.js talks
+       to Supabase directly. Needs only `secret`.
+     mode 'endpoint'  -- POSTs to a summarizer URL he runs (Wing OS), bearer auth.
+       Needs `url` and `secret`.
+   Configs saved before the modes existed have a url and no mode, so they read as
+   'endpoint' and keep working untouched. */
 function aiCfg(){
   try {
     const o = JSON.parse(localStorage.getItem(AI_KEY) || 'null');
-    if (o && typeof o.url === 'string' && o.url && typeof o.secret === 'string' && o.secret) return o;
+    if (!o || typeof o.secret !== 'string' || !o.secret) return null;
+    const mode = o.mode === 'anthropic' ? 'anthropic' : 'endpoint';
+    if (mode === 'anthropic') return { mode, secret: o.secret, url: '' };
+    if (typeof o.url === 'string' && o.url) return { mode, secret: o.secret, url: o.url };
   } catch (e){}
   return null;
 }
@@ -3309,10 +3384,26 @@ function aiSay(msg, bad){
   el.textContent = msg;
   el.className = 'icsmsg ' + (bad ? 'bad' : 'ok');
 }
+let AI_MODE = 'anthropic';
+function aiPaintMode(){
+  const key = AI_MODE === 'anthropic';
+  $('#aiModeKey').className = 'minibtn' + (key ? ' primary' : '');
+  $('#aiModeUrl').className = 'minibtn' + (key ? '' : ' primary');
+  $('#aiUrlField').style.display = key ? 'none' : '';
+  $('#aiSecretField').firstChild.nodeValue = key ? 'Anthropic API key' : 'Secret';
+  $('#aiSecret').placeholder = key ? 'sk-ant-...' : 'LECTURE_API_SECRET';
+  $('#aiModeWhat').textContent = key
+    ? 'This browser calls api.anthropic.com directly with your key, using model ' + AI_MODEL +
+      '. Each lecture costs a few cents and only runs when you tap it.'
+    : 'This browser POSTs the lecture to your own summarizer URL with the secret as a bearer token. ' +
+      'Use this to point the app back at Wing OS.';
+}
 function openAiSheet(){
   const c = aiCfg();
-  $('#aiUrl').value = c ? c.url : '';
+  AI_MODE = c ? c.mode : 'anthropic';
+  $('#aiUrl').value = c && c.mode === 'endpoint' ? c.url : '';
   $('#aiSecret').value = c ? c.secret : '';
+  aiPaintMode();
   aiSay(c ? 'Saved on this device.' : '');
   $('#aiSheet').classList.add('on');
 }
@@ -3327,6 +3418,146 @@ function aiPayload(r){
     notes: (r.notes || []).map(n => mmss(n.t) + '  ' + (n.text || '').trim())
              .filter(l => l.trim()).join('\n'),
     transcript: (r.transcript || '').trim()
+  };
+}
+
+/* -------- direct-to-Anthropic path ---------------------------------------
+   The prompt, the schema and the anti-fabrication system text below are the
+   ones already proven in Wing OS (app/api/lecture/summarize/route.ts). They are
+   copied rather than reworded on purpose: that wording was tested against
+   fabrication traps and held. The only thing that changed is who makes the
+   call -- this browser, with Jack's own key, instead of a server of ours.
+
+   Headers per the Anthropic Messages API: x-api-key, anthropic-version, and
+   anthropic-dangerous-direct-browser-access, which is the header that makes
+   api.anthropic.com answer a browser at all.
+
+   NO KEY IS EVER WRITTEN INTO THIS FILE. This repo is public. The key comes out
+   of localStorage on the device and goes nowhere but api.anthropic.com. */
+const AI_MODEL = 'claude-opus-5';
+const AI_MAX_CHARS = 60000;
+/* Claude Opus 5 list price, $5/MTok in and $25/MTok out. */
+const AI_PRICE_IN = 5, AI_PRICE_OUT = 25;
+
+const AI_SYSTEM = `You summarize a single university lecture from the student's own raw notes, and (when present) a machine speech-to-text transcript of the same lecture. The student is Jack. Your output is read as if it were his notes, so it has to be true to them.
+
+THE ONE RULE THAT MATTERS MOST: summarize ONLY what is present in the provided notes and transcript. You must not add outside knowledge about the subject. You must not fill gaps with what a lecture on this topic would usually cover. You must not invent a term, a definition, a date, a deadline, an assignment, a name, or a number that does not appear in the input. Sparse notes must produce a sparse summary. Two words of input produce almost nothing, and that is the correct answer. A confidently wrong exam date here would cost Jack a grade, so an empty array is always better than a plausible guess.
+
+Field rules:
+- headline: one short line naming what this lecture was about, drawn from the input. If the input does not say what the lecture was about, describe only what is literally there (e.g. "Fragmentary note: 'entropy increases'"). Never title it with a topic the notes do not name.
+- keyPoints: the substantive points the notes actually make, most important first. Compress and clarify Jack's shorthand, but do not extend it. If the notes contain no substantive point, return an empty array.
+- terms: only terms whose definition is stated in the notes or transcript. A term mentioned without a definition does NOT belong here. Never supply a definition from your own knowledge.
+- todos: only things Jack must go and do that are stated in the input -- readings, problem sets, exam or due dates said aloud. Copy dates exactly as stated; never normalize a vague date into a specific one and never infer one. If the input is uncertain or gives two possibilities for a date, carry that uncertainty through word for word and never resolve it to one. Omit "due" when no date was given.
+- questions: the highest-value field. Real gaps only -- places where the notes are ambiguous, contradictory, cut off mid-thought, reference something never explained, or record a conclusion without its reasoning. Each question must be traceable to something actually in the notes. Do not generate study-guide filler, generic review prompts, or questions about material the lecture never touched. If the notes are clear, or too thin to even have identifiable gaps, return fewer questions or none.
+- confidence: "high" only when the input is substantial enough that the summary genuinely reflects the lecture. Use "low" whenever the input is short, fragmentary, garbled, or covers only part of a session -- the app shows the student a warning when this is "low".
+
+Write plainly. No em dashes. Do not pad any field to look thorough.`;
+
+const AI_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['headline','keyPoints','terms','todos','questions','confidence'],
+  properties: {
+    headline: { type:'string' },
+    keyPoints: { type:'array', items:{ type:'string' } },
+    terms: { type:'array', items:{ type:'object', additionalProperties:false,
+      required:['term','definition'],
+      properties:{ term:{type:'string'}, definition:{type:'string'} } } },
+    todos: { type:'array', items:{ type:'object', additionalProperties:false,
+      required:['text'],
+      properties:{ text:{type:'string'}, due:{type:'string'} } } },
+    questions: { type:'array', items:{ type:'string' } },
+    confidence: { type:'string', enum:['high','low'] }
+  }
+};
+
+function aiPrompt(p){
+  return [
+    'Course: ' + (p.course || '(not provided)'),
+    'Date: ' + (p.date || '(not provided)'),
+    '',
+    p.notes
+      ? "--- STUDENT'S TYPED NOTES ---\n" + p.notes
+      : "--- STUDENT'S TYPED NOTES ---\n(none: the student typed no notes for this lecture)",
+    '',
+    p.transcript
+      ? '--- MACHINE TRANSCRIPT (speech-to-text, may contain recognition errors) ---\n' + p.transcript
+      : '--- MACHINE TRANSCRIPT ---\n(none: this device produced no speech-to-text. This is normal, not an error. Work from the notes alone.)',
+    '',
+    'Summarize the above using only what it contains. The course name and date above are metadata only: do not treat them as knowledge about what was taught.'
+  ].join('\n');
+}
+
+/* Returns the same shape runDeepSummary already handles from the endpoint,
+   or throws an Error whose message is what goes on screen. */
+async function aiRunAnthropic(payload, key){
+  const size = payload.notes.length + payload.transcript.length;
+  if (size > AI_MAX_CHARS){
+    throw new Error('This lecture is ' + size.toLocaleString() + ' characters, past the ' +
+      AI_MAX_CHARS.toLocaleString() + ' the app sends in one request. It was not truncated, ' +
+      'because a partial summary would look complete. Split the lecture and run it in parts.');
+  }
+  let res;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: 8192,
+        system: AI_SYSTEM,
+        thinking: { type: 'adaptive' },
+        output_config: { effort: 'high', format: { type: 'json_schema', schema: AI_SCHEMA } },
+        messages: [{ role: 'user', content: aiPrompt(payload) }]
+      })
+    });
+  } catch (e){
+    throw new Error('Could not reach api.anthropic.com. ' +
+      (navigator.onLine === false ? 'This phone is offline.'
+        : 'The request never completed (' + ((e && e.message) || 'network error') + '). ' +
+          'Nothing was sent to anywhere else and nothing was spent.'));
+  }
+
+  let data = null;
+  try { data = await res.json(); } catch (e){ data = null; }
+
+  if (!res.ok){
+    const msg = data && data.error && data.error.message ? String(data.error.message) : '';
+    if (res.status === 401) throw new Error('Anthropic rejected the key (401). ' +
+      'The key saved in Settings is wrong, revoked, or from another account. ' + msg);
+    if (res.status === 403) throw new Error('Anthropic refused the key (403). It may not have ' +
+      'access to ' + AI_MODEL + '. ' + msg);
+    if (res.status === 400) throw new Error('Anthropic rejected the request (400). ' + msg);
+    if (res.status === 429) throw new Error('Anthropic rate limited this key (429). ' +
+      'Wait a moment and run it again. ' + msg);
+    if (res.status >= 500) throw new Error('Anthropic returned ' + res.status +
+      '. That is their side, not yours. Try again shortly. ' + msg);
+    throw new Error('Anthropic returned ' + res.status + '. ' + msg);
+  }
+  if (!data) throw new Error('Anthropic answered ' + res.status + ' but the body was not readable JSON.');
+  if (data.stop_reason === 'refusal') throw new Error('The model declined this lecture. ' +
+    ((data.stop_details && data.stop_details.explanation) || ''));
+  if (data.stop_reason === 'max_tokens') throw new Error('The summary was cut off before it ' +
+    'finished, so it was thrown away rather than shown half written. Try a shorter section.');
+
+  const blocks = Array.isArray(data.content) ? data.content : [];
+  const txt = (blocks.find(b => b && b.type === 'text') || {}).text || '';
+  let summary;
+  try { summary = JSON.parse(txt); } catch (e){
+    throw new Error('The model did not return a usable summary, so nothing was saved.');
+  }
+  const inTok = (data.usage && data.usage.input_tokens) || 0;
+  const outTok = (data.usage && data.usage.output_tokens) || 0;
+  return {
+    summary,
+    model: data.model || AI_MODEL,
+    cost: (inTok * AI_PRICE_IN + outTok * AI_PRICE_OUT) / 1e6,
+    hadTranscript: !!payload.transcript
   };
 }
 
@@ -3348,8 +3579,8 @@ function aiPaneHtml(r, state){
 
   if (state && state.err){
     h += '<div class="aibad" style="margin-top:10px">' + esc(state.err) + '</div>' +
-         '<div class="aiwhat">Nothing was written in place of it. The ranked summary from your own ' +
-         'notes is below and is unaffected.</div>' +
+         '<div class="aiwhat">Nothing was written in place of it. Your own notes, organised, are ' +
+         'below and are unaffected.</div>' +
          '<div class="minibtns"><button class="minibtn primary" data-ai="' + r.id + '">Try again</button>' +
          '<button class="minibtn" data-aicfg="1">Settings</button></div></div>';
     return h;
@@ -3360,7 +3591,7 @@ function aiPaneHtml(r, state){
     h += '<div class="aihead">' + esc(s.headline || '(no headline returned)') + '</div>';
     h += '<div class="aiwhat">Written by a model (' + esc(saved.model || 'unknown model') +
          ') from your own notes' + (saved.hadTranscript ? ' and this phone\'s transcript' : '') +
-         ', not from your notes ranked. It can only use what you captured.</div>';
+         '. This one is real reading, not your lines re-sorted. It can only use what you captured.</div>';
     if (s.confidence === 'low'){
       h += '<div class="aiwarn">Low confidence. The model said the notes it was given were thin, ' +
            'fragmentary or only part of the session, so treat this as a partial record of the ' +
@@ -3396,16 +3627,19 @@ function aiPaneHtml(r, state){
   }
 
   if (!cfg){
-    h += '<div class="aiwhat">Not set up. Everything below is the ranked summary, which works ' +
-         'offline and always will. Add your own summarizer endpoint and key to have a model ' +
-         'read the lecture as well. Nothing is shipped with this app.</div>' +
+    h += '<div class="aiwhat">Not set up. Everything below is just your own notes organised, ' +
+         'which works offline and always will. Add your own Anthropic API key, or your own ' +
+         'summarizer endpoint, to have a model actually read the lecture. No key ships with ' +
+         'this app and whatever you add stays in this browser.</div>' +
          '<div class="minibtns"><button class="minibtn" data-aicfg="1">Set it up</button></div></div>';
     return h;
   }
 
   h += '<div class="aiwhat">Sends this lecture\'s notes' +
        ((r.transcript || '').trim() ? ' and transcript' : '') +
-       ' to your endpoint and comes back with the points, terms, to-dos and the questions ' +
+       (cfg.mode === 'anthropic' ? ' straight to Anthropic (' + esc(AI_MODEL) + ') with your key'
+                                 : ' to your endpoint') +
+       ' and comes back with the points, terms, to-dos and the questions ' +
        'worth asking. Costs a little each run, so it only runs when you tap it.</div>' +
        '<div class="minibtns"><button class="minibtn primary" data-ai="' + r.id + '">Deep summary</button>' +
        '<button class="minibtn" data-aicfg="1">Settings</button></div></div>';
@@ -3447,6 +3681,15 @@ async function runDeepSummary(id){
       'to send. Nothing was requested and nothing was spent.');
   }
 
+  /* Direct to Anthropic. Same contract in, same shape out, so everything
+     below the branch (saving, cost, the cache) is unchanged. */
+  if (cfg.mode === 'anthropic'){
+    let out;
+    try { out = await aiRunAnthropic(payload, cfg.secret); }
+    catch (e){ return fail((e && e.message) || 'The summary failed for an unknown reason.'); }
+    return aiSaveResult(r, out);
+  }
+
   let res;
   try {
     res = await fetch(cfg.url, {
@@ -3475,6 +3718,13 @@ async function runDeepSummary(id){
     return fail('The endpoint answered but returned no summary. Nothing has been saved.');
   }
 
+  return aiSaveResult(r, body);
+}
+
+/* One save path for both modes: cache into IndexedDB so re-opening the lecture
+   costs nothing, then repaint. Shared so the direct-to-Anthropic path cannot
+   drift away from the endpoint path. */
+async function aiSaveResult(r, body){
   r.ai = {
     summary: body.summary,
     model: body.model || '',
@@ -3496,7 +3746,8 @@ async function runDeepSummary(id){
   }
   AI_RUNNING = false;
   if (SUM_FOR && SUM_FOR.id === r.id) SUM_FOR = r;
-  paint(null);
+  const p = $('#aiPane');
+  if (p) p.innerHTML = aiPaneHtml(r, null);
 }
 
 let SUM_FOR = null;
