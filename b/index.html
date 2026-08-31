@@ -1701,18 +1701,58 @@ const DUE = { y:0, mo:0, sel:null, ready:false };
 const MONTHS = ['January','February','March','April','May','June','July',
                 'August','September','October','November','December'];
 
+/* A refetched copy of data/canvas.js, when it is newer than the one the page
+   loaded. See canvasRefresh() -- the <script src> is served from the HTTP
+   cache, so without this the twice-daily refresh never reaches the phone. */
+let CANVAS_FRESH = null;
+
 /* An imported file wins over anything shipped with the app. */
 const dueItems = () => {
   const s = storedCanvas();
   if (s) return s.items;
+  if (CANVAS_FRESH) return CANVAS_FRESH.items;
   return (typeof CANVAS_ITEMS === 'undefined') ? [] : CANVAS_ITEMS;
 };
 const dueSource = () => {
   const s = storedCanvas();
   if (s) return 'imported ' + s.stamp;
+  if (CANVAS_FRESH) return 'pulled ' + CANVAS_FRESH.stamp;
   if (typeof CANVAS_PULLED === 'string') return 'pulled ' + CANVAS_PULLED;
   return '';
 };
+
+/* data/canvas.js is loaded by a plain <script src>, which the browser serves
+   from its HTTP cache. The GitHub Actions job rewrites that file twice a day,
+   so a cached copy means the app can sit on yesterday's coursework -- observed
+   live on 2026-08-31, where the page showed a 22:53 pull while the server held
+   the 09:33 one, and two assignments stayed marked late after they were graded.
+   Refetch past the cache on open and on refocus, and only swap when the stamp
+   actually differs. Parsed, never eval'd: this is a public repo and the file is
+   fetched over the network. A failure here is silent on purpose -- the shipped
+   copy still renders, and this is only ever an improvement on it. */
+async function canvasRefresh(){
+  try {
+    const r = await fetch('data/canvas.js?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const txt = await r.text();
+    const stamp = (txt.match(/CANVAS_PULLED\s*=\s*"([^"]+)"/) || [])[1];
+    if (!stamp) return;
+    const current = CANVAS_FRESH ? CANVAS_FRESH.stamp
+                  : (typeof CANVAS_PULLED === 'string' ? CANVAS_PULLED : '');
+    if (stamp === current) return;
+    const grab = name => {
+      const m = txt.match(new RegExp(name + '\\s*=\\s*(\\[[\\s\\S]*?\\]);\\s*\\n'));
+      return m ? JSON.parse(m[1]) : null;
+    };
+    const items = grab('CANVAS_ITEMS');
+    if (!items) return;
+    CANVAS_FRESH = { stamp, items,
+                     undated: grab('CANVAS_UNDATED') || [],
+                     ann: grab('CANVAS_ANN') || [] };
+    if (typeof renderAll === 'function') renderAll();
+    else if (typeof tick === 'function') tick();
+  } catch (e) { /* offline or blocked: the shipped copy stands */ }
+}
 const isoOf = (y, mo, d) => y + '-' + pad2(mo) + '-' + pad2(d);
 const toMin = t => (+t.slice(0,2)) * 60 + (+t.slice(3,5));
 
@@ -1848,7 +1888,8 @@ function renderCanvasTab(){
 /* Recent instructor announcements, shipped by canvas_export.py. An ICS
    import cannot carry these, so the section simply stays hidden then. */
 function renderAnnouncements(today){
-  const list = (typeof CANVAS_ANN === 'undefined') ? [] : CANVAS_ANN;
+  const list = CANVAS_FRESH ? CANVAS_FRESH.ann
+             : (typeof CANVAS_ANN === 'undefined') ? [] : CANVAS_ANN;
   const recent = list.filter(a => daysBetween(a.posted, today) <= 14);
   const sec = $('#annSec');
   if (!recent.length){ sec.style.display = 'none'; return; }
@@ -1867,7 +1908,8 @@ function renderAnnouncements(today){
 /* Assignments Canvas has posted with no due date yet. They used to be
    dropped at export and were invisible, which is how work sneaks up. */
 function renderUndated(done){
-  const list = (typeof CANVAS_UNDATED === 'undefined') ? [] : CANVAS_UNDATED;
+  const list = CANVAS_FRESH ? CANVAS_FRESH.undated
+             : (typeof CANVAS_UNDATED === 'undefined') ? [] : CANVAS_UNDATED;
   /* An imported ICS wins over the shipped file, so hide the shipped
      undated list too when an import is in charge: it may be someone else's. */
   const items = storedCanvas() ? [] : list.filter(x => x.done !== true);
@@ -6037,7 +6079,12 @@ function boot(){
   try { planBoot(); } catch (e){ console.error('plan init', e); }
   tick();
   setInterval(tick, 1000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    tick();
+    canvasRefresh();   // the cron may have rewritten canvas.js while we were away
+  });
+  canvasRefresh();
 }
 boot();
 </script>
