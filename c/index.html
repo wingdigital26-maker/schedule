@@ -729,6 +729,24 @@ audio{width:100%;margin-bottom:12px}
     <div class="sechead"><h2>What is coming</h2><span class="aux" id="dueStamp"></span></div>
     <div class="card tight" id="dueNext"></div>
 
+    <!-- CANVAS GRADES.
+         On the Due tab, high up, because this is the Canvas tab: everything
+         else pulled from Canvas already lives here, and it is one tap from
+         the launch screen. The obvious-looking home, the Courses view, is
+         NOT reachable in this build -- no nav button targets v-courses -- so
+         putting grades there would have hidden them completely.
+         These are the instructor's gradebook figures. The grade CALCULATOR
+         (GRADES / GRADE_KEY, reached from a course's Info panel) is a
+         separate, hand-entered what-if and is deliberately left alone:
+         folding Canvas numbers into it would either clobber what Jack typed
+         or make it impossible to tell which number came from where.
+         No score is ever written into data/canvas.js, which is committed to
+         a public repo. These arrive only through the private sync room. -->
+    <div class="sechead"><h2>Grades</h2><span class="aux" id="cvgAux"></span></div>
+    <div class="card tight" id="cvgCourses"></div>
+    <div class="sechead"><h2>Latest grades entered</h2><span class="aux" id="cvgRecentAux"></span></div>
+    <div class="card tight" id="cvgRecent"></div>
+
     <div class="sechead"><h2>Calendar</h2><span class="aux" id="dueLegend">Tap a day</span></div>
     <div class="card tight">
       <div class="calhead">
@@ -1546,7 +1564,14 @@ function renderCourses(){
         '<div class="kv"><span class="k">Floor</span><span class="v">Floor ' + floorOf(c.room) + '</span></div>' +
         '<div class="kv"><span class="k">Room</span><span class="v">' + c.room + '</span></div>' +
         '<div class="kv"><span class="k">Final</span><span class="v">' + fin + '</span></div>' +
-        '<div class="kv"><span class="k">Current grade</span><span class="v">' +
+        /* Two grade rows on purpose. "In Canvas" is the instructor's real
+           gradebook figure; "You worked out" is the calculator below, which
+           is Jack's own what-if. Labelling them separately is the only
+           honest way to show both. */
+        '<div class="kv"><span class="k">In Canvas</span><span class="v">' +
+          cvgCourseLine(c.short) +
+        '</span></div>' +
+        '<div class="kv"><span class="k">You worked out</span><span class="v">' +
           (gradeFor(c.key) ? gradeFor(c.key).pct.toFixed(1) + '% ' + letter(gradeFor(c.key).pct) : 'no scores yet') +
         '</span></div>' +
         '<div class="minibtns" style="margin-top:10px"><button class="minibtn" data-grades="' + esc(c.key) + '">Grades</button></div>' +
@@ -1556,6 +1581,118 @@ function renderCourses(){
         '</div>' +
       '</div></details>';
   }).join('');
+}
+
+/* ---------------- Canvas grades ----------------
+   Written into the private sync room twice a day by tools/canvas_pull.py.
+   NOT in data/canvas.js: that file is committed to a public repo, so no
+   score is allowed anywhere near it. The only copy on this device is this
+   localStorage key, and it arrives over sync.
+
+   Read-only. Nothing in this app writes CVGRADE_KEY, which is what makes
+   the sync merge safe: the server's copy is always the newer one.
+
+   The honesty rules this render exists to keep:
+     * a course Canvas has not graded says "not graded yet", never 0;
+     * the refresh time is always on screen, because a stale number shown
+       as current is a lie;
+     * with sync off it says so, instead of an empty list that reads as
+       "you have no grades";
+     * no GPA. OU course numbers do not encode credit hours, so any GPA
+       here would be invented. */
+const CVGRADE_KEY = 'schedhub.cvgrade.' + SCHEDULE.id;
+let CVGRADES = loadJSON(CVGRADE_KEY, null);
+
+function cvgSwatch(short){
+  const c = COURSES.find(x => x.short === short);
+  return c ? c.color : 'var(--line)';
+}
+/* Trim float noise without inventing precision: 88.5 stays 88.5, 100.0
+   prints as 100, 1.25 stays 1.25. Deliberately not a real figure -- this
+   file is public, so even an example must not be one of Jack's scores. */
+function cvgNum(n){ return String(Math.round(n * 100) / 100); }
+function cvgPct(n){ return cvgNum(n) + '%'; }
+
+/* Sync off, or on but nothing has arrived yet. Said plainly either way. */
+function cvgNotReady(){
+  const on = !!(window.SchedSync && window.SchedSync.code());
+  return '<div class="dueempty">' + (on
+    ? 'Sync is on, but no grades have come through yet. They are refreshed ' +
+      'twice a day from Canvas.'
+    : 'Grades need sync turned on. They are kept out of this app’s public ' +
+      'files on purpose and only travel through your own sync room, so ' +
+      'there is nothing to show until it is set up — tap Manage on the sync ' +
+      'bar at the top of the screen.') + '</div>';
+}
+
+/* One course's Canvas figure, for the row inside its Info panel. */
+function cvgCourseLine(short){
+  const g = CVGRADES;
+  if (!g || !Array.isArray(g.courses)){
+    return (window.SchedSync && window.SchedSync.code())
+      ? 'not synced yet' : 'sync not set up';
+  }
+  const row = g.courses.find(x => x.short === short);
+  if (!row) return 'not in Canvas';
+  if (typeof row.score !== 'number') return 'not graded yet';
+  return cvgPct(row.score) + (row.letter ? ' ' + esc(row.letter) : '');
+}
+
+function renderCanvasGrades(){
+  CVGRADES = loadJSON(CVGRADE_KEY, null);
+  /* The Info panels above carry the same figure, so they move together. */
+  try { renderCourses(); } catch (e){}
+  const host = $('#cvgCourses'), rhost = $('#cvgRecent');
+  if (!host || !rhost) return;
+  const g = CVGRADES;
+
+  if (!g || !Array.isArray(g.courses)){
+    $('#cvgAux').textContent = '';
+    $('#cvgRecentAux').textContent = '';
+    host.innerHTML = cvgNotReady();
+    rhost.innerHTML = cvgNotReady();
+    return;
+  }
+
+  $('#cvgAux').textContent = g.pulled ? 'from Canvas ' + g.pulled : 'refresh time unknown';
+  host.innerHTML = g.courses.length ? g.courses.map(c => {
+    /* score === null is Canvas saying there is nothing graded yet. It must
+       not fall through to a 0, and it must not render blank. */
+    const has = typeof c.score === 'number';
+    return '<div class="row"><div class="swatch" style="--sc:' + cvgSwatch(c.short) + '"></div>' +
+      '<div class="rmain">' +
+        (c.course ? '<div class="code">' + esc(c.course) + '</div>' : '') +
+        '<div class="n">' + esc(c.short || c.course || 'Course') + '</div>' +
+        '<div class="m">' + (has
+          ? cvgPct(c.score) + (c.letter ? ' &middot; ' + esc(c.letter) : '')
+          : 'not graded yet') + '</div>' +
+      '</div></div>';
+  }).join('') : '<div class="empty">Canvas listed no courses.</div>';
+
+  /* recent === null means the fetch for it failed while the per-course
+     figures still came through. An empty array means it genuinely ran and
+     found nothing. Those are different and are not both shown as "none". */
+  const r = g.recent;
+  if (!Array.isArray(r)){
+    $('#cvgRecentAux').textContent = 'unavailable';
+    rhost.innerHTML = '<div class="dueempty">The last refresh could not read ' +
+      'recently graded work. The per-class grades above are still current as of ' +
+      esc(g.pulled || 'that refresh') + '.</div>';
+    return;
+  }
+  $('#cvgRecentAux').textContent = r.length ? r.length + ' most recent' : '';
+  rhost.innerHTML = r.length ? r.map(x => {
+    const out = typeof x.points === 'number' ? ' out of ' + cvgNum(x.points) : '';
+    const link = x.url && /^https?:\/\//i.test(x.url);
+    return '<div class="row"><div class="swatch" style="--sc:' + cvgSwatch(x.short) + '"></div>' +
+      '<div class="rmain">' +
+        '<div class="code">' + esc(x.short || x.course || '') + '</div>' +
+        '<div class="n">' + esc(x.title || 'Untitled') + '</div>' +
+        '<div class="m">' + cvgNum(x.score) + out + ' &middot; graded ' + esc(x.at) + '</div>' +
+      '</div>' +
+      (link ? '<a class="rgo" href="' + esc(x.url) + '" target="_blank" rel="noopener">Open</a>' : '') +
+      '</div>';
+  }).join('') : '<div class="empty">Nothing has been graded yet this term.</div>';
 }
 
 /* ---------------- finals ---------------- */
@@ -6494,6 +6631,7 @@ function tick(){
 
 function boot(){
   renderCourses();
+  try { renderCanvasGrades(); } catch (e){ console.error('grades init', e); }
   renderBuildings();
   try { studyBoot(); } catch (e){ console.error('study init', e); }
   try { walkBoot(); } catch (e){ console.error('walk init', e); }

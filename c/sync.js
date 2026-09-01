@@ -183,6 +183,15 @@ const NS = [
     load(){ PINS = loadPins(); },
     draw: safeRender(() => renderBuildings()) },
 
+  /* Canvas grades. One blob, pushed into this room twice a day by
+     tools/canvas_pull.py running on GitHub Actions, and effectively
+     one-way: nothing in index.html ever writes CVGRADE_KEY, so the local
+     copy can only ever be replaced by a newer one from the server. Grades
+     are here rather than in data/canvas.js because that file is committed
+     to a PUBLIC repo and this room is private. */
+  { n:'cvgrade', kind:'blob', key:() => CVGRADE_KEY,
+    draw: safeRender(() => renderCanvasGrades()) },
+
   { n:'canvas', kind:'blob',  key:() => CANVAS_KEY,
     draw: safeRender(() => { renderCanvasTab(); renderDue(N_()); }) },
 

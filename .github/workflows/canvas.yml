@@ -35,6 +35,11 @@ jobs:
           CANVAS_BASE_URL: ${{ secrets.CANVAS_BASE_URL }}
           SCHEDULE_PUSH_URL: ${{ secrets.SCHEDULE_PUSH_URL }}
           SCHEDULE_PUSH_SECRET: ${{ secrets.SCHEDULE_PUSH_SECRET }}
+          # Grades go into the private Supabase sync room and NEVER into a
+          # file in this repo, which is public. If this secret is not set the
+          # script skips the grade push and says so; the coursework refresh
+          # is unaffected either way.
+          SCHEDULE_SYNC_CODE: ${{ secrets.SCHEDULE_SYNC_CODE }}
         run: python tools/canvas_pull.py
 
       # NO build.py STEP HERE. Do not add one back. Three reasons:

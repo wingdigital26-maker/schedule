@@ -9,6 +9,10 @@ Environment:
                       accepted for parity with the local ghl-cli .env).
     SCHEDULE_PUSH_URL     optional. Endpoint for the phone push.
     SCHEDULE_PUSH_SECRET  optional. Sent as an Authorization bearer token.
+    SCHEDULE_SYNC_CODE    optional. The app's device-sync code. Grades are
+                          pushed into that private Supabase room and NOWHERE
+                          else. Never printed, never written to a file. If it
+                          is absent the grade push is skipped and says so.
     CANVAS_ALLOW_SHRINK   optional. "1" to bypass the sanity floor once (same
                           as passing --allow-shrink). See sanity_check().
 
@@ -21,6 +25,12 @@ Exit codes:
 Deliberately excluded from the export, because the app is published to a
 PUBLIC GitHub Pages site: names, logins, grades and scores. Only course codes,
 assignment titles and due dates go in.
+
+GRADES ARE NEVER WRITTEN TO A FILE IN THIS REPO. Not to data/canvas.js, not
+anywhere else. They are fetched in memory and POSTed straight into Jack's
+private Supabase sync room -- the same room, the same schedhub_push RPC and the
+same item shape sync.js already uses, keyed by a sync code that only ever
+exists as an environment variable. The repo is public; the room is not.
 
 The output file is written to a temp file and moved into place only after the
 whole pull succeeds, so a failed run can never blank out good coursework.
@@ -221,7 +231,11 @@ def is_done(sub):
 
 
 def pull():
-    courses = get('courses', enrollment_state='active')
+    # include[]=total_scores adds enrollments[].computed_current_score /
+    # computed_current_grade. Those are read here and handed to the GRADE push
+    # only; nothing below ever copies them into an `item`.
+    courses = get('courses', enrollment_state='active',
+                  **{'include[]': 'total_scores'})
     out = []
     undated = []
     skipped = 0
@@ -292,7 +306,7 @@ def pull():
     ann.sort(key=lambda x: x['posted'], reverse=True)
     ann = ann[:20]
 
-    return out, undated, ann, skipped
+    return out, undated, ann, skipped, courses
 
 
 def existing_item_count():
@@ -518,6 +532,199 @@ def push(items):
           f'({len(alerted) - pruned} tracked, {pruned} pruned)')
 
 
+# =====================================================================
+# GRADES
+#
+# Everything below reads scores and sends them to exactly one place: the
+# private Supabase sync room, via the same schedhub_push RPC sync.js uses.
+# Nothing here touches OUT, PUSH_STATE, or any other file. If you are adding
+# to this section and find yourself near write_out(), stop.
+# =====================================================================
+
+# Same project and same anon key as sync.js, and public for the same reason:
+# the key can execute the two sync functions and nothing else, and neither
+# does anything without the sync code. The code is the credential, and it
+# only ever comes from the environment.
+SB_URL = 'https://ikgnhieorzjaxtjoneye.supabase.co'
+SB_ANON = (
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI'
+    'sInJlZiI6ImlrZ25oaWVvcnpqYXh0am9uZXllIiwicm9sZSI6ImFub24iLCJ'
+    'pYXQiOjE3ODU2ODAzMjEsImV4cCI6MjEwMTI1NjMyMX0.j5mExwdSlzS-2jado_5T1XycAp1kO_2Vtz9ZEirV09s'
+)
+
+# The sync item this script owns. One blob, one namespace, read-only as far as
+# the app is concerned: nothing in index.html ever writes this key, so the
+# per-item last-write-wins merge in sync.js can only ever move it forward.
+GRADE_ITEM_KEY = 'cvgrade:v'
+RECENT_LIMIT = 15
+
+
+def get_soft(path, **params):
+    """get(), but a failure returns None instead of killing the run.
+
+    get() calls die() on any HTTP or network error, and die() exits non-zero,
+    which would abort the workflow step and throw away a coursework refresh
+    that already succeeded. Grades are the expendable half of this script.
+    """
+    try:
+        return get(path, **params)
+    except SystemExit:
+        return None
+    except Exception as e:  # noqa: BLE001
+        print(f'grades: could not fetch /{path.lstrip("/")} '
+              f'({e.__class__.__name__})', file=sys.stderr)
+        return None
+
+
+def course_names(courses):
+    """course id -> (nice code, nice short name)."""
+    names = {}
+    for c in courses:
+        if not isinstance(c, dict) or not c.get('id'):
+            continue
+        names[c['id']] = NICE.get(
+            c.get('course_code', ''),
+            (c.get('course_code', '?'), c.get('name', '?')),
+        )
+    return names
+
+
+def course_grades(courses):
+    """Per-course current score and letter, straight from the enrollment.
+
+    A course with no graded work reports None for both, and that None is
+    carried through as null on purpose. The app renders it as "not graded
+    yet". It must never become 0, and it must never become ''.
+    """
+    rows = []
+    for c in courses:
+        if not isinstance(c, dict) or not c.get('id'):
+            continue
+        if c.get('access_restricted_by_date'):
+            continue
+        code, short = NICE.get(
+            c.get('course_code', ''),
+            (c.get('course_code', '?'), c.get('name', '?')),
+        )
+        enr = [e for e in (c.get('enrollments') or [])
+               if isinstance(e, dict) and e.get('type') == 'student']
+        e = enr[0] if enr else {}
+        score = e.get('computed_current_score')
+        rows.append({
+            'course': code,
+            'short': short,
+            # None stays None. json.dumps writes null, and the app tests for
+            # it explicitly rather than falling through to a falsy 0.
+            'score': float(score) if isinstance(score, (int, float)) else None,
+            'letter': e.get('computed_current_grade') or None,
+        })
+    rows.sort(key=lambda r: r['short'])
+    return rows
+
+
+def recent_grades(names):
+    """The most recently graded submissions, newest first.
+
+    THE ENDPOINT: GET /api/v1/users/self/graded_submissions with
+    include[]=assignment. It is the only one that answers this question for
+    "me" across every course in one call. courses/{id}/students/submissions
+    is a TEACHER endpoint -- as a student it returns an empty list, which is
+    why it looked like there was no data.
+
+    The response is not reliably ordered, so it is sorted here by graded_at.
+    """
+    subs = get_soft('users/self/graded_submissions',
+                    **{'include[]': 'assignment', 'per_page': 100})
+    if not isinstance(subs, list):
+        return None
+    rows = []
+    for s in subs:
+        if not isinstance(s, dict) or s.get('excused'):
+            continue
+        at = s.get('graded_at')
+        score = s.get('score')
+        # Not graded, or graded but withheld from the student. Either way
+        # there is no honest number to show.
+        if not at or not s.get('posted_at') or not isinstance(score, (int, float)):
+            continue
+        a = s.get('assignment') or {}
+        code, short = names.get(a.get('course_id'), ('', ''))
+        pts = a.get('points_possible')
+        rows.append({
+            'course': code,
+            'short': short,
+            'title': (a.get('name') or '').strip(),
+            'score': float(score),
+            'points': float(pts) if isinstance(pts, (int, float)) else None,
+            'at': central(at).strftime('%Y-%m-%d %H:%M'),
+            'url': a.get('html_url'),
+        })
+    rows.sort(key=lambda r: r['at'], reverse=True)
+    return rows[:RECENT_LIMIT]
+
+
+def push_grades(courses):
+    """Fetch grades and put them in the private sync room. Never fatal."""
+    code = os.environ.get('SCHEDULE_SYNC_CODE', '').strip()
+    if not code:
+        print('grades: SCHEDULE_SYNC_CODE not set, skipping the grade push')
+        return
+    if len(code) < 20:
+        # schedhub_room() rejects these server-side anyway; saying so here is
+        # clearer than a bare "sync code too short" from Postgres.
+        print('grades: SCHEDULE_SYNC_CODE is too short to be a real sync code, '
+              'skipping the grade push', file=sys.stderr)
+        return
+
+    per_course = course_grades(courses)
+    recent = recent_grades(course_names(courses))
+    if recent is None:
+        # The per-course figures are still worth sending. The app tells the
+        # difference between "no recent list" and "an empty recent list".
+        print('grades: the recent-submissions fetch failed; sending per-course '
+              'grades only', file=sys.stderr)
+
+    now = datetime.now(CENTRAL)
+    value = {
+        'pulled': now.strftime('%Y-%m-%d %H:%M'),
+        'courses': per_course,
+        'recent': recent,
+    }
+    body = json.dumps({
+        'p_code': code,
+        'p_items': [{
+            'k': GRADE_ITEM_KEY,
+            'v': value,
+            'd': False,
+            # Milliseconds since epoch, matching the client clock sync.js
+            # stamps its own items with. Newer wins, per item.
+            't': int(now.timestamp() * 1000),
+        }],
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        SB_URL + '/rest/v1/rpc/schedhub_push', data=body, method='POST',
+        headers={'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
+                 'Content-Type': 'application/json'},
+    )
+    try:
+        with OPENER.open(req, timeout=30) as r:
+            wrote = r.read().decode('utf-8').strip()
+    except urllib.error.HTTPError as e:
+        # Never echo the body: a Postgres error can quote the argument it was
+        # given, and the argument here is the sync code.
+        print(f'grades: push FAILED, HTTP {e.code}', file=sys.stderr)
+        return
+    except Exception as e:  # noqa: BLE001
+        print(f'grades: push FAILED, {e.__class__.__name__}', file=sys.stderr)
+        return
+
+    graded = sum(1 for c in per_course if c['score'] is not None)
+    print(f'grades: pushed to the sync room ({wrote} row written), '
+          f'{graded} of {len(per_course)} courses graded so far, '
+          f'{len(recent) if recent else 0} recently graded item(s)')
+
+
 def alert_failure(reason):
     """Tell Jack the refresh is broken, so a stale-but-valid canvas.js does not
     quietly keep being served while nothing updates.
@@ -561,7 +768,7 @@ def main():
     allow_shrink = ('--allow-shrink' in sys.argv[1:]
                     or os.environ.get('CANVAS_ALLOW_SHRINK', '').strip() == '1')
 
-    out, undated, ann, skipped = pull()
+    out, undated, ann, skipped, courses = pull()
 
     old_count = existing_item_count()
     reason = sanity_check(len(out), old_count, allow_shrink)
@@ -588,6 +795,15 @@ def main():
     for s in soon:
         print(f"  {s['due']} {s['time']}  {s['course']:<10} {s['title'][:44]}")
     push(soon)
+
+    # LAST, and inside a catch-all. data/canvas.js is already written and the
+    # due alert is already sent by this point, so nothing the grade push can
+    # do is allowed to cost the run. push_grades() handles its own network
+    # errors; this is the backstop for anything else.
+    try:
+        push_grades(courses)
+    except Exception as e:  # noqa: BLE001
+        print(f'grades: skipped, {e.__class__.__name__}: {e}', file=sys.stderr)
 
 
 if __name__ == '__main__':
