@@ -220,6 +220,13 @@ h1{font-size:22.5px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spa
   font-weight:700;color:var(--dim2);letter-spacing:.02em}
 /* suggested study, drawn as a ghost: dashed, unfilled, never a commitment.
    Nothing here is saved, and the solver and notifications never see it. */
+/* real help hours on the day grid: open doors, not commitments */
+.phelp{position:absolute;border-radius:10px;border:1.5px solid;background:var(--bg2);
+  padding:4px 8px;overflow:hidden;text-align:left;opacity:.96}
+.phelp .hn{display:block;font-size:11.5px;font-weight:800;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phelp .ht{display:block;font-size:10px;font-weight:700;color:var(--dim2);margin-top:2px;
+  line-height:1.35;font-variant-numeric:tabular-nums}
 .pghost{position:absolute;border-radius:10px;border:1.5px dashed var(--accent);background:transparent;
   padding:3px 8px;text-align:left;overflow:hidden;font:inherit;color:var(--accent);z-index:2}
 .pghost .gn{display:block;font-size:11.5px;font-weight:700;line-height:1.2;color:var(--accent);
@@ -673,6 +680,59 @@ audio{width:100%;margin-bottom:12px}
   background:var(--bg2);border:1px solid var(--line);color:var(--dim)}
 .slsay.ok{background:var(--good-bg);border-color:var(--good-line);color:var(--good)}
 .slsay.no{background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn)}
+/* ---- week board: all five weekdays at once, classes solid and the
+   suggested study sittings dashed in the gaps, so "when do I study for
+   everything" is one picture instead of five taps. ---- */
+.wkwrap{position:relative;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.wkhead{display:flex;background:var(--card);padding:2px 0 6px;min-width:520px}
+.wkhead .wkh0{flex:0 0 34px}
+.wkhead .wkh{flex:1 1 0;min-width:0;text-align:center;font-size:12px;font-weight:800;color:var(--dim2);
+  letter-spacing:.02em}
+.wkhead .wkh.today{color:var(--accent)}
+.wkgrid{position:relative;min-width:520px}
+.wkgrid .wkcol{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.wkgrid .wkblk{position:absolute;border-radius:8px;padding:3px 6px;overflow:hidden;text-align:left;
+  font:inherit}
+.wkgrid .wkblk .wn{display:block;font-size:10.5px;font-weight:800;line-height:1.15;color:var(--tx);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wkgrid .wkblk .wt{display:block;font-size:9.5px;font-weight:700;color:var(--dim);margin-top:1px;
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wkgrid .wkblk.ghost{border:1.5px dashed;background:transparent;cursor:pointer;z-index:2}
+.wkgrid .wkblk.ghost .wn,.wkgrid .wkblk.ghost .wt{color:inherit}
+/* Help hours, read as "when could I go and get help": grouped by the day
+   you would go, each row saying who, where, and whether you are actually
+   free at that hour. The class colour is the only link back to the course. */
+.hday{padding:13px 0;border-top:1px solid var(--line)}
+.hday:first-child{border-top:0}
+.hdl{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.hdl b{font-size:13px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--dim2)}
+.hday.today .hdl b{color:var(--accent)}
+.hdl .hdf{flex:1;text-align:right;font-size:11.5px;font-weight:700;color:var(--dim2)}
+.hrow{display:flex;align-items:center;gap:10px;padding:9px 0 0}
+.hrow .hbar{flex:0 0 4px;align-self:stretch;border-radius:2px;min-height:38px}
+.hrow .hmid{flex:1;min-width:0}
+.hrow .htime{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.hrow .hwho{font-size:12.5px;font-weight:700;color:var(--dim);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .hwhere{font-size:12px;font-weight:600;color:var(--dim2);margin-top:2px}
+.hrow .hgo{flex:0 0 auto;font-size:12px;font-weight:800;color:var(--accent);background:var(--bg2);
+  border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:40px}
+.hpill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+.hpill.free{color:var(--good);background:var(--good-bg);border:1px solid var(--good-line)}
+.hpill.busy{color:var(--warn);background:var(--warn-bg);border:1px solid var(--warn-line)}
+.hpill.walk{color:var(--dim);background:var(--bg2);border:1px solid var(--line)}
+.hrow.clash .htime{color:var(--dim2)}
+/* the ones with no hours posted yet, kept visible so they are not forgotten */
+.hpend{margin-top:4px;padding:11px 13px;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
+.hpend .hp{display:flex;gap:8px;align-items:baseline;font-size:12.5px;line-height:1.5;padding:3px 0}
+.hpend .hp i{width:8px;height:8px;border-radius:2px;flex:0 0 auto;align-self:center}
+.hpend .hp b{font-weight:800}
+.hpend .hp span{color:var(--dim2);font-weight:600}
+.wklegend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:10px 2px 0}
+.wklegend .wl{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--dim)}
+.wklegend .wl i{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+.wklegend .wl.dash i{background:transparent;border:1.5px dashed var(--dim2);border-radius:3px}
 .foot{color:var(--dim2);font-size:12px;text-align:center;padding:22px 10px 8px;line-height:1.6}
 /* the page footer sits in the same column as every card above it, edge for
    edge, so nothing appears to slide left or right at the bottom */
@@ -784,7 +844,21 @@ audio{width:100%;margin-bottom:12px}
   <section class="view" id="v-plan">
     <div class="sechead"><h2>Schedule</h2><span class="aux" id="planAux"></span></div>
     <div class="chips" id="planChips"></div>
-    <div class="card tight"><div class="plangrid" id="planGrid"></div></div>
+    <div id="helpWrap">
+      <div class="sechead"><h2>Help hours</h2><span class="aux" id="helpAux"></span></div>
+      <div class="card" id="helpList"></div>
+      <div id="helpPending"></div>
+      <div class="foot" style="text-align:left;padding:10px 2px 0">Pulled from each course syllabus on Canvas.
+      Where a syllabus says TBA or posts hours as a PDF, it says so instead of guessing.</div>
+    </div>
+    <div class="card tight" id="planDayCard"><div class="plangrid" id="planGrid"></div></div>
+    <div class="card tight" id="planWeekCard" style="display:none">
+      <div class="wkwrap">
+        <div class="wkhead" id="weekHead"></div>
+        <div class="plangrid wkgrid" id="weekGrid"></div>
+      </div>
+      <div class="wklegend" id="weekLegend"></div>
+    </div>
     <div class="minibtns">
       <button class="minibtn primary" id="planAdd">Add a block</button>
       <button class="minibtn" id="planNotify">Notify me</button>
@@ -793,7 +867,7 @@ audio{width:100%;margin-bottom:12px}
     <!-- STUDY LOAD: a view of where study time could go, not a thing that fills
          the calendar. Nothing below writes anything until a single sitting is
          kept on purpose. -->
-    <div id="sload">
+    <div id="sload" hidden>
       <div class="sechead"><h2>Study time</h2><span class="aux" id="sloadSum"></span></div>
       <div class="card tight"><div id="sloadWeek"></div></div>
       <div id="sloadSay"></div>
@@ -1113,33 +1187,61 @@ const CAMPUS = 'University of Oklahoma, Norman, OK';
 const COURSES = [
   { code:'ASTR 1504',  title:'Astronomy: Exploring Universe', short:'Astronomy',
     days:'MWF', start:'14:00', end:'14:50', bldg:'Nielsen Hall', room:'0170',
+    help:[ { who:'Prof. Saloni Bhatiani', days:'M', start:'15:00', end:'16:30',
+             bldg:'Nielsen Hall', room:'141', pin:'Nielsen Hall' },
+           { who:'Prof. Saloni Bhatiani', days:'W', start:'11:00', end:'12:30',
+             bldg:'Nielsen Hall', room:'141', pin:'Nielsen Hall' } ],
     final:{ date:'2026-12-17', start:'10:30', end:'12:30', bldg:'Nielsen Hall', room:'0170' } },
 
   { code:'ASTR 1504-020', title:'Disc-ASTR 1504-020', short:'Astro Discussion',
     days:'R', start:'15:30', end:'16:20', bldg:'Nielsen Hall', room:'0302',
+    help:[ { who:'Julia Brouwer (TA)', tba:'Office hours listed as TBA in the syllabus' } ],
     final:{ tba:true } },
 
   { title:'Personal Computing Prod Tools', short:'Personal Computing',
     days:'M', start:'15:00', end:'15:50', bldg:'Adams Hall', room:'0150',
+    help:[ { who:'Dr. Eugene Young', days:'MW', start:'11:00', end:'14:00', online:'Zoom, by appointment' },
+           { who:'Dr. Eugene Young', days:'F', start:'13:30', end:'14:30', online:'Zoom, by appointment' },
+           { who:'Noah Moery (TA)', tba:'TA hours not posted on Canvas yet' } ],
     final:{ date:'2026-12-17', start:'16:30', end:'18:30', bldg:'Adams Hall', room:'0150' } },
 
   { title:'Business for People/Prosperity', short:'Business for People',
-    days:'MWF', start:'10:00', end:'10:50', bldg:'Dale Hall', room:'0112', final:null },
+    days:'MWF', start:'10:00', end:'10:50', bldg:'Dale Hall', room:'0112',
+    help:[ { who:'Prof. Jaron Harvey', appt:'By appointment, booking link in the syllabus',
+             bldg:'Adams Hall', room:'105F/G', pin:'Adams Hall' } ],
+    final:null },
 
   { title:'Principles of Economics-Micro', short:'Microeconomics',
-    days:'MWF', start:'11:00', end:'11:50', bldg:'Dale Hall', room:'0200', final:null },
+    days:'MWF', start:'11:00', end:'11:50', bldg:'Dale Hall', room:'0200',
+    help:[ { who:'Dr. Samantha Johnson', days:'W', start:'12:00', end:'14:00',
+             bldg:'Cate Center 1', room:'325' },
+           { who:'Econ Learning Lab', days:'MTWR', start:'15:00', end:'17:00',
+             bldg:'Cate Center 1', room:'145', walkin:true },
+           { who:'Action Tutoring', days:'MWR', start:'18:00', end:'20:00',
+             bldg:'Dunham Hall', room:'A128', walkin:true } ],
+    final:null },
 
   { title:'Functn/Model Bus/Life/Soc Sci', short:'Math Modeling',
-    days:'MWF', start:'09:00', end:'09:50', bldg:'Physical Science Ctr', room:'0108', final:null },
+    days:'MWF', start:'09:00', end:'09:50', bldg:'Physical Science Ctr', room:'0108',
+    help:[ { who:'Your instructor', days:'W', start:'10:00', end:'12:00',
+             note:'Room not given in the syllabus, email to confirm' },
+           { who:'Math Center', days:'MTWR', start:'09:00', end:'18:00',
+             bldg:'Physical Science Ctr', room:'231', pin:'Physical Science Ctr', walkin:true },
+           { who:'Math Center', days:'F', start:'09:00', end:'15:00',
+             bldg:'Physical Science Ctr', room:'231', pin:'Physical Science Ctr', walkin:true } ],
+    final:null },
 
   { title:'Computer-Based Info Systems', short:'Info Systems',
-    days:'TR', start:'13:30', end:'14:45', bldg:'Adams Hall', room:'0150', final:null }
+    days:'TR', start:'13:30', end:'14:45', bldg:'Adams Hall', room:'0150',
+    help:[ { who:'Prof. Shuang Zhai', tba:'Syllabus is a PDF on Canvas, no hours in the Canvas text' },
+           { who:'TAs: Nicholas Hunter, Scott Li, Melody Roberson', tba:'No hours posted on Canvas' } ],
+    final:null }
 ];
 /* ==DATA:END== */
 
 /* ==PEERS:START== */
 const PEERS = {
-  jack:{ label:'Jack · Fall 2026', busy:{M:[[540,590],[600,650],[660,710],[840,890],[900,950]],T:[[810,885]],W:[[540,590],[600,650],[660,710],[840,890]],R:[[810,885],[930,980]],F:[[540,590],[600,650],[660,710],[840,890]]} },
+  jack:{ label:'Jack · Fall 2026', busy:{M:[[540,590],[540,1080],[600,650],[660,710],[660,840],[840,890],[900,950],[900,990],[900,1020],[1080,1200]],T:[[540,1080],[810,885],[900,1020]],W:[[540,590],[540,1080],[600,650],[600,720],[660,710],[660,750],[660,840],[720,840],[840,890],[900,1020],[1080,1200]],R:[[540,1080],[810,885],[900,1020],[930,980],[1080,1200]],F:[[540,590],[540,900],[600,650],[660,710],[810,870],[840,890]]} },
   b:{ label:'Maddox · Fall 2026', busy:{M:[[840,890],[900,950]],T:[[630,705],[810,885]],W:[[840,890],[900,950]],R:[[630,705],[810,885]],F:[[720,770],[840,890],[900,950]]} },
   c:{ label:'Fall 2026 · Schedule C', busy:{M:[[600,650],[660,710],[780,830],[840,890]],T:[],W:[[600,650],[660,710],[780,830],[840,890],[1080,1135]],R:[],F:[[600,650],[660,710],[780,830],[840,890]]} }
 };
@@ -1171,10 +1273,14 @@ function fmt(t){
 /* Leading digit of the room number is the floor: 0150 -> 1, 0302 -> 3,
    3103 -> 3. A one or two digit room is ground floor. */
 function floorOf(room){
+  if (roomPlain(room)) return null;          // no floor can be read off "A128"
   const t = String(parseInt(room, 10) || 0);
   return t.length <= 2 ? 1 : +t[0];
 }
-function roomShort(room){ return String(parseInt(room,10)); }
+/* Class rooms are digits ("0170"); help-hour rooms are not always ("A128"),
+   so anything that is not plain digits is shown exactly as the syllabus wrote it. */
+function roomPlain(room){ return !/^\s*\d+\s*$/.test(String(room || '')); }
+function roomShort(room){ return roomPlain(room) ? String(room).trim() : String(parseInt(room,10)); }
 /* Wash a course color toward white so grid blocks stay readable with dark text. */
 function wash(hex, amt){
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
@@ -1211,14 +1317,22 @@ function destQ(bldg, room){
   if (seed && seed.addr) return seed.addr;
   return bldg + ', ' + CAMPUS;
 }
+/* Where the sheet already knows where you are standing, that beats any
+   building name as a starting point -- so the route begins at you. */
+function originQ(from){
+  if (WALK.me && isFinite(WALK.me.lat) && isFinite(WALK.me.lng)) return WALK.me.lat + ',' + WALK.me.lng;
+  return from ? destQ(from) : null;
+}
 function appleUrl(bldg, from){
   const d = 'daddr=' + enc(destQ(bldg));
-  const s = from ? '&saddr=' + enc(destQ(from)) : '';
+  const o = originQ(from);
+  const s = o ? '&saddr=' + enc(o) : '';
   return 'https://maps.apple.com/?' + d + s + '&dirflg=w';
 }
 function googleUrl(bldg, from){
   let u = 'https://www.google.com/maps/dir/?api=1&destination=' + enc(destQ(bldg)) + '&travelmode=walking';
-  if (from) u += '&origin=' + enc(destQ(from));
+  const o = originQ(from);
+  if (o) u += '&origin=' + enc(o);
   return u;
 }
 
@@ -1367,7 +1481,7 @@ function heroFinals(N){
            '<div class="r">Room not posted yet. Check one.ou.edu.</div></div></div>') +
      '<div class="cd"><span class="lab">' + cdLab + '</span><span class="val">' + cdVal + '</span></div>' +
      (fin.bldg ? '<div class="btns">' +
-       '<button class="btn" data-walk="' + esc(fin.bldg) + '">Walk there</button>' +
+       '<button class="btn" data-map="' + esc(fin.bldg) + '" data-room="' + fin.room + '">Walk there</button>' +
        '<button class="btn ghost" data-map="' + esc(fin.bldg) + '" data-room="' + fin.room + '">Map</button>' +
      '</div>' : '') +
    '</div>';
@@ -1456,7 +1570,7 @@ function heroCard(N, st){
      '</div>' +
      '<div class="cd"><span class="lab">' + cdLab + '</span><span class="val">' + cdVal + '</span></div>' +
      '<div class="btns">' +
-       '<button class="btn" data-walk="' + esc(c.bldg) + '"' +
+       '<button class="btn" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '"' +
          (walkFrom ? ' data-from="' + esc(walkFrom) + '"' : '') + '>Walk there</button>' +
        '<button class="btn ghost" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '"' +
          (walkFrom ? ' data-from="' + esc(walkFrom) + '"' : '') + '>Map</button>' +
@@ -1542,7 +1656,7 @@ function renderBuildings(){
       '<div class="row"><div class="swatch" style="--sc:var(--line)"></div>' +
       '<div class="rmain"><div class="n">' + b.bldg + '</div>' +
       '<div class="m">' + b.rooms.join(' &middot; ') + '</div></div>' +
-      '<button class="rgo" data-walk="' + esc(b.bldg) + '">Walk</button></div>'
+      '<button class="rgo" data-map="' + esc(b.bldg) + '">Walk</button></div>'
     ).join('');
 }
 
@@ -1580,7 +1694,7 @@ function renderCourses(){
         '</span></div>' +
         '<div class="minibtns" style="margin-top:10px"><button class="minibtn" data-grades="' + esc(c.key) + '">Grades</button></div>' +
         '<div class="btns">' +
-          '<button class="btn" data-walk="' + esc(c.bldg) + '">Walk there</button>' +
+          '<button class="btn" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '">Walk there</button>' +
           '<button class="btn ghost" data-map="' + esc(c.bldg) + '" data-room="' + c.room + '">Map</button>' +
         '</div>' +
       '</div></details>';
@@ -1725,7 +1839,7 @@ function renderFinals(N){
           ? esc(c.final.bldg) + ' &middot; Floor ' + floorOf(c.final.room) + ', Room ' + roomShort(c.final.room)
           : '<span class="tba">ROOM TBA</span>') + '</div>' +
       '</div>' +
-      (placed ? '<button class="rgo" data-walk="' + esc(c.final.bldg) + '" data-room="' + c.final.room + '">Walk</button>' : '') +
+      (placed ? '<button class="rgo" data-map="' + esc(c.final.bldg) + '" data-room="' + c.final.room + '">Walk</button>' : '') +
       '</div>';
   }).join('') +
   tba.map(c =>
@@ -4049,7 +4163,10 @@ const PIN_SEED = {
   'Physical Science Ctr': { lat:35.2090, lng:-97.4469, addr:'Physical Sciences Center, 601 Elm Ave, Norman, OK 73019' },
   'Adams Hall':           { lat:35.2085, lng:-97.4450, addr:'Adams Hall, 307 W Brooks St, Norman, OK 73019' },
   'Dale Hall':            { lat:35.2064, lng:-97.4455, addr:'Dale Hall, 455 W Lindsey St, Norman, OK 73019' },
-  'Cross Village':        { lat:35.2018, lng:-97.4402, addr:'Cross Village, 1400 Asp Ave, Norman, OK 73019' }
+  'Cross Village':        { lat:35.2018, lng:-97.4402, addr:'Cross Village, 1400 Asp Ave, Norman, OK 73019' },
+  /* help-hour buildings: no class of yours meets here, but you walk to them */
+  'Cate Center 1':        { lat:35.2035128, lng:-97.4451165, addr:'Cate Center 1, Cate Center Dr, Norman, OK 73072' },
+  'Dunham Hall':          { lat:35.2033628, lng:-97.4429332, addr:'Dunham College, 250 W Lindsey St, Norman, OK 73019' }
 };
 const PIN_KEY = 'schedhub.pins.' + SCHEDULE.id;
 
@@ -4134,8 +4251,9 @@ function liveMsg(t){ return '<div class="walkmsg">' + esc(t) + '</div>'; }
 function drawWalk(){
   const b = WALK.bldg, pin = PINS[b];
   $('#walkTitle').textContent = b;
+  const fl = WALK.room ? floorOf(WALK.room) : null;
   $('#walkSub').innerHTML = (WALK.room
-      ? 'Floor ' + floorOf(WALK.room) + ' &middot; Room ' + roomShort(WALK.room) + ' &middot; '
+      ? (fl ? 'Floor ' + fl + ' &middot; ' : '') + 'Room ' + roomShort(WALK.room) + ' &middot; '
       : '') + esc(pin ? pin.addr : '');
 
   if (!pin){ $('#walkLive').innerHTML = liveMsg('No pin for this building yet.'); return; }
@@ -4148,7 +4266,11 @@ function drawWalk(){
         '<div class="wsbig">' + (here ? 'You are here' : feet(d)) + '</div>' +
         '<div class="wslab">' +
           (here
-            ? (WALK.room ? 'Head to floor ' + floorOf(WALK.room) + ', room ' + roomShort(WALK.room) : 'At the building')
+            ? (WALK.room
+                ? (floorOf(WALK.room)
+                    ? 'Head to floor ' + floorOf(WALK.room) + ', room ' + roomShort(WALK.room)
+                    : 'Head to room ' + roomShort(WALK.room))
+                : 'At the building')
             : walkMins(d) + ' min walk &middot; head ' + compass(br)) +
         '</div>' +
         (WALK.me.acc > 40 ? '<div class="wsacc">GPS accurate to about ' + feet(WALK.me.acc) + '</div>' : '') +
@@ -4214,7 +4336,8 @@ function walkBoot(){
   $('#walkGoogle').onclick = () => {
     const pin = PINS[WALK.bldg];
     const url = pin && pin.exact
-      ? 'https://www.google.com/maps/dir/?api=1&destination=' + pin.lat + ',' + pin.lng + '&travelmode=walking'
+      ? 'https://www.google.com/maps/dir/?api=1&destination=' + pin.lat + ',' + pin.lng +
+        '&travelmode=walking' + (originQ(WALK.from) ? '&origin=' + enc(originQ(WALK.from)) : '')
       : googleUrl(WALK.bldg, WALK.from);
     openExternal(url, pin ? pin.addr : WALK.bldg);
   };
@@ -4512,7 +4635,7 @@ function renderFood(N){
       '<div class="minibtns">' +
         '<button class="minibtn" data-vhours="' + v.id + '">Full hours</button>' +
         '<button class="minibtn" data-vedit="' + v.id + '">Edit hours</button>' +
-        '<button class="minibtn" data-walk="Cross Village">Walk</button>' +
+        '<button class="minibtn" data-map="Cross Village">Walk</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -5159,6 +5282,7 @@ const PLAN_DAYS = ['U','M','T','W','R','F','S'];
 const PLAN_DAYLAB = {U:'Sun',M:'Mon',T:'Tue',W:'Wed',R:'Thu',F:'Fri',S:'Sat'};
 let planBlocks = loadJSON(PLAN_KEY, []);
 let planDay = null;          // null = today
+let planWeek = false;        // true = the five-day study board
 let planEditing = null;      // block id being edited, or null
 
 function planSave(){ saveJSON(PLAN_KEY, planBlocks); }
@@ -5191,18 +5315,183 @@ function renderPlanChips(N){
   const wrap = $('#planChips');
   wrap.innerHTML = PLAN_DAYS.map(L => {
     const n = (L !== 'U' && L !== 'S' && !pastClasses(N) ? meetingsFor(L).length : 0) + planBlocksFor(L).length;
-    const on = (planDay || N.letter) === L;
+    const on = !planWeek && (planDay || N.letter) === L;
     return '<button class="chip' + (on ? ' on' : '') + '" data-day="' + L + '">' +
       PLAN_DAYLAB[L] + (n ? '<span class="cnt">' + n + '</span>' : '') + '</button>';
   }).join('');
-  wrap.querySelectorAll('.chip').forEach(b => {
-    b.onclick = () => { planDay = b.dataset.day === campusNow().letter ? null : b.dataset.day; renderPlan(); };
+  wrap.insertAdjacentHTML('beforeend',
+    '<button class="chip' + (planWeek ? ' on' : '') + '" data-week="1">Week</button>');
+  wrap.querySelectorAll('.chip[data-day]').forEach(b => {
+    b.onclick = () => { planWeek = false;
+      planDay = b.dataset.day === campusNow().letter ? null : b.dataset.day; renderPlan(); };
   });
+  wrap.querySelector('.chip[data-week]').onclick = () => { planWeek = !planWeek; renderPlan(); };
+}
+
+/* ---- the week board -------------------------------------------------
+   Five weekday columns, every class solid in its own colour and every
+   suggested study sitting dashed in the same colour beside it, so the
+   answer to "when do I study for all of this" is one glance. Tapping a
+   dashed one keeps it, exactly as on the day grid. ---- */
+/* Every help slot a course lists, flattened with its course attached. Slots
+   with days+times can be drawn on the board; TBA / by-appointment ones can
+   only be listed, and are listed rather than quietly dropped. */
+function helpSlots(){
+  const out = [];
+  COURSES.forEach(c => (c.help || []).forEach(h => out.push(Object.assign({ c }, h))));
+  return out;
+}
+function helpFor(L){
+  return helpSlots().filter(h => h.days && h.days.includes(L) && h.start && h.end)
+    .map(h => Object.assign({}, h, { s:mins(h.start), e:mins(h.end) }))
+    .sort((a,b) => a.s - b.s);
+}
+function helpWhere(h){
+  if (h.online) return h.online;
+  if (h.bldg) return h.bldg + (h.room ? ' ' + h.room : '');
+  return h.note || '';
+}
+/* Everything with a real day and time, bucketed by the day you would go.
+   A window that runs while you are in class is not useful, so each row says
+   whether you are actually free for it. */
+function renderHelp(){
+  const N = campusNow();
+  const look = planWeek ? N.letter : (planDay || N.letter);   // the day on screen
+  const timed = helpSlots().filter(h => h.days && h.start);
+  $('#helpAux').textContent = planWeek
+    ? timed.length + ' windows this week'
+    : ('MTWRF'.includes(look) ? DAYNAME[look] : 'No classes this day');
+
+  const show = planWeek ? 'MTWRF'.split('') : ['MTWRF'.includes(look) ? look : 'M'];
+  const days = show.map(L => ({ L, rows:helpFor(L) })).filter(d => d.rows.length);
+  const body = days.map(d => {
+    const rows = d.rows.map(h => {
+      /* free means no class of yours sits across the middle of the window */
+      const clash = meetingsFor(d.L).filter(m => m.s < h.e && m.e > h.s);
+      const free = Math.max(0, (h.e - h.s) - clash.reduce((t, m) =>
+        t + (Math.min(m.e, h.e) - Math.max(m.s, h.s)), 0));
+      const pill = free >= 30
+        ? '<span class="hpill free">' + dur(free * 60000) + ' free</span>'
+        : '<span class="hpill busy">you are in class</span>';
+      const go = h.bldg
+        ? '<button class="hgo" data-map="' + esc(h.pin || h.bldg) + '" data-room="' +
+            esc(h.room || '') + '">Walk there</button>'
+        : '';
+      return '<div class="hrow' + (free >= 30 ? '' : ' clash') + '">' +
+        '<span class="hbar" style="background:' + h.c.color + '"></span>' +
+        '<span class="hmid">' +
+          '<span class="htime">' + fmt(h.start) + ' – ' + fmt(h.end) + '</span>' + pill +
+          (h.walkin ? '<span class="hpill walk">walk-in</span>' : '') +
+          '<div class="hwho">' + esc(h.who) + ' · ' + esc(cName(h.c)) + '</div>' +
+          '<div class="hwhere">' + esc(helpWhere(h) || 'Location not posted') + '</div>' +
+        '</span>' + go + '</div>';
+    }).join('');
+    return '<div class="hday' + (d.L === look ? ' today' : '') + '"><div class="hdl"><b>' +
+      DAYNAME[d.L] + '</b><span class="hdf">' + d.rows.length +
+      (d.rows.length === 1 ? ' window' : ' windows') + '</span></div>' + rows + '</div>';
+  }).join('');
+  $('#helpList').innerHTML = body ||
+    '<div class="empty">Nothing open on this day. Tap Week to see the rest.</div>';
+
+  /* not scheduled yet: appointment-only and TBA, listed so they stay visible */
+  const pend = helpSlots().filter(h => !(h.days && h.start));
+  $('#helpPending').innerHTML = pend.length
+    ? '<div class="hpend">' + pend.map(h =>
+        '<div class="hp"><i style="background:' + h.c.color + '"></i><b>' + esc(h.who) + '</b>' +
+        '<span>' + esc(h.appt || h.tba || 'No hours posted') +
+        (h.bldg ? ' · ' + esc(helpWhere(h)) : '') + '</span></div>').join('') + '</div>'
+    : '';
+}
+
+function renderWeekBoard(N){
+  const DAYS = ['M','T','W','R','F'];
+  const PXM = 0.85, GUT = 34;
+  const cols = DAYS.map(L => {
+    const classes = pastClasses(N) ? [] : meetingsFor(L).map(m => ({
+      s:m.s, e:m.e, name:m.c.short || m.c.title, color:m.c.color, cls:true }));
+    const own = planBlocksFor(L).map(x => ({ s:x.s, e:x.e, name:x.b.title, color:x.b.color }));
+    const ghosts = sloadGhostsFor(L).map(g => {
+      const c = COURSES.find(x => x.key === g.key);
+      return { s:g.s, e:g.e, name:g.name, color:(c && c.color) || 'var(--accent)', g };
+    });
+    return { L, items:planLanes(classes.concat(own).sort((a,b) => a.s - b.s || a.e - b.e)),
+             ghosts:[] };
+  });
+
+  const all = cols.flatMap(c => c.items.concat(c.ghosts));
+  const lo = Math.min(8 * 60, ...all.map(i => i.s - (i.s % 60)));
+  const hi = Math.max(18 * 60, ...all.map(i => i.e + (60 - i.e % 60) % 60));
+
+  $('#weekHead').innerHTML = '<div class="wkh0"></div>' + DAYS.map(L =>
+    '<div class="wkh' + (L === N.letter ? ' today' : '') + '">' + PLAN_DAYLAB[L] + '</div>').join('');
+
+  const grid = $('#weekGrid');
+  grid.style.height = (hi - lo) * PXM + 'px';
+  let html = '';
+  for (let m = lo; m <= hi; m += 60){
+    const h12 = (m / 60) % 12 || 12;
+    html += '<div class="phour" style="top:' + (m - lo) * PXM + 'px"><span>' +
+      h12 + (m / 60 >= 12 ? 'p' : 'a') + '</span></div>';
+  }
+  const colW = 'calc((100% - ' + GUT + 'px) / 5)';
+  const colLeft = n => 'calc(' + GUT + 'px + ' + colW + ' * ' + n + ')';
+
+  cols.forEach((col, n) => {
+    html += '<div class="wkcol" style="left:' + colLeft(n) + '"></div>';
+    col.ghosts.forEach((g, k) => {
+      const h = Math.max(16, (g.e - g.s) * PXM - 2);
+      html += '<button class="wkblk ghost" data-col="' + n + '" data-ghost="' + k + '"' +
+        ' style="top:' + (g.s - lo) * PXM + 'px;height:' + h + 'px;left:calc(' + colLeft(n) +
+        ' + 2px);width:calc(' + colW + ' - 6px);border-color:' + g.color + ';color:' + g.color + '">' +
+        '<span class="wn">' + esc(g.name) + '</span>' +
+        (h >= 30 ? '<span class="wt">' + hm(g.s) + '–' + hm(g.e) + '</span>' : '') + '</button>';
+    });
+    col.items.forEach(it => {
+      const h = Math.max(16, (it.e - it.s) * PXM - 2);
+      const laneW = 'calc((' + colW + ' - 6px) / ' + it.lanes + ')';
+      html += '<div class="wkblk" style="top:' + (it.s - lo) * PXM + 'px;height:' + h +
+        'px;left:calc(' + colLeft(n) + ' + 2px + ' + laneW + ' * ' + it.lane + ');width:' + laneW +
+        ';background:' + wash(it.color, .8) + ';border-left:3px solid ' + it.color + '">' +
+        '<span class="wn">' + esc(it.name) + '</span>' +
+        (h >= 30 ? '<span class="wt">' + hm(it.s) + '–' + hm(it.e) + '</span>' : '') + '</div>';
+    });
+  });
+  if ('MTWRF'.includes(N.letter) && N.minutes >= lo && N.minutes <= hi){
+    const n = DAYS.indexOf(N.letter);
+    html += '<div class="pnowline" style="top:' + (N.minutes - lo) * PXM +
+      'px;left:' + colLeft(n) + ';width:' + colW + '"></div>';
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.wkblk.ghost').forEach(el => {
+    el.onclick = () => {
+      const g = cols[+el.dataset.col].ghosts[+el.dataset.ghost].g;
+      if (g && confirm('Keep ' + hm(g.s) + ' to ' + hm(g.e) + ' on ' + PLAN_DAYLAB[g.L] +
+        ' for ' + g.name + '?' + String.fromCharCode(10,10) + 'It becomes a normal block you can edit or delete.')) sloadKeep(g);
+    };
+  });
+
+  const seen = [];
+  COURSES.forEach(c => { if (sloadGhostsFor('M').concat(
+      sloadGhostsFor('T'), sloadGhostsFor('W'), sloadGhostsFor('R'), sloadGhostsFor('F'))
+      .some(g => g.key === c.key)) seen.push(c); });
+  $('#weekLegend').innerHTML =
+    seen.map(c => '<span class="wl"><i style="background:' + c.color + '"></i>' +
+      esc(c.short || c.title) + '</span>').join('');
 }
 
 function renderPlan(){
   const N = campusNow();
   renderPlanChips(N);
+  $('#planDayCard').style.display = planWeek ? 'none' : '';
+  $('#planWeekCard').style.display = planWeek ? '' : 'none';
+  if (planWeek){
+    try { sloadCache = sloadSuggest(); } catch (e){ sloadCache = null; console.error('study suggest', e); }
+    renderWeekBoard(N);
+    try { renderHelp(); } catch (e){ console.error('help', e); }
+    try { renderStudyLoad(); } catch (e){ console.error('study load', e); }
+    return;
+  }
   const L = planDay || N.letter;
   const isToday = L === N.letter;
   $('#planAux').textContent = isToday ? 'Today' : DAYNAME[L] || PLAN_DAYLAB[L] + 'day';
@@ -5219,7 +5508,7 @@ function renderPlan(){
      of the block list. It is never saved, never in `items`, and so never seen
      by lanes, clash detection or notifications. */
   try { sloadCache = sloadSuggest(); } catch (e){ sloadCache = null; console.error('study suggest', e); }
-  const ghosts = ('MTWRF'.includes(L) ? sloadGhostsFor(L) : []);
+  const ghosts = [];   /* suggested study is off: Jack wants real hours only */
 
   /* ghosts count toward the window too, so a suggestion never lands off-grid */
   const span = items.concat(ghosts);
@@ -5228,6 +5517,8 @@ function renderPlan(){
   const PXM = 1.15;
   const grid = $('#planGrid');
   grid.style.height = (hi - lo) * PXM + 'px';
+
+
 
   let html = '';
   for (let m = lo; m <= hi; m += 60){
@@ -5266,7 +5557,6 @@ function renderPlan(){
       (h >= 34 ? '<span class="gt">' + hm(g.s) + ' – ' + hm(g.e) + ' · tap to keep this one</span>' : '') +
       '</button>';
   });
-
   items.forEach(it => {
     const laneW = (100 - 9) / it.lanes;   // 9% left gutter for hour labels
     const left = 9 + it.lane * laneW;
@@ -5311,6 +5601,7 @@ function renderPlan(){
     openPlanSheet(null, { start:m2t(s), end:m2t(Math.min(s + 60, g.until)), days:L });
   };
 
+  try { renderHelp(); } catch (e){ console.error('help', e); }
   try { renderStudyLoad(); } catch (e){ console.error('study load', e); }
 }
 
