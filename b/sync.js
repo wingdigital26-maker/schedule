@@ -47,11 +47,11 @@ if (typeof SCHEDULE === 'undefined' || !SCHEDULE || !SCHEDULE.id) return;
 
 /* ---------------------------------------------------------------- config */
 
-const SB_URL  = 'https://ikgnhieorzjaxtjoneye.supabase.co';
+const SB_URL  = 'https://ntgutipydukbxfbctmgr.supabase.co';
 /* Public by design. It is the anon key: it can execute the two sync
    functions and nothing else, and neither works without the sync code.
    A service key must never appear in this file. */
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrZ25oaWVvcnpqYXh0am9uZXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2ODAzMjEsImV4cCI6MjEwMTI1NjMyMX0.j5mExwdSlzS-2jado_5T1XycAp1kO_2Vtz9ZEirV09s';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50Z3V0aXB5ZHVrYnhmYmN0bWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2Mjg5NzgsImV4cCI6MjEwNjIwNDk3OH0.EvoHsqSXq1xFfQJPPvQZ0ppq36FVWLZGzBmB_NVy39M';
 
 const ID = SCHEDULE.id;
 const P  = 'schedhub.sync.';          // every key this file owns starts here

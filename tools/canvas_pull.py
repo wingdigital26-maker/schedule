@@ -545,11 +545,9 @@ def push(items):
 # the key can execute the two sync functions and nothing else, and neither
 # does anything without the sync code. The code is the credential, and it
 # only ever comes from the environment.
-SB_URL = 'https://ikgnhieorzjaxtjoneye.supabase.co'
+SB_URL = 'https://ntgutipydukbxfbctmgr.supabase.co'
 SB_ANON = (
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI'
-    'sInJlZiI6ImlrZ25oaWVvcnpqYXh0am9uZXllIiwicm9sZSI6ImFub24iLCJ'
-    'pYXQiOjE3ODU2ODAzMjEsImV4cCI6MjEwMTI1NjMyMX0.j5mExwdSlzS-2jado_5T1XycAp1kO_2Vtz9ZEirV09s'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50Z3V0aXB5ZHVrYnhmYmN0bWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2Mjg5NzgsImV4cCI6MjEwNjIwNDk3OH0.EvoHsqSXq1xFfQJPPvQZ0ppq36FVWLZGzBmB_NVy39M'
 )
 
 # The sync item this script owns. One blob, one namespace, read-only as far as
